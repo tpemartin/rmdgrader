@@ -1,14 +1,15 @@
 setup_library <- function(codeChunksProcessed, dataEnvironment){
+  dataEnvironment$setupText <- codeChunksProcessed$chunkExpressions$setup
   with_env(
     dataEnvironment,
     {
-      codeChunksProcessed$chunkExpressions$setup %>%
+      setupText %>%
         map_chr(
           deparse
         ) %>%
         {stringr::str_which(.,"library")} -> whichHasLibrary
 
-      codeChunksProcessed$chunkExpressions$setup[whichHasLibrary] %>%
+      setupText[whichHasLibrary] %>%
         walk(
           eval
         )
@@ -16,7 +17,7 @@ setup_library <- function(codeChunksProcessed, dataEnvironment){
   )
 }
 
-fillup_dataEnvironment <- function(envir, correctAnsFilepath, part){
+fillup_dataEnvironment <- function(envir, correctAnsFilepath, targetPart){
   correctAnsFilepath %>%
     get_codeChunkProcessed_from_filepath() -> codeChunksProcessed
 
@@ -24,7 +25,7 @@ fillup_dataEnvironment <- function(envir, correctAnsFilepath, part){
                 dataEnvironment = envir)
 
   codeChunksProcessed$chunkLabelsDecomposed %>%
-    filter(part == part) -> targetPartLabels
+    filter(part == targetPart) -> targetPartLabels
 
   if(any(targetPartLabels$type=="data")) {
     # dataEnvironment = new.env(parent=.GlobalEnv)
@@ -47,7 +48,7 @@ fillup_dataEnvironment <- function(envir, correctAnsFilepath, part){
   invisible(envir)
 }
 
-fillupDataEnv_with_ansEnvir <- function(codeChunksProcessed){
+fillupDataEnv_with_ansEnvir <- function(codeChunksProcessed, dataEnvironment, targetPart){
 
   # .x=2
   {
@@ -56,7 +57,7 @@ fillupDataEnv_with_ansEnvir <- function(codeChunksProcessed){
       {
         {
           codeChunksProcessed$chunkLabelsDecomposed %>%
-            filter(part ==.x) -> targetPartLabels
+            filter(part ==targetPart) -> targetPartLabels
 
           targetPartLabels %>%
             filter(
@@ -71,7 +72,7 @@ fillupDataEnv_with_ansEnvir <- function(codeChunksProcessed){
           answerCodeExpressions <-
             codeChunksProcessed$chunkExpressions[[ansLabels[[.x]]]]
           answerEnvironment$ansObjectName <-
-            codeChunksProcessed$ansObjectnames[[ansLabels[[.x]]]]
+            ansObjectNames[[ansLabels[[.x]]]]
 
           flag_executable <-
             tryCatch_codeExpressions(answerCodeExpressions, answerEnvironment)
@@ -97,7 +98,7 @@ prepare_dataEnvironment <- function(correctAnsFilename, part){
   dataEnvironment %>%
     fillup_dataEnvironment(
       correctAnsFilepath = correctAnsFilename,
-      part=part
+      targetPart = part
     )
 
 }

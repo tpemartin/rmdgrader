@@ -53,7 +53,13 @@ processDataExprs2getDataEnvironment <- function(
 # helpers -----------------------------------------------------------------
 
 parseCodeChunk2Expressions <- function(x){
-  x %>%
-    paste0(collapse="\n") %>%
-    rlang::parse_exprs()
+  tryCatch({
+    x %>%
+      paste0(collapse="\n") %>%
+      rlang::parse_exprs()
+  },
+  error=function(e){
+    "codes can not be parsed to expression"
+    rlang::expr('Error chunk')
+  })
 }
