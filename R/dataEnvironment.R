@@ -52,6 +52,8 @@ fillupDataEnv_with_ansEnvir <- function(codeChunksProcessed, dataEnvironment, ta
 
   # .x=2
   {
+    dataEnvironment$codeChunksProcessed <- codeChunksProcessed
+    dataEnvironment$targetPart <- targetPart
     with_env(
       dataEnvironment,
       {
@@ -61,7 +63,7 @@ fillupDataEnv_with_ansEnvir <- function(codeChunksProcessed, dataEnvironment, ta
 
           targetPartLabels %>%
             filter(
-              is.na(postfix), type=="ans"
+              type=="ans"
             ) %>%
             arrange(digit) %>%
             pull(label) -> ansLabels
@@ -71,23 +73,31 @@ fillupDataEnv_with_ansEnvir <- function(codeChunksProcessed, dataEnvironment, ta
         for(.x in seq_along(ansLabels)){
           answerCodeExpressions <-
             codeChunksProcessed$chunkExpressions[[ansLabels[[.x]]]]
-          answerEnvironment$ansObjectName <-
-            ansObjectNames[[ansLabels[[.x]]]]
 
-          flag_executable <-
-            tryCatch_codeExpressions(answerCodeExpressions, answerEnvironment)
+          switch(
+            ansLabels[[.x]] %>% get_ansLabelType,
+            "s"={ # 程式陳述正確與否的題目
+              answerEnvironment$ansValues[[ansLabels[[.x]]]] <- list(
+                answerCodeExpressions
+              )
+            },
+            "NA"={
+              answerEnvironment$ansObjectName <-
+                ansObjectNames[[ansLabels[[.x]]]]
 
-          if(flag_executable){
-            answerEnvironment$ansValues[[ansLabels[[.x]]]] <- list(
-              answerEnvironment[[answerEnvironment$ansObjectName]]
-            )
-          } else {
-            answerEnvironment$ansValues[[ansLabels[[.x]]]] %>%
-              append(list("Error"))
-          }
+              flag_executable <-
+                tryCatch_codeExpressions(answerCodeExpressions, answerEnvironment)
+
+              if(flag_executable){
+                answerEnvironment$ansValues[[ansLabels[[.x]]]] <- list(
+                  answerEnvironment[[answerEnvironment$ansObjectName]]
+                )
+              } else {
+                answerEnvironment$ansValues[[ansLabels[[.x]]]] %>%
+                  append(list("Error"))
+              }
+            })
         }
-
-
       }
     )
   }
@@ -101,4 +111,13 @@ prepare_dataEnvironment <- function(correctAnsFilename, part){
       targetPart = part
     )
 
+}
+
+# helpers -----------------------------------------------------------------
+
+
+get_ansLabelType <- function(x) {
+  x %>%
+    stringr::str_extract("(?<=ans[:digit:]{1,2})[:alpha:]+") -> ansType
+  ansType
 }
