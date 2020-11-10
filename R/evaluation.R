@@ -1,3 +1,12 @@
+#' Execute Rmd scripts and obtain answer object values
+#'
+#' @param studentsRmds A character of full filename path of Rmds
+#' @param correctAnsFilename A character of full filename path of correct Answer Rmds
+#'
+#' @return A list of 2
+#' @export
+#'
+#' @examples none
 get_answerObjectValues <- function(studentsRmds, correctAnsFilename)
 {
   studentValues <- vector("list", length(studentsRmds))
@@ -15,9 +24,6 @@ get_answerObjectValues <- function(studentsRmds, correctAnsFilename)
 
   }
 
-  # prepare folder for unprocessable Rmds
-  unprocessableFolder <- file.path(root,"unprocessable")
-  if(!dir.exists(unprocessableFolder)) dir.create(unprocessableFolder)
   badRmds <- vector("list", length(parts))
   names(badRmds) <- parts
   for(.y in seq_along(parts)){

@@ -54,10 +54,14 @@ fillupDataEnv_with_ansEnvir <- function(codeChunksProcessed, dataEnvironment, ta
   {
     dataEnvironment$codeChunksProcessed <- codeChunksProcessed
     dataEnvironment$targetPart <- targetPart
+    dataEnvironment$get_ansLabelType <- get_ansLabelType
+    dataEnvironment$tryCatch_codeExpressions <- tryCatch_codeExpressions
     with_env(
       dataEnvironment,
       {
         {
+          library(dplyr)
+          library(rmdgrader)
           codeChunksProcessed$chunkLabelsDecomposed %>%
             filter(part ==targetPart) -> targetPartLabels
 
@@ -82,6 +86,7 @@ fillupDataEnv_with_ansEnvir <- function(codeChunksProcessed, dataEnvironment, ta
               )
             },
             "NA"={
+              # 讓環境裡ansObjectName帶有答案物件名
               answerEnvironment$ansObjectName <-
                 ansObjectNames[[ansLabels[[.x]]]]
 
