@@ -8,20 +8,49 @@ require(callr)
 
 get_codeChunks <- function(Rmdlines){
   require(dplyr)
-  Rmdlines %>%
-    rmd2drake::get_chunksTable(
-      exclude="(afterMake=T|drake=F)"
-    ) -> chunkTable
-  Rmdlines %>%
-    rmd2drake::get_listCodeChunksFromRmdlines(
-      requireLabel = T,
-      exclude="(afterMake=T|drake=F)") -> codeChunks
+  chunkTable <- Rmdlines %>% rmd2drake::get_chunksTable(exclude = "(afterMake=T|drake=F)")
+  codeChunks <- Rmdlines %>% get_listCodeChunksFromRmdlinesWithChunkTable(chunkTable)
   codeChunks
 }
+
+# get_codeChunks <- function(Rmdlines){
+#   require(dplyr)
+#   Rmdlines %>%
+#     rmd2drake::get_chunksTable(
+#       exclude="(afterMake=T|drake=F)"
+#     ) -> chunkTable
+#   Rmdlines %>%
+#     rmd2drake::get_listCodeChunksFromRmdlines(
+#       requireLabel = T,
+#       exclude="(afterMake=T|drake=F)") -> codeChunks
+#   codeChunks
+# }
 
 
 # helpers -----------------------------------------------------------------
 
+get_listCodeChunksFromRmdlinesWithChunkTable <- function(Rmdlines, chunkTable)
+{
+  chunkTable %>%
+    filter(!is.na(object)) -> chunkTableWithLabels
+  chunkTableWithLabels
+
+  seq_along(chunkTableWithLabels$object) %>%
+    purrr::map(
+      ~{
+        with(
+          chunkTableWithLabels,
+          {
+            codes= Rmdlines[begin[[.x]]:end[[.x]]]
+            codes
+          }
+        )
+      }
+    ) -> list_codeChunks
+
+  names(list_codeChunks) <- chunkTableWithLabels$object
+  list_codeChunks
+}
 
 obtain_ansObjectName <- function(x){
   x %>%

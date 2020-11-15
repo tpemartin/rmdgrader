@@ -14,7 +14,7 @@ get_answerObjectValues <- function(studentsRmds, correctAnsFilename)
   # get Rmd structure information from answer Rmd
   {
     correctAnsFilename %>%
-      get_codeChunkProcessed_from_filepath() -> correctCodeChunksProcessed
+      get_codeChunkProcessed_from_filepath(codeChunksFromAnsFile=T) -> correctCodeChunksProcessed
 
     # 大題標號
     parts <- levels(correctCodeChunksProcessed$chunkLabelsDecomposed$part)
