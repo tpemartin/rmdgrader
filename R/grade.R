@@ -138,3 +138,41 @@ get_errorStatus <- function(list_expectations){
     return(T)
   })
 }
+
+#' Generate a list of getxy from a group of Rmds selected
+#'
+#' @param eliteGroup A character vector each represent a chosen Rmd to form getxy as how we use in getxy input argument. This is a vectorized version.
+#'
+#' @return
+#' @export
+#'
+#' @examples none
+generate_mgetxy = function(eliteGroup){
+  map(
+    eliteGroup,
+    getxyFunctional
+  ) -> list_getxy
+  names(list_getxy) <- eliteGroup
+  list_getxy
+}
+
+#' Grade function specific to elite group
+#'
+#' @param .mgetxy A list of getxy functions
+#'
+#' @return
+#' @export
+#'
+#' @examples none
+grademFunctional <- function(.mgetxy){
+
+  function(ansLabel, gradingMethod){
+    map_dbl(
+      .mgetxy,
+      ~{
+        .x(ansLabel)
+        gradingMethod(x,y)
+      }
+    )
+  }
+}
