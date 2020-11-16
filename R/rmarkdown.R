@@ -58,9 +58,21 @@ obtain_ansObjectName <- function(x){
       stringr::str_trim(., side="both") %>%
         purrr::keep(function(x) x!="") %>%
         {.[[length(.)]]} %>%
-        stringr::str_remove("[#\\s]+")
+        stringr::str_remove("[#\\s]+") %>%
+        stringr::str_split(";") %>%
+        unlist()
     }
 }
+
+# obtain_ansObjectName <- function(x){
+#   x %>%
+#     {
+#       stringr::str_trim(., side="both") %>%
+#         purrr::keep(function(x) x!="") %>%
+#         {.[[length(.)]]} %>%
+#         stringr::str_remove("[#\\s]+")
+#     }
+# }
 
 decomposeChunkLabels <- function(codeChunks){
   names_codechunks <- names(codeChunks)

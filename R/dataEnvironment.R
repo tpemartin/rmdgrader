@@ -19,8 +19,8 @@ setup_library <- function(codeChunksProcessed, dataEnvironment){
 
 fillup_dataEnvironment <- function(envir, correctAnsFilepath, targetPart){
   correctAnsFilepath %>%
-    get_codeChunkProcessed_from_filepath() -> codeChunksProcessed
-
+    get_codeChunkProcessed_from_filepath(codeChunksFromAnsFile=T) -> codeChunksProcessed
+  # browser()
   setup_library(codeChunksProcessed,
                 dataEnvironment = envir)
 
@@ -43,21 +43,84 @@ fillup_dataEnvironment <- function(envir, correctAnsFilepath, targetPart){
         codeChunksProcessed,
         dataEnvironment = envir
       )
-
   }
+  # attach ansObjectnames to envir
+  purrr::map(
+    codeChunksProcessed$ansObjectnames,
+    ~stringr::str_remove_all(.x,"\\s")
+  ) -> codeChunksProcessed$ansObjectnames
+
+  envir$ansObjectnames <- codeChunksProcessed$ansObjectnames
   invisible(envir)
 }
 
-fillupDataEnv_with_ansEnvir <- function(codeChunksProcessed, dataEnvironment, targetPart){
+fillupDataEnv_with_ansEnvir <- function(codeChunksProcessed, targetPart, answerEnvironment){
 
   # .x=2
   {
-    dataEnvironment$codeChunksProcessed <- codeChunksProcessed
-    dataEnvironment$targetPart <- targetPart
-    dataEnvironment$get_ansLabelType <- get_ansLabelType
-    dataEnvironment$tryCatch_codeExpressions <- tryCatch_codeExpressions
+    {
+      library(dplyr)
+      library(rmdgrader)
+      codeChunksProcessed$chunkLabelsDecomposed %>%
+        filter(part ==targetPart) -> targetPartLabels
+
+      targetPartLabels %>%
+        filter(
+          type=="ans"
+        ) %>%
+        arrange(digit) %>%
+        pull(label) -> ansLabels
+    }
+    {
+      # answerEnvironment <- new.env(parent = dataEnvironment)
+      answerEnvironment[["ansValues"]] <- list()
+      for(.x in seq_along(ansLabels)){
+        targetAnsLabel <- ansLabels[[.x]]
+        answerCodeExpressions <-
+          codeChunksProcessed$chunkExpressions[[targetAnsLabel]]
+
+        switch(
+          targetAnsLabel %>% get_ansLabelType,
+          "s"={ # 程式陳述正確與否的題目
+            answerEnvironment$ansValues[[targetAnsLabel]] <- list(
+              answerCodeExpressions
+            )
+          },
+          "NA"={
+            cat('target label: ', targetAnsLabel, '\n')
+            # if(targetAnsLabel=="ans31") browser()
+            flag_executable <-
+              tryCatch_eval_inAnsEnv(
+                answerCodeExpressions,
+                answerEnvironment)
+
+            if(flag_executable){
+
+              answerEnvironment$ansValues[[targetAnsLabel]] <- list(get_ansObjectValueFromAnswerEnvironment(answerEnvironment, targetAnsLabel))
+
+            } else {
+              answerEnvironment$ansValues[[targetAnsLabel]] %>%
+                append(list("Error"))
+            }
+          })
+      }
+    }
+
+  }
+}
+fillupDataEnv_with_ansEnvir2 <- function(codeChunksProcessed, targetPart){
+
+  # .x=2
+  {
+    answerEnvironment <- new.env(parent=dataEnvironment)
+    answerEnvironment$codeChunksProcessed <- codeChunksProcessed
+    answerEnvironment$targetPart <- targetPart
+
+    answerEnvironment$get_ansLabelType <- get_ansLabelType
+    answerEnvironment$tryCatch_codeExpressions <- tryCatch_codeExpressions
+    browser()
     with_env(
-      dataEnvironment,
+      answerEnvironment,
       {
         {
           library(dplyr)
@@ -72,33 +135,63 @@ fillupDataEnv_with_ansEnvir <- function(codeChunksProcessed, dataEnvironment, ta
             arrange(digit) %>%
             pull(label) -> ansLabels
         }
-        answerEnvironment <- new.env(parent = dataEnvironment)
+        # answerEnvironment <- new.env(parent = dataEnvironment)
         answerEnvironment[["ansValues"]] <- list()
         for(.x in seq_along(ansLabels)){
+          targetAnsLabel <- ansLabels[[.x]]
           answerCodeExpressions <-
-            codeChunksProcessed$chunkExpressions[[ansLabels[[.x]]]]
+            codeChunksProcessed$chunkExpressions[[targetAnsLabel]]
 
           switch(
-            ansLabels[[.x]] %>% get_ansLabelType,
+            targetAnsLabel %>% get_ansLabelType,
             "s"={ # 程式陳述正確與否的題目
-              answerEnvironment$ansValues[[ansLabels[[.x]]]] <- list(
+              answerEnvironment$ansValues[[targetAnsLabel]] <- list(
                 answerCodeExpressions
               )
             },
             "NA"={
               # 讓環境裡ansObjectName帶有答案物件名
               answerEnvironment$ansObjectName <-
-                ansObjectNames[[ansLabels[[.x]]]]
+                ansObjectNames[[targetAnsLabel]]
 
               flag_executable <-
                 tryCatch_codeExpressions(answerCodeExpressions, answerEnvironment)
 
               if(flag_executable){
-                answerEnvironment$ansValues[[ansLabels[[.x]]]] <- list(
-                  answerEnvironment[[answerEnvironment$ansObjectName]]
-                )
+                if(targetAnsLabel=='ans31') browser()
+                {
+                  targetAnsObjNames <- ansObjectNames[[targetAnsLabel]]
+                  ansValues = {
+                    ansValues <-
+                      mget(targetAnsObjNames,
+                           envir=answerEnvironment,
+                           ifnotfound=NA)
+                    ansValues <- ansValues[which(!is.na(ansValues))]
+                    ansValues
+                  }
+                  answerEnvironment$ansValues[[targetAnsLabel]] <- ansValues
+                }
+                # {
+                #   whichHasTargetAnsObjName <- which(
+                #     map_lgl(
+                #       answerEnvironment$ansObjectName,
+                #       exists,
+                #       envir=answerEnvironment
+                #     )
+                #   )
+                #   if(length(whichHasTargetAnsObjName)==0){
+                #     answerEnvironment$ansValues[[targetAnsLabel]] <-
+                #       list(NULL)
+                #   } else {
+                #     targetAnsObjName <- answerEnvironment$ansObjectName[[whichHasTargetAnsObjName]]
+                #     answerEnvironment$ansValues[[targetAnsLabel]] <-
+                #       list(
+                #         answerEnvironment[[targetAnsObjName]]
+                #       )
+                #   }
+                # }
               } else {
-                answerEnvironment$ansValues[[ansLabels[[.x]]]] %>%
+                answerEnvironment$ansValues[[targetAnsLabel]] %>%
                   append(list("Error"))
               }
             })
@@ -107,15 +200,16 @@ fillupDataEnv_with_ansEnvir <- function(codeChunksProcessed, dataEnvironment, ta
     )
   }
 }
+
 prepare_dataEnvironment <- function(correctAnsFilename, part){
 
-  dataEnvironment = new.env(parent=.GlobalEnv)
+  dataEnvironment <<- new.env(parent=.GlobalEnv)
   dataEnvironment %>%
     fillup_dataEnvironment(
       correctAnsFilepath = correctAnsFilename,
       targetPart = part
     )
-
+  # browser()
 }
 
 # helpers -----------------------------------------------------------------

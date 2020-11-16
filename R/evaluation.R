@@ -28,7 +28,7 @@ get_answerObjectValues <- function(studentsRmds, correctAnsFilename)
   names(badRmds) <- parts
   for(.y in seq_along(parts)){
     unprocessableRmds <- c()
-
+    # if(.y==3) browser()
     # 產生某一大題回答值
     targetPart <- parts[[.y]]
     # targetLabels
@@ -37,7 +37,7 @@ get_answerObjectValues <- function(studentsRmds, correctAnsFilename)
         correctCodeChunksProcessed$chunkLabelsDecomposed %>%
           filter(type=="ans", part==targetPart) %>% pull(label)
       }
-
+    # browser()
     # prepare dataEnvironment for the part
     prepare_dataEnvironment(correctAnsFilename, part=targetPart) ->> dataEnvironment
 
@@ -76,11 +76,14 @@ get_answerObjectValues <- function(studentsRmds, correctAnsFilename)
         }
 
         # 執行合理codeChunks
-        codeChunksProcessed %>%
-          fillupDataEnv_with_ansEnvir(dataEnvironment, targetPart)
+        answerEnvironment <<- new.env(parent=dataEnvironment)
+        # browser()
+        fillupDataEnv_with_ansEnvir(codeChunksProcessed, targetPart, answerEnvironment)
+
+        # browser()
         studentValues[[.x]] <- append(
           studentValues[[.x]],
-          dataEnvironment$answerEnvironment$ansValues)
+          answerEnvironment$ansValues)
       }
     }
     badRmds[[.y]] <- unprocessableRmds
@@ -91,12 +94,36 @@ get_answerObjectValues <- function(studentsRmds, correctAnsFilename)
   )
 }
 
-tryCatch_codeExpressions <- function(answerCodeExpressions, answerEnvironment){
+tryCatch_codeExpressions2 <- function(answerCodeExpressions, answerEnvironment){
   tryCatch({
     purrr::walk(
       answerCodeExpressions,
       eval, envir=answerEnvironment
     )
+    T
+  },
+  error=function(e){
+    "Error: codes cannot be processed"
+    F
+  }) -> flag_executable
+  invisible(flag_executable)
+}
+tryCatch_codeExpressions <- function(answerCodeExpressions, answerEnvironment){
+  tryCatch({
+    answerEnvironment$answerCodeExpressions <- answerCodeExpressions
+    rlang::with_env(
+      answerEnvironment,
+      {
+        purrr::walk(
+          answerCodeExpressions,
+          eval
+        )
+      }
+    )
+    # purrr::walk(
+    #   answerCodeExpressions,
+    #   eval, envir=answerEnvironment
+    # )
     T
   },
   error=function(e){
@@ -124,6 +151,7 @@ get_ansObjectnames <- function(codeChunks) {
 processDataExprs2getDataEnvironment <- function(
   dataLabels, codeChunksProcessed, dataEnvironment
 ){
+  # browser()
   dataExpressions <- {
     codeChunksProcessed$chunkExpressions[dataLabels]
   }
