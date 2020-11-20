@@ -159,6 +159,28 @@ obtainIssueComments <- function(
   comments
 }
 
+#' Select disput files from menu and investigate
+#'
+#' @param disputeFolder A character of dispute folder path
+#' @param disputeFileInfo A list of return from generate_disputeFilesFromIssueComments
+#'
+#' @return
+#' @export
+#'
+#' @examples none.
+inspect_selectedDisputeFile <- function(disputeFolder, disputeFileInfo){
+  # select file to review
+  disputeRmd <- rstudioapi::selectFile(path = disputeFolder)
+  school_id <- str_extract(disputeRmd, "[:digit:]{9}")
+  disputeFileInfo %>%
+    keep(
+      ~{str_detect(.x$markRmd, school_id)}) %>%
+    {
+      file.edit(.[[1]]$markRmd)
+      file.edit(.[[1]]$disputeBriefing)
+    }
+}
+
 # helpers -----------------------------------------------------------------
 
 #' Generate marked Rmd and its dispute Rmd for dispute resolution
