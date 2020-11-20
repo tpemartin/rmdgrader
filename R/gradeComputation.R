@@ -27,9 +27,10 @@ convert_gradeList2dataframe <- function(...) {
   df_grades %>%
     rowwise() %>%
     mutate(
-      total = sum(c_across(contains("ans")), na.rm = T)
+      total = sum(c_across(contains("ans")), na.rm = T),
+      final = 3 + 7/10*total
     ) %>%
-    select(name, total, everything()) -> df_grades
+    select(name, total, final, everything()) -> df_grades
 
   df_grades
 }

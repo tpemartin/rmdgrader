@@ -53,7 +53,7 @@ augment_studentRmdsWithAtAnsFunctional <-
           c(
             ansRmd_augmentStudent[1:cutLoc],
             "",
-            "```{r}",
+            paste0("```{r ",ansLabels[[.x]],"me}"),
             studentCodeChunks[[ansLabelNow]],
             "```",
             "",
