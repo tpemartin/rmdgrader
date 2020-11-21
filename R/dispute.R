@@ -165,6 +165,7 @@ generate_disputeFilesFromIssueComments <- function(
   disputeFileInfo <- vector("list", length(issueComments))
   for(.x in seq_along(issueComments)){
     commentTarget = issueComments[[.x]]
+    # browser()
     result =
       generate_disputeFilesFromOneComment(
         commentTarget = commentTarget,
@@ -348,9 +349,13 @@ generate_disputeFilesFromOneComment <- function(commentTarget, title, sourceRetu
           school_id, "_reply.Rmd"
         )
       )
-
+# browser()
     if(!file.exists(disputeBriefingFilename) ||  overwrite[[2]]){
-      commentVector %>%
+      c(
+        "## 提問\n",
+        commentVector,
+        "\n## 回覆\n"
+        ) %>%
         xfun::write_utf8(
           con = disputeBriefingFilename
         )
