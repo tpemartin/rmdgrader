@@ -1,13 +1,80 @@
+#' Return all processed dispute files to students' google drive return folder
+#'
+#' @param disputeFolder A character of path to local dispute folder
+#' @param localGDReturnFolderPath A character of path to local google drive return folder
+#' @param title A character of exercise title
+#' @param overwrite defaul=T
+#'
+#' @return
+#' @export
+#'
+#' @examples none
+returnAllDisputeFiles <- function(disputeFolder, localGDReturnFolderPath, title, overwrite = T) {
+  disputeFiles <- list.files(path = disputeFolder, full.names = T)
+  school_ids <- str_extract(disputeFiles, "[0-9]{9}") %>%
+    unique()
+  for (.x in seq_along(school_ids)) {
+    school_idx <- school_ids[[.x]]
+    disputeFiles %>%
+      str_subset(school_idx) -> files2returnFrom
+    returnFolderx <-
+      file.path(
+        localGDReturnFolderPath,
+        school_idx, title
+      )
+    map(
+      files2returnFrom,
+      ~ file.path(returnFolderx, basename(.x))
+    ) -> files2returnTo
+
+    walk2(
+      files2returnFrom, files2returnTo,
+      file.copy,
+      overwrite = overwrite
+    )
+  }
+}
+#' Update tb_Grades according to disputeFolder Rmd result
+#'
+#' @param tb_Grades A data frame return from convert_gradeList2dataframe()
+#' @param disputeFolder A character of path to dispute folder
+#' @param title A character of exercise title such as hw1, midterm1
+#'
+#' @return
+#' @export
+#'
+#' @examples none
+update_tbGrades <- function(tb_Grades, disputeFolder, disputeFileInfo, title){
+  require(purrr); require(dplyr); require(stringr)
+  disputeFiles <- list.files(path=disputeFolder, full.names = T) %>%
+    str_subset(paste0(title,"_[0-9]{9}.Rmd"))
+
+  list(
+    tb_grades
+  ) %>%
+    append(disputeFiles) -> list2reduce
+
+  reduce(
+    list2reduce,
+    update_tbGradesAndTargetRmdFile,
+    disputeFileInfo
+  ) -> tb_gradesNew
+
+  tb_gradesNew
+}
+
 #' Update tb_grades and target file Rmd under the hood
 #'
 #' @param tb_grades A data frame from step3 grading
+
 #' @param targetFile A character of full path to a target dispute Rmd
+#' @param disputeFileInfo A list returned from generate_disputeFilesFromIssueComments()
 #'
 #' @return A data frame tb_grades new
 #' @export
 #'
 #' @examples none.
-update_tbGradesAndTargetRmdFile <- function(tb_grades, targetFile)
+update_tbGradesAndTargetRmdFile <- function(tb_grades, targetFile, disputeFileInfo)
 {
   xfun::read_utf8(
     file.path(targetFile)
@@ -277,8 +344,8 @@ generate_disputeFilesFromOneComment <- function(commentTarget, title, sourceRetu
       file.path(
         disputeFolder,
         paste0(
-          title, "Dispute_",
-          school_id, ".Rmd"
+          title, "_",
+          school_id, "_reply.Rmd"
         )
       )
 

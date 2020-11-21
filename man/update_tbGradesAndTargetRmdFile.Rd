@@ -4,12 +4,14 @@
 \alias{update_tbGradesAndTargetRmdFile}
 \title{Update tb_grades and target file Rmd under the hood}
 \usage{
-update_tbGradesAndTargetRmdFile(tb_grades, targetFile)
+update_tbGradesAndTargetRmdFile(tb_grades, targetFile, disputeFileInfo)
 }
 \arguments{
 \item{tb_grades}{A data frame from step3 grading}
 
 \item{targetFile}{A character of full path to a target dispute Rmd}
+
+\item{disputeFileInfo}{A list returned from generate_disputeFilesFromIssueComments()}
 }
 \value{
 A data frame tb_grades new
