@@ -91,12 +91,14 @@ grade_for <- function(targetLabel, gradingMethod, whichCorrectAnsvalue=1){
 #' @examples none.
 getxyFunctional <- function(.x){
   .x = ifelse(is.character(.x), basename(.x), .x)
+  stringr::str_which(
+    names(studentValues), .x) -> whichIsTheTarget
   function(targetLabel, whichCorrectAnsvalue=1){
     assertthat::assert_that(
       exists("studentValues", envir=.GlobalEnv),
       exists("correctValues", envir = .GlobalEnv)
     )
-    studentValues[[.x]][[targetLabel]][[1]] ->> x
+    studentValues[[whichIsTheTarget]][[targetLabel]][[1]] ->> x
     correctValues[[targetLabel]][[whichCorrectAnsvalue]] ->> y
   }
 }
