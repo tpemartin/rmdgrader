@@ -190,7 +190,7 @@ generate_mgetxy = function(eliteGroup){
     eliteGroup,
     getxyFunctional
   ) -> list_getxy
-  names(list_getxy) <- stringr::str_extract(eliteGroup,"[0-9]{9}")
+  names(list_getxy) <- eliteGroup
   list_getxy
 }
 
