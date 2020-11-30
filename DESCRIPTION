@@ -1,7 +1,7 @@
 Package: rmdgrader
 Type: Package
 Title: What the Package Does (Title Case)
-Version: 0.1.8
+Version: 0.1.9
 Author: Who wrote it
 Maintainer: The package maintainer <yourself@somewhere.net>
 Description: More about what it does (maybe more than one line)
@@ -16,7 +16,8 @@ Imports:
     dplyr,
     purrr,
     rlang,
-    stringr
+    stringr,
+    future
 Remotes: 
     tpemartin/rmd2drake
 RoxygenNote: 7.1.1

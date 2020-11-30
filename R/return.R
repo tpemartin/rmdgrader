@@ -78,14 +78,20 @@ augment_studentRmdsWithAtAnsFunctional <-
 reviseRmd_atAns <- function(ansRmdlines)
 {
   require(dplyr)
+  require(stringr)
   # insert one empty line to assure there is line after the last code chunk.
   ansRmdlines <- c(ansRmdlines,"")
   chunkTable <- ansRmdlines %>% rmd2drake::get_chunksTable(exclude = "(afterMake=T|drake=F)")
 
+  chunkTable$object %>%
+    stringr::str_count("ans[0-9]+") %>%
+    sum() -> totalAns
   ansRmdlines_atAns <-
     ansRmdlines %>%
     augment_atAnsBracket(chunkTable) %>%
-    setup_attachAtAns(chunkTable)
+    setup_attachAtAns(chunkTable) %>%
+    str_replace_all("%fullRawGrade%",as.character(totalAns))
+
 }
 augment_atAnsBracket <- function(rmdlines, chunkTable) {
   # content, codeChunk

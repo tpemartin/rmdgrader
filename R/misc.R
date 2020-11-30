@@ -1,3 +1,20 @@
+#' Safely unlist a list where element with zero length will be list(0)
+#'
+#' @param listObj A list
+#'
+#' @return
+#' @export
+#'
+#' @examples none
+safe_unlist <- function(listObj){
+  require(dplyr)
+  require(purrr)
+  map(
+    listObj,
+    ~{ifelse(length(.x)==0,0,.x)}
+  ) %>%
+    unlist()
+}
 #' Ensure the path is absolute.
 #'
 #' @param path A character of path, absolute or relative.

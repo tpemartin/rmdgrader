@@ -1,3 +1,38 @@
+#' Decompose an object for systematic grading
+#'
+#' @param y an object
+#'
+#' @return a list of class(object), length(object), el_withNames, el_noName
+#' @export
+#'
+#' @examples none
+decomposeObject <- function(y){
+  nY <- length(y) # determine grades for each element
+  namesY <- names(y)
+  whichHasNoName <-
+    if(is.null(namesY)){
+      1:nY
+    } else {
+      which(namesY=="")
+    }
+  whichHasName <-
+    if(is.null(namesY)){
+      NULL
+    } else {
+      which(namesY!="")
+    }
+
+  ywithNames <- y[whichHasName]
+  ynoName <- y[whichHasNoName]
+
+  list(
+    class=class(y),
+    length=nY,
+    el_withNames = ywithNames,
+    el_noName = ynoName
+  )
+}
+
 #' Grade answer with given grading method
 #'
 #' @description there must be studentValues and correctValues two list of answer object values proccessed from student Rmds and teacher Rmd
@@ -91,6 +126,7 @@ grade_for <- function(targetLabel, gradingMethod, whichCorrectAnsvalue=1){
 #' @examples none.
 getxyFunctional <- function(.x){
   .x = ifelse(is.character(.x), basename(.x), .x)
+  .x = stringr::str_remove_all(.x, "\\s")
   stringr::str_which(
     names(studentValues), .x) -> whichIsTheTarget
   function(targetLabel, whichCorrectAnsvalue=1){
@@ -154,7 +190,7 @@ generate_mgetxy = function(eliteGroup){
     eliteGroup,
     getxyFunctional
   ) -> list_getxy
-  names(list_getxy) <- eliteGroup
+  names(list_getxy) <- stringr::str_extract(eliteGroup,"[0-9]{9}")
   list_getxy
 }
 

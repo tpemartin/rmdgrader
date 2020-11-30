@@ -18,7 +18,7 @@ convert_gradeList2dataframe <- function(...) {
           data.frame(
             name = names(groupvar[[.x]])
           )
-        df_temp[[ansLabels[[.x]]]] <- unlist(groupvar[[.x]])
+        df_temp[[ansLabels[[.x]]]] <- safe_unlist(groupvar[[.x]])
         df_temp
       }
     ) -> list_df
@@ -28,7 +28,7 @@ convert_gradeList2dataframe <- function(...) {
     rowwise() %>%
     mutate(
       total = sum(c_across(contains("ans")), na.rm = T),
-      final = 3 + 7/10*total
+      final = 3 + 7/length(ansLabels)*total
     ) %>%
     select(name, total, final, everything()) -> df_grades
 
