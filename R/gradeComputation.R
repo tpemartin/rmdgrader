@@ -6,7 +6,7 @@
 #' @export
 #'
 #' @examples none
-convert_gradeList2dataframe <- function(...) {
+convert_gradeList2dataframe <- function(..., turnInBonus=3) {
   groupvar <- list(...)
   # browser()
   names(groupvar) -> ansLabels
@@ -28,7 +28,7 @@ convert_gradeList2dataframe <- function(...) {
     rowwise() %>%
     mutate(
       total = sum(c_across(contains("ans")), na.rm = T),
-      final = 3 + 7/length(ansLabels)*total
+      final = turnInBonus + (10-turnInBonus)/length(ansLabels)*total
     ) %>%
     select(name, total, final, everything()) -> df_grades
 
