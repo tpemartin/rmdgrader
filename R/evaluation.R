@@ -47,6 +47,7 @@ get_answerObjectValues <- function(studentsRmds, correctAnsFilename)
       for(.x in seq_along(studentsRmds))
       {
         studentFilename <- studentsRmds[[.x]]
+        isAnsFile <- ifelse(stringr::str_detect(studentFilename,"ans"), T, F)
         cat('.x = ',.x, "; ",basename(studentFilename),"\n")
 
 
@@ -78,7 +79,7 @@ get_answerObjectValues <- function(studentsRmds, correctAnsFilename)
         # 執行合理codeChunks
         answerEnvironment <<- new.env(parent=dataEnvironment)
         # browser()
-        fillupDataEnv_with_ansEnvir(codeChunksProcessed, targetPart, answerEnvironment)
+        fillupDataEnv_with_ansEnvir(codeChunksProcessed, targetPart, answerEnvironment, isAnsFile=isAnsFile )
 
         # browser()
         studentValues[[.x]] <- append(

@@ -4,7 +4,7 @@
 \alias{convert_gradeList2dataframe}
 \title{Convert list of grades into a data frame with total computed}
 \usage{
-convert_gradeList2dataframe(...)
+convert_gradeList2dataframe(..., turnInBonus = 3)
 }
 \arguments{
 \item{...}{A name=value pair, such as ans11=grade11, ans12=grade12,...}

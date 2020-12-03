@@ -54,7 +54,8 @@ fillup_dataEnvironment <- function(envir, correctAnsFilepath, targetPart){
   invisible(envir)
 }
 
-fillupDataEnv_with_ansEnvir <- function(codeChunksProcessed, targetPart, answerEnvironment){
+fillupDataEnv_with_ansEnvir <- function(codeChunksProcessed, targetPart, answerEnvironment, ...){
+  argList <- list(...)
 
   # .x=2
   {
@@ -76,6 +77,7 @@ fillupDataEnv_with_ansEnvir <- function(codeChunksProcessed, targetPart, answerE
       answerEnvironment[["ansValues"]] <- list()
       for(.x in seq_along(ansLabels)){
         targetAnsLabel <- ansLabels[[.x]]
+
         answerCodeExpressions <-
           codeChunksProcessed$chunkExpressions[[targetAnsLabel]]
 
@@ -85,6 +87,47 @@ fillupDataEnv_with_ansEnvir <- function(codeChunksProcessed, targetPart, answerE
             answerEnvironment$ansValues[[targetAnsLabel]] <- list(
               answerCodeExpressions
             )
+          },
+          "b"={ # 可借用正確答案之environment
+
+            # Create borrwoEnvironment from correct answers
+            if(length(argList)!=0 && argList$isAnsFile) createBorrowEnvironment(answerEnvironment, targetAnsLabel)
+            cat('target label: ', targetAnsLabel, '\n')
+            borrowEnvName <- as.name(paste0("borrowEnv_", targetAnsLabel))
+
+            # clone borrowEnvironment for local evaluation
+            borrowEnvExpr <- rlang::expr(borrowEnv <- rlang::env_clone(!!borrowEnvName))
+            eval(borrowEnvExpr)
+
+            # clone answerEnvironment to do original scenario evaluation to preserve student answer environment continuity
+            answerEnvironment_clone <-
+              rlang::env_clone(answerEnvironment)
+
+            # execute in borrowEnvironment and update ansValues in answerEnvironment
+            flag_executable_borrow <-
+              tryCatch_eval_inAnsEnv(
+                answerCodeExpressions,
+                borrowEnv)
+            recordAnsObjValues_withFlagExecutable(
+              flag_executable_borrow,targetAnsLabel,
+              saveEnv=answerEnvironment,
+              evalEnv=borrowEnv)
+
+            # execute in answerEnvironment, but no need to update ansValues in answerEnvironment
+            flag_executable_ansClone <-
+              tryCatch_eval_inAnsEnv(
+                answerCodeExpressions,
+                answerEnvironment)
+
+
+            # if(flag_executable){
+            #
+            #   answerEnvironment$ansValues[[targetAnsLabel]] <- list(get_ansObjectValueFromAnswerEnvironment(borrowEnv, targetAnsLabel))
+            #
+            # } else {
+            #   answerEnvironment$ansValues[[targetAnsLabel]] %>%
+            #     append(list("Error"))
+            # }
           },
           "NA"={
             cat('target label: ', targetAnsLabel, '\n')

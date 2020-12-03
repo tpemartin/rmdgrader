@@ -1,3 +1,52 @@
+#' Return copied full path filenames to correct individual return folders
+#'
+#' @return
+#' @export
+#'
+#' @examples none.
+returnCopiedDisputeFilesFromMacFinder <- function(){
+  rprojroot::is_rstudio_project$make_fix_file() -> .root
+  clipr::read_clip() -> chosenFiles
+  is.fullPath <- all(str_detect(chosenFiles, .root()))
+  assertthat::assert_that(is.fullPath,
+                          msg="copied filename is not a full path filename")
+  chosenFiles %>%
+    str_extract("[:digit:]{9}") %>%
+    unique()-> school_ids
+  for(.x in school_ids){
+
+    fromFiles <- stringr::str_subset(
+      chosenFiles, .x
+    )
+
+    returnFolderx <-
+      file.path(params$localGDReturnFolder,
+                .x ,params$title)
+    toFiles <- file.path(
+      returnFolderx, basename(fromFiles)
+    )
+
+    ## backup original Rmd by renaming
+    list.files(
+      returnFolderx, full.names=T
+    ) %>%
+      stringr::str_subset("(?<!origin)\\.Rmd$") -> filesInReturnFolderx
+    file.link(
+      from=filesInReturnFolderx,
+      to=stringr::str_replace(filesInReturnFolderx,
+                              "\\.Rmd","_origin.Rmd")
+    )
+
+    file.copy(
+      from=fromFiles,
+      to=toFiles,
+      overwrite = T
+    )
+  }
+
+}
+
+
 #' Return all processed dispute files to students' google drive return folder
 #'
 #' @param disputeFolder A character of path to local dispute folder
@@ -22,6 +71,18 @@ returnAllDisputeFiles <- function(disputeFolder, localGDReturnFolderPath, title,
         localGDReturnFolderPath,
         school_idx, title
       )
+
+    ## backup original Rmd by renaming
+    list.files(
+      returnFolderx, full.names=T
+    ) %>%
+      stringr::str_subset("(?<!origin)\\.Rmd$") -> filesInReturnFolderx
+    file.link(
+      from=filesInReturnFolderx,
+      to=stringr::str_replace(filesInReturnFolderx,
+                              "\\.Rmd","_origin.Rmd")
+    )
+
     map(
       files2returnFrom,
       ~ file.path(returnFolderx, basename(.x))
