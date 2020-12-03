@@ -309,7 +309,67 @@ inspect_selectedDisputeFile <- function(disputeFolder, disputeFileInfo){
       file.edit(.[[1]]$disputeBriefing)
     }
 }
+#' Build student coursework webpage browsing service.
+#' @description The function create a courseWorkService environment in global and bring out finder for you to choose files from dispute folder. Once copy file name. Run  courseWorkService$build_courseworkBrowse() to complete the service build
+#'
+#' @return
+#' @export
+#'
+#' @examples none
+browseStudentCourseworkWebpageService <- function(){
+  rootIsThere <-
+    (find(".root") == ".GlobalEnv") || length(find(".root")) !=0
+  paramsIsThere <-
+    length(find("params")) !=0
+  submissionFile <- file.path(.root(), params$gradingFolder, params$title,"df_studentSubmissions.Rdata")
 
+  assertthat::assert_that(
+    rootIsThere, msg="There is not .root in Global environment"
+  )
+  assertthat::assert_that(
+    paramsIsThere,
+    msg="There is not params object to complete path definition"
+  )
+  assertthat::assert_that(
+    file.exists(submissionFile),
+    msg=paste0("There is no ",
+               submissionFile)
+  )
+  courseWorkService <<- new.env()
+
+  courseWorkService$build_courseworkBrowse=function(){
+    clipr::read_clip() -> chosenFiles
+    load(
+      submissionFile, envir=.GlobalEnv
+    )
+    courseWorkService$school_ids <- stringr::str_extract(chosenFiles,"[0-9]{9}") %>%
+      unique()
+    df_studentSubmissions %>%
+      filter(學號 %in% courseWorkService$school_ids) -> df_chosenStudents
+
+    buildBrowseFunctional <- function(link){
+      function(){
+        browseURL(link)
+      }
+    }
+    courseWorkService$browse <- vector("list",
+                                       length(courseWorkService$school_ids))
+    for(.x in seq_along(courseWorkService$school_ids)){
+      df_chosenStudents$classroomCourseworkLink[[.x]] -> link
+      courseWorkService$browse[[.x]] <- buildBrowseFunctional(link)
+    }
+    names(courseWorkService$browse) <- paste0("ID_",courseWorkService$school_ids)
+
+    df_chosenStudents$classroomCourseworkLink %>% walk(browseURL)
+  }
+
+  rstudioapi::showDialog(
+    title="Classroom coursework service",
+    message ="將打開finder, 請選擇帶有學號的檔案（們）\n再回到創造出來的courseWorkService物件進行$build_courseworkBrowse()")
+
+  system(paste0('open ',glue::glue('"{disputeFolder}"')))
+
+}
 # helpers -----------------------------------------------------------------
 
 #' Generate marked Rmd and its dispute Rmd for dispute resolution
