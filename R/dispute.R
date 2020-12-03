@@ -141,6 +141,9 @@ update_tbGradesAndTargetRmdFile <- function(tb_grades, targetFile, disputeFileIn
     file.path(targetFile)
   ) -> rmdlines
 
+  totalAns <- names(tb_grades) %>%
+    stringr::str_detect("ans") %>%
+    sum()
 
   disputeFileInfo %>%
     keep(
@@ -180,7 +183,7 @@ update_tbGradesAndTargetRmdFile <- function(tb_grades, targetFile, disputeFileIn
     newTotal <-
       sum(tb_grades[whichHasTheTargetRecord,allAnsLabels])
     tb_grades$total[[whichHasTheTargetRecord]] <- round(newTotal,4)
-    newFinal <- 3+newTotal*7/10
+    newFinal <- 3+newTotal*7/totalAns
     tb_grades$final[[whichHasTheTargetRecord]] <- round(newFinal,4)
 
     ## update rmdlines
