@@ -44,11 +44,12 @@ get_answerObjectValues <- function(studentsRmds, correctAnsFilename)
     {
       # 針對某一份Rmd[[.x]]
       # .x=32
+      totalRmds = length(studentsRmds)
       for(.x in seq_along(studentsRmds))
       {
         studentFilename <- studentsRmds[[.x]]
         isAnsFile <- ifelse(stringr::str_detect(studentFilename,"ans"), T, F)
-        cat('.x = ',.x, "; ",basename(studentFilename),"\n")
+        cat('.x = ',.x," /",totalRmds,"; ",basename(studentFilename),"\n")
 
 
         # Process student code chunks
