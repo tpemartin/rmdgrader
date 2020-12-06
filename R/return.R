@@ -7,10 +7,25 @@
 #' @export
 #'
 #' @examples none
-synthersizeWithCorrectAnsFunctional <- function(correctAnsFilename){
+synthersizeWithCorrectAnsFunctional <- function(correctAnsFilename, needToFixFront=T, ...){
+  argList <- list(...)
   require(dplyr)
   correctAnsFilename %>%
-    xfun::read_utf8() %>%
+    xfun::read_utf8() -> rmdlines
+  if(needToFixFront){
+    whichIsTitle <- stringr::str_which(
+      rmdlines, "^title: ")
+    whichEndTheInsert <-
+      stringr::str_which(
+        rmdlines,
+        "^請先執以下code chunk")
+    rmdlines <- as.list(rmdlines)
+    rmdlines[[whichIsTitle+1]] <-
+      c(returnTemplate,"\n")
+    rmdlines[(whichIsTitle+2):(whichEndTheInsert-1)] <- NULL
+    rmdlines <- unlist(rmdlines)
+  }
+  rmdlines %>%
     rmdgrader::reviseRmd_atAns()-> ansRmdlines_revised
 
   ansRmdlines_revised %>%
