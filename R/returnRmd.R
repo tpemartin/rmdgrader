@@ -181,13 +181,14 @@ generateReturnRmds_then_copy2googleDriveReturnFolder = function(title, roster, c
 #' @param gradeRecord A data frame from the row regarding the student
 #' @param correctAnswerSynthesizer A function generated from synthersizeWithCorrectAnsFunctional
 #' @param returnFolder A path for return Rmd storage
+#' @param needPR default=F. Want return Rmd to include his/her ranking.
 #'
 #' @return
 #' @export
 #'
 #' @examples none
 synthesize_returnRmd <- function(
-  studentRmdfilename, gradeRecord, correctAnswerSynthesizer, returnFolder
+  studentRmdfilename, gradeRecord, correctAnswerSynthesizer, returnFolder, needPR=F
 ){
   # Synthesize studentRmd with correct answers
   synthesizedStudentRmd =
@@ -251,10 +252,15 @@ synthesize_returnRmd <- function(
         whichHasAnsLabel
       ]
 
+    finalGradeReplacement <- as.character(round(gradeRecord$final,3))
+    if(needPR){
+      finalGradeReplacement <- paste0(finalGradeReplacement," 在100人中排名第", gradeRecord$PR)
+    }
+
     str_replace(returnRmd, "%rawGrade%",
                 as.character(round(gradeRecord$total,3))) %>%
-      str_replace("%finalGrade%",
-                  as.character(round(gradeRecord$final,3))) -> returnRmd
+      str_replace("%finalGrade%", finalGradeReplacement
+                  ) -> returnRmd
 
     returnRmd
   }

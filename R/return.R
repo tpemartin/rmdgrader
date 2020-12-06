@@ -2,6 +2,7 @@
 #'
 #' @description the synthesizer takes in only one input that is the codeChunkTable produced by rmd2drake::get_listCodeChunksFromRmdlines
 #' @param correctAnsFilename A character of filepath to the correct answer Rmd
+#' @param needToFixFront A logical. Default=T. need to replace the front of your ansfile so to show rawGrade, finalGrade etc
 #'
 #' @return
 #' @export

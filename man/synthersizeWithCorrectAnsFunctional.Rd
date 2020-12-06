@@ -4,10 +4,16 @@
 \alias{synthersizeWithCorrectAnsFunctional}
 \title{Generate synthesizer that sythersizes both correct answer and student answer}
 \usage{
-synthersizeWithCorrectAnsFunctional(correctAnsFilename)
+synthersizeWithCorrectAnsFunctional(
+  correctAnsFilename,
+  needToFixFront = T,
+  ...
+)
 }
 \arguments{
 \item{correctAnsFilename}{A character of filepath to the correct answer Rmd}
+
+\item{needToFixFront}{A logical. Default=T. need to replace the front of your ansfile so to show rawGrade, finalGrade etc}
 }
 \value{
 

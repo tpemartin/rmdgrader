@@ -28,7 +28,9 @@ convert_gradeList2dataframe <- function(..., turnInBonus=3) {
     rowwise() %>%
     mutate(
       total = sum(c_across(contains("ans")), na.rm = T),
-      final = turnInBonus + (10-turnInBonus)/length(ansLabels)*total
+      final = turnInBonus + (10-turnInBonus)/length(ansLabels)*total,
+      PR = round(100*(1-percent_rank(tb_grades$final)),0),
+      PR = pmin(pmax(xx,1), 100)
     ) %>%
     select(name, total, final, everything()) -> df_grades
 

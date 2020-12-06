@@ -8,7 +8,8 @@ synthesize_returnRmd(
   studentRmdfilename,
   gradeRecord,
   correctAnswerSynthesizer,
-  returnFolder
+  returnFolder,
+  needPR = F
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ synthesize_returnRmd(
 \item{correctAnswerSynthesizer}{A function generated from synthersizeWithCorrectAnsFunctional}
 
 \item{returnFolder}{A path for return Rmd storage}
+
+\item{needPR}{default=F. Want return Rmd to include his/her ranking.}
 }
 \value{
 
