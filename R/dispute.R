@@ -182,21 +182,17 @@ update_tbGradesAndTargetRmdFile <- function(tb_grades, targetFile, disputeFileIn
 
   # produce df newGrades
   newGrades <- list()
-  for(.x in seq_along(list_detect[[1]]$prefixPattern))
-  {
-    list_detect[[1]]$prefixPattern[[.x]] -> .pattern
-    whichHasPrefixPattern <- str_which(rmdlines, .pattern)
-    rmdlines[[whichHasPrefixPattern]] -> targetLine
-    if(str_detect(targetLine,"(R)")){
-      # already reviewed
-      ansLabel <- str_extract(targetLine, "(?<=#[\\s]{0,1})[0-9][\\.]+[0-9]") %>%
-        str_remove("\\.") %>%
-        paste0("ans",.)
-      newGrade <- str_extract(targetLine,"\\([\\.[0-9]]+\\)") %>%
-        str_remove_all("[\\(\\)]") %>%
-        as.numeric()
-      newGrades[[ansLabel]] <- newGrade
-    }
+  rmdlines %>%
+    str_trim(side="right") %>%
+    str_which("\\(R\\)$") -> loc_Rs
+  for (.x in seq_along(loc_Rs)) {
+    targetLine <- rmdlines[[loc_Rs[[.x]]]]
+    ansLabel <- str_extract(targetLine, "(?<=#[\\s]{0,1})[0-9][\\.]+[0-9]") %>%
+      str_remove("\\.") %>% paste0("ans", .)
+    newGrade <- str_extract(targetLine, "\\([\\.[0-9]]+\\)") %>%
+      str_remove_all("[\\(\\)]") %>% as.numeric()
+    newGrades[[ansLabel]] <- newGrade
+
   }
   newGrades <- as.data.frame(newGrades)
 
