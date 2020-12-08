@@ -1,3 +1,33 @@
+#' Post the dispute issue
+#'
+#' @param repoUrl A character of repo url
+#' @param title A character
+#' @param content A character
+#' @param label A character default="dispute"
+#'
+#' @return
+#' @export
+#'
+#' @examples none
+post_disputeIssue2Github <- function(repoUrl, title, content, label="dispute"){
+  require(stringr)
+  require(dplyr)
+  str_extract(repoUrl, "(?<=(https://github.com/))[:graph:]+") %>%
+    str_split("/") %>%
+    {.[[1]][c(1,2)]} -> owner_repo
+  require(gitterhub)
+  gh <- githubService()
+  # gitterhub:::create_issue
+  browser()
+  if(is.null(label)){
+    issue <- gh$create_issue(owner=owner_repo[[1]], repo=owner_repo[[2]], .title = title, .body = content)
+  } else {
+    issue <- gh$create_issue(owner=owner_repo[[1]], repo=owner_repo[[2]], .title = title, .body = content, labels = list(label))
+  }
+
+}
+
+
 #' Return copied full path filenames to correct individual return folders
 #'
 #' @return
@@ -273,7 +303,7 @@ obtainIssueComments <- function(
   list_issues %>%
     keep(
       ~ {
-        str_detect(.x$title, titleKeyword)
+        str_detect(.x$title, regex(titleKeyword, ignore_case=T))
       }
     ) -> targetIssue
 
