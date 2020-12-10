@@ -29,7 +29,7 @@ mget_safe <- function(text, envir=rlang::caller_env()){
     eval(parse(text=text), envir = envir)
   },
   error=function(e){
-    NA
+    paste0("Parsing Error of ", text)
   })-> objValue
   objValue
 }

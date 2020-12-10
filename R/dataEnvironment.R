@@ -77,7 +77,7 @@ fillupDataEnv_with_ansEnvir <- function(codeChunksProcessed, targetPart, answerE
       answerEnvironment[["ansValues"]] <- list()
       for(.x in seq_along(ansLabels)){
         targetAnsLabel <- ansLabels[[.x]]
-
+        if(targetAnsLabel=="ans63") browser()
         answerCodeExpressions <-
           codeChunksProcessed$chunkExpressions[[targetAnsLabel]]
 

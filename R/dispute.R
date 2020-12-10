@@ -18,7 +18,7 @@ post_disputeIssue2Github <- function(repoUrl, title, content, label="dispute"){
   require(gitterhub)
   gh <- githubService()
   # gitterhub:::create_issue
-  browser()
+  # browser()
   if(is.null(label)){
     issue <- gh$create_issue(owner=owner_repo[[1]], repo=owner_repo[[2]], .title = title, .body = content)
   } else {

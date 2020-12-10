@@ -80,6 +80,7 @@ get_answerObjectValues <- function(studentsRmds, correctAnsFilename)
         # 執行合理codeChunks
         answerEnvironment <<- new.env(parent=dataEnvironment)
         # browser()
+  #### Core step: 執行各chunk並存下答案物件值
         fillupDataEnv_with_ansEnvir(codeChunksProcessed, targetPart, answerEnvironment, isAnsFile=isAnsFile )
 
         # browser()

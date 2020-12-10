@@ -206,7 +206,7 @@ synthesize_returnRmd <- function(
     # synthesizedStudentRmd[whichHasHashTag] %>%
     #   str_which("# [:digit:]{1}") %>%
     #   whichHasHashTag[.] -> whichHasHashTag
-    ansLables <- str_extract(names(gradeRecord), "ans[:graph:]+")
+    ansLabels <- str_extract(names(gradeRecord), "ans[:graph:]+") %>% na.omit()
 
     # get prefix hashtag pattern for later regex match
     prefixPattern = {
@@ -220,9 +220,8 @@ synthesize_returnRmd <- function(
               .[[1]] -> digits
             prefixHashtags <-
               ifelse(length(digits) == 2,
-                     paste0("^### ", digits[[1]], ".", digits[[2]]),
-                     paste0("^## ", digits)
-              )
+                     paste0("^[#]+ ", digits[[1]], ".", digits[[2]]),
+                     paste0("^[#]+ ", digits))
           }
         )
     }
