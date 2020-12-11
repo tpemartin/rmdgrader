@@ -440,11 +440,10 @@ generate_disputeFilesFromOneComment <- function(commentTarget, title, sourceRetu
               ansDigits %>%
                 str_split("") %>%
                 .[[1]] -> digits
-              prefixHashtags <-
-                ifelse(length(digits) == 2,
-                       paste0("^### ", digits[[1]], ".", digits[[2]]),
-                       paste0("^## ", digits)
-                )
+              prefixHashtags <- ifelse(length(digits) ==
+                                         2,
+                                       paste0("^#+ ", digits[[1]], ".", digits[[2]]),
+                                       paste0("^#+ ", digits))
             }
           )
       }
