@@ -54,6 +54,7 @@ fillup_dataEnvironment <- function(envir, correctAnsFilepath, targetPart){
   invisible(envir)
 }
 
+
 fillupDataEnv_with_ansEnvir <- function(codeChunksProcessed, targetPart, answerEnvironment, ...){
   argList <- list(...)
 
@@ -77,7 +78,7 @@ fillupDataEnv_with_ansEnvir <- function(codeChunksProcessed, targetPart, answerE
       answerEnvironment[["ansValues"]] <- list()
       for(.x in seq_along(ansLabels)){
         targetAnsLabel <- ansLabels[[.x]]
-        if(targetAnsLabel=="ans63") browser()
+        # if(targetAnsLabel=="ans61") browser()
         answerCodeExpressions <-
           codeChunksProcessed$chunkExpressions[[targetAnsLabel]]
 
@@ -139,7 +140,9 @@ fillupDataEnv_with_ansEnvir <- function(codeChunksProcessed, targetPart, answerE
 
             if(flag_executable){
 
-              answerEnvironment$ansValues[[targetAnsLabel]] <- list(get_ansObjectValueFromAnswerEnvironment(answerEnvironment, targetAnsLabel))
+              # if(targetAnsLabel=="ans61") browser()
+              answerEnvironment$ansValues[[targetAnsLabel]] <- list(get_ansObjectValueFromAnswerEnvironment(answerEnvironment, targetAnsLabel,
+                                                                                                            isStudentRmd=argList$isStudentRmd))
 
             } else {
               answerEnvironment$ansValues[[targetAnsLabel]] %>%

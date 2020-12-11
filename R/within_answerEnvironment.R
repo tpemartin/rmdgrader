@@ -1,4 +1,4 @@
-get_ansObjectValueFromAnswerEnvironment <- function(envir, targetAnsLabel){
+get_ansObjectValueFromAnswerEnvironment <- function(envir, targetAnsLabel, isStudentRmd=T){
   # look for the answer object in answerEnvironment
   targetAnswerObjectNames = dataEnvironment$ansObjectnames[[targetAnsLabel]]
   map(
@@ -7,11 +7,13 @@ get_ansObjectValueFromAnswerEnvironment <- function(envir, targetAnsLabel){
     envir=envir
   ) -> targetAnswerObjectValues
   targetAnswerObjectValueSingleton <- list(NULL)
-  if(any(!is.na(targetAnswerObjectValues))){
+  if(isStudentRmd && any(!is.na(targetAnswerObjectValues))){
     targetAnswerObjectValueSingleton <- {
       whichIsNotNA <- which(!is.na(targetAnswerObjectValues))
       targetAnswerObjectValues[[whichIsNotNA[[1]]]]
     }
+  } else {
+    targetAnswerObjectValueSingleton <- targetAnswerObjectValues
   }
   return(targetAnswerObjectValueSingleton)
 }
@@ -24,7 +26,7 @@ get_ansObjectValueFromAnswerEnvironment <- function(envir, targetAnsLabel){
 #' @export
 #'
 #' @examples none
-mget_safe <- function(text, envir=rlang::caller_env()){
+mget_safe <- function(text, envir){
   tryCatch({
     eval(parse(text=text), envir = envir)
   },
