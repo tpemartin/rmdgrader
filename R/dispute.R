@@ -61,10 +61,12 @@ returnCopiedDisputeFilesFromMacFinder <- function(){
       returnFolderx, full.names=T
     ) %>%
       stringr::str_subset("(?<!origin)\\.Rmd$") -> filesInReturnFolderx
+    toFileOrigin = stringr::str_replace(filesInReturnFolderx,
+                                  "\\.Rmd","_origin.Rmd")
+    if(file.exists(toFileOrigin)) file.remove(toFileOrigin)
     file.link(
       from=filesInReturnFolderx,
-      to=stringr::str_replace(filesInReturnFolderx,
-                              "\\.Rmd","_origin.Rmd")
+      to=toFileOrigin
     )
 
     file.copy(

@@ -7,13 +7,21 @@ get_ansObjectValueFromAnswerEnvironment <- function(envir, targetAnsLabel, isStu
     envir=envir
   ) -> targetAnswerObjectValues
   targetAnswerObjectValueSingleton <- list(NULL)
-  if(isStudentRmd && any(!is.na(targetAnswerObjectValues))){
+  if(isStudentRmd && any(!is.na(targetAnswerObjectValues) &
+                         stringr::str_detect(targetAnswerObjectValues,"Parsing Error",negate=T))){
     targetAnswerObjectValueSingleton <- {
-      whichIsNotNA <- which(!is.na(targetAnswerObjectValues))
-      targetAnswerObjectValues[[whichIsNotNA[[1]]]]
+      whichIsNotNAParsingError <-
+        which(!is.na(targetAnswerObjectValues) & str_detect(targetAnswerObjectValues, "Parsing Error", negate=T))
+      targetAnswerObjectValues[[whichIsNotNAParsingError[[1]]]]
+
     }
   } else {
-    targetAnswerObjectValueSingleton <- targetAnswerObjectValues
+    if(length(targetAnswerObjectValues)==1){
+      targetAnswerObjectValueSingleton <- targetAnswerObjectValues[[1]]
+    } else {
+      targetAnswerObjectValueSingleton <- targetAnswerObjectValues
+    }
+
   }
   return(targetAnswerObjectValueSingleton)
 }
