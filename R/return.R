@@ -139,8 +139,6 @@ augment_atAnsBracket <- function(rmdlines, chunkTable) {
              "} %at% ans",
              "{"
       )
-    output[[.x]] <-
-      c(originPart, attachPart)
   }
   output[[numberOfDivisions]] <-
     rmdlines[
