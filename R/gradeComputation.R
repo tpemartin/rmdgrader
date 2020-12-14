@@ -6,7 +6,7 @@
 #' @export
 #'
 #' @examples none
-convert_gradeList2dataframe <- function(..., turnInBonus=3) {
+convert_gradeList2dataframe <- function(..., turnInBonus=3, maxPoint=10) {
   groupvar <- list(...)
   # browser()
   names(groupvar) -> ansLabels
@@ -28,7 +28,7 @@ convert_gradeList2dataframe <- function(..., turnInBonus=3) {
     rowwise() %>%
     mutate(
       total = sum(c_across(contains("ans")), na.rm = T),
-      final = turnInBonus + (10-turnInBonus)/length(ansLabels)*total) %>%
+      final = min(maxPoint, turnInBonus + (maxPoint-turnInBonus)/length(ansLabels)*total)) %>%
     ungroup() %>%
     mutate(
       PR = pmin(round(100*(1-percent_rank(final)),0)+1,100)

@@ -167,7 +167,7 @@ update_tbGrades <- function(tb_Grades, disputeFolder, disputeFileInfo, title){
 #' @export
 #'
 #' @examples none.
-update_tbGradesAndTargetRmdFile <- function(tb_grades, targetFile, disputeFileInfo)
+update_tbGradesAndTargetRmdFile <- function(tb_grades, targetFile, disputeFileInfo, maxPoint=10)
 {
   xfun::read_utf8(
     file.path(targetFile)
@@ -212,7 +212,7 @@ update_tbGradesAndTargetRmdFile <- function(tb_grades, targetFile, disputeFileIn
       sum(tb_grades[whichHasTheTargetRecord,allAnsLabels])
     tb_grades$total[[whichHasTheTargetRecord]] <- round(newTotal,4)
     newFinal <- 3+newTotal*7/totalAns
-    tb_grades$final[[whichHasTheTargetRecord]] <- round(newFinal,4)
+    tb_grades$final[[whichHasTheTargetRecord]] <- min(maxPoint,round(newFinal,4))
 
     ## update rmdlines
     {
