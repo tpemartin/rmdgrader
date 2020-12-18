@@ -136,7 +136,7 @@ generateReturnRmds_then_copy2googleDriveReturnFolder2 = function(title, roster, 
 #' @export
 #'
 #' @examples none
-generateReturnRmds_then_copy2googleDriveReturnFolder = function(title, roster, correctAnsTemplateFilename, localGDReturnFolderPath){
+generateReturnRmds_then_copy2googleDriveReturnFolder = function(title, roster, correctAnsTemplateFilename, localGDReturnFolderPath, turnInBonus=3){
 
   # move return files to return folder
   {
@@ -161,11 +161,13 @@ generateReturnRmds_then_copy2googleDriveReturnFolder = function(title, roster, c
       )
     copy_toGoogleDriveReturnFolder(listRmdsInCannotSynthesizedFolder, title, localGDReturnFolderPath) -> gd_badRmds
 
+    # browser()
     copyCorrectAnsRmdToGDCannotSynthesizedFolder(
       correctAnsTemplateFilename,
       listRmdsInCannotSynthesizedFolder,
       title,
-      localGDReturnFolderPath
+      localGDReturnFolderPath,
+      turnInBonus
     ) -> cannotSynthesizedFiles
 
   }
@@ -260,7 +262,10 @@ synthesize_returnRmd <- function(
                 as.character(round(gradeRecord$total,3))) %>%
       str_replace("%finalGrade%", finalGradeReplacement
                   ) -> returnRmd
-
+    # browser()
+    # stringr::str_extract()
+    # str_view_all(returnRmd, "[:digit:]+(?=/[:digit:]+\\) \\* rawGrade)")
+    # %turnInBonus%
     returnRmd
   }
 
@@ -331,7 +336,6 @@ copy_toGoogleDriveReturnFolder <- function(listRmdsInReturnFolder, title, localG
       cat("Folder not exist: ", personalReturnFolder, "... creating\n")
       dir.create(personalReturnFolder,
                  recursive=T)
-      next
     }
     destfile=file.path(personalReturnFolder, basename(returnRmd))
     file.copy(
@@ -406,11 +410,12 @@ copyCorrectAnsRmdToGDCannotSynthesizedFolder <- function(
   correctAnsTemplateFilename,
   listRmdsInCannotSynthesizedFolder,
   title,
-  localGDReturnFolderPath
+  localGDReturnFolderPath,
+  turnInBonus
 )
 {
   correctAnsTemplateFilename %>% xfun::read_utf8() %>%
-    rmdgrader::reviseRmd_atAns() -> revisedAnsRmd
+    rmdgrader::reviseRmd_atAns(turnInBonus) -> revisedAnsRmd
   tmpRmd = tempfile(
     str_remove(
       basename(correctAnsTemplateFilename),"\\.Rmd"),

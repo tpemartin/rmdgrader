@@ -26,8 +26,9 @@ synthersizeWithCorrectAnsFunctional <- function(correctAnsFilename, needToFixFro
     rmdlines[(whichIsTitle+2):(whichEndTheInsert-1)] <- NULL
     rmdlines <- unlist(rmdlines)
   }
+  # browser()
   rmdlines %>%
-    rmdgrader::reviseRmd_atAns()-> ansRmdlines_revised
+    rmdgrader::reviseRmd_atAns(turnInBonus=argList$turnInBonus)-> ansRmdlines_revised
 
   ansRmdlines_revised %>%
     rmd2drake:::get_chunksTable() %>%
@@ -91,7 +92,7 @@ augment_studentRmdsWithAtAnsFunctional <-
 #' @export
 #'
 #' @examples none
-reviseRmd_atAns <- function(ansRmdlines)
+reviseRmd_atAns <- function(ansRmdlines, turnInBonus)
 {
   require(dplyr)
   require(stringr)
@@ -102,6 +103,17 @@ reviseRmd_atAns <- function(ansRmdlines)
   chunkTable$object %>%
     stringr::str_count("ans[0-9]+") %>%
     sum() -> totalAns
+  effortTotal <- 10-turnInBonus
+  if(turnInBonus==0){
+    stringr::str_remove(ansRmdlines, "%turnInBonus% \\+ ") -> ansRmdlines
+  } else {
+    stringr::str_replace(ansRmdlines, "%turnInBonus%", turnInBonus) -> ansRmdlines
+  }
+  # browser()
+  stringr::str_replace(
+    ansRmdlines, "%effortTotal%", as.character(effortTotal)
+  ) -> ansRmdlines
+
   ansRmdlines_atAns <-
     ansRmdlines %>%
     augment_atAnsBracket(chunkTable) %>%
@@ -129,7 +141,7 @@ augment_atAnsBracket <- function(rmdlines, chunkTable) {
   fullPositionMarks <- c(1, positions, length(rmdlines))
   numberOfDivisions <- length(fullPositionMarks) / 2
   dim(fullPositionMarks) <- c(2, numberOfDivisions)
-
+  # browser()
   output <- vector("list", numberOfDivisions)
   for (.x in 1:(numberOfDivisions - 1)) {
     seqX <- fullPositionMarks[1, .x]:fullPositionMarks[2, .x]
@@ -139,6 +151,24 @@ augment_atAnsBracket <- function(rmdlines, chunkTable) {
              "} %at% ans",
              "{"
       )
+    originPartLastValidLine <- {
+      stringr::str_trim(originPart,side="both") -> originPartTemp
+      stringr::str_subset(originPartTemp, "^#", negate=T) -> originPartTemp
+      originPartTemp[[length(originPartTemp)]]
+    }
+
+    if(stringr::str_detect(originPartLastValidLine,"^```")){
+      output[[.x]] <- c(
+        originPart,
+        "{"
+      )
+    } else {
+      output[[.x]] <- c(
+        originPart,
+        "} %at% ans"
+      )
+    }
+
   }
   output[[numberOfDivisions]] <-
     rmdlines[

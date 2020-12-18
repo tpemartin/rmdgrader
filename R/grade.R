@@ -44,6 +44,7 @@ decomposeObject <- function(y){
 #' @export
 #'
 #' @examples none
+
 grade <- function(targetLabel, gradingMethod, whichCorrectAnsvalue=1){
   assertthat::assert_that(
     exists("studentValues", envir=.GlobalEnv),
