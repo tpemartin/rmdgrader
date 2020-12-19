@@ -3,12 +3,13 @@
 #' @description the synthesizer takes in only one input that is the codeChunkTable produced by rmd2drake::get_listCodeChunksFromRmdlines
 #' @param correctAnsFilename A character of filepath to the correct answer Rmd
 #' @param needToFixFront A logical. Default=T. need to replace the front of your ansfile so to show rawGrade, finalGrade etc
+#' @param fullMark A numeric, default=NULL, each ans is 1pt
 #'
 #' @return
 #' @export
 #'
 #' @examples none
-synthersizeWithCorrectAnsFunctional <- function(correctAnsFilename, needToFixFront=T, ...){
+synthersizeWithCorrectAnsFunctional <- function(correctAnsFilename, needToFixFront=T, fullMark=NULL, ...){
   argList <- list(...)
   require(dplyr)
   correctAnsFilename %>%
@@ -28,7 +29,7 @@ synthersizeWithCorrectAnsFunctional <- function(correctAnsFilename, needToFixFro
   }
   # browser()
   rmdlines %>%
-    rmdgrader::reviseRmd_atAns(turnInBonus=argList$turnInBonus)-> ansRmdlines_revised
+    rmdgrader::reviseRmd_atAns(turnInBonus=argList$turnInBonus, fullMark)-> ansRmdlines_revised
 
   ansRmdlines_revised %>%
     rmd2drake:::get_chunksTable() %>%
@@ -87,12 +88,14 @@ augment_studentRmdsWithAtAnsFunctional <-
 #' Revise Rmd to accommodate \%at\% ans
 #'
 #' @param ansRmdlines A character of Rmd lines
+#' @param turnInBonus A numeric
+#' @param fullMark A numeric, default=NULL, each ans is 1 pt
 #'
 #' @return
 #' @export
 #'
 #' @examples none
-reviseRmd_atAns <- function(ansRmdlines, turnInBonus)
+reviseRmd_atAns <- function(ansRmdlines, turnInBonus, fullMark=NULL)
 {
   require(dplyr)
   require(stringr)
@@ -103,6 +106,7 @@ reviseRmd_atAns <- function(ansRmdlines, turnInBonus)
   chunkTable$object %>%
     stringr::str_count("ans[0-9]+") %>%
     sum() -> totalAns
+  if(is.null(fullMark)) totalAns -> fullMark
   effortTotal <- 10-turnInBonus
   if(turnInBonus==0){
     stringr::str_remove(ansRmdlines, "%turnInBonus% \\+ ") -> ansRmdlines
@@ -118,7 +122,7 @@ reviseRmd_atAns <- function(ansRmdlines, turnInBonus)
     ansRmdlines %>%
     augment_atAnsBracket(chunkTable) %>%
     setup_attachAtAns(chunkTable) %>%
-    str_replace_all("%fullRawGrade%",as.character(totalAns))
+    str_replace_all("%fullRawGrade%",as.character(fullMark))
 
 }
 augment_atAnsBracket <- function(rmdlines, chunkTable) {
