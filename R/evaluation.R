@@ -44,9 +44,11 @@ get_answerObjectValues <- function(studentsRmds, correctAnsFilename)
     {
       # 針對某一份Rmd[[.x]]
       # .x=32
+      # whichIsTheTarget <- str_which(studentsRmds,"410874230")
       totalRmds = length(studentsRmds)
       for(.x in seq_along(studentsRmds))
       {
+        # if(.y==2 && .x==whichIsTheTarget) browser()
         studentFilename <- studentsRmds[[.x]]
         isStudentRmd <- str_detect(basename(studentFilename), "ans", negate=T)
         isAnsFile <- ifelse(stringr::str_detect(studentFilename,"ans"), T, F)

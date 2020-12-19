@@ -107,7 +107,7 @@ reviseRmd_atAns <- function(ansRmdlines, turnInBonus)
   if(turnInBonus==0){
     stringr::str_remove(ansRmdlines, "%turnInBonus% \\+ ") -> ansRmdlines
   } else {
-    stringr::str_replace(ansRmdlines, "%turnInBonus%", turnInBonus) -> ansRmdlines
+    stringr::str_replace(ansRmdlines, "%turnInBonus%", as.character(turnInBonus)) -> ansRmdlines
   }
   # browser()
   stringr::str_replace(

@@ -6,7 +6,7 @@
 #' @export
 #'
 #' @examples none
-convert_gradeList2dataframe <- function(..., turnInBonus=3, maxPoint=10) {
+convert_gradeList2dataframe <- function(..., turnInBonus=3, maxPoint=10, fullMark=NULL) {
   groupvar <- list(...)
   # browser()
   names(groupvar) -> ansLabels
@@ -23,12 +23,13 @@ convert_gradeList2dataframe <- function(..., turnInBonus=3, maxPoint=10) {
       }
     ) -> list_df
   reduce(list_df, full_join, by = "name") -> df_grades
-
+  assertthat::assert_that(is.numeric(fullMark))
+  fullMark = ifelse(is.null(fullMark), length(ansLabels), fullMark)
   df_grades %>%
     rowwise() %>%
     mutate(
       total = sum(c_across(contains("ans")), na.rm = T),
-      final = min(maxPoint, turnInBonus + (maxPoint-turnInBonus)/length(ansLabels)*total)) %>%
+      final = min(maxPoint, turnInBonus + (maxPoint-turnInBonus)/fullMark*total)) %>%
     ungroup() %>%
     mutate(
       PR = pmin(round(100*(1-percent_rank(final)),0)+1,100)
