@@ -4,7 +4,7 @@
 \alias{generate_studentRmdFromAnsRmd}
 \title{Generate homework or exam Rmd for students from ans Rmd}
 \usage{
-generate_studentRmdFromAnsRmd(ansFilename)
+generate_studentRmdFromAnsRmd(ansFilename, destfolderPath = ".")
 }
 \arguments{
 \item{ansFilename}{A character of full path to the ans Rmd}

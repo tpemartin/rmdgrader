@@ -4,10 +4,14 @@
 \alias{reviseRmd_atAns}
 \title{Revise Rmd to accommodate \%at\% ans}
 \usage{
-reviseRmd_atAns(ansRmdlines)
+reviseRmd_atAns(ansRmdlines, turnInBonus, fullMark = NULL)
 }
 \arguments{
 \item{ansRmdlines}{A character of Rmd lines}
+
+\item{turnInBonus}{A numeric}
+
+\item{fullMark}{A numeric, default=NULL, each ans is 1 pt}
 }
 \value{
 

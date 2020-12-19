@@ -8,7 +8,8 @@ generateReturnRmds_then_copy2googleDriveReturnFolder(
   title,
   roster,
   correctAnsTemplateFilename,
-  localGDReturnFolderPath
+  localGDReturnFolderPath,
+  turnInBonus = 3
 )
 }
 \arguments{

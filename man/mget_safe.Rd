@@ -4,7 +4,7 @@
 \alias{mget_safe}
 \title{a safe version of mget, this allow input argument to be either a character of object name or a character of obtaining value, such as "a[['number']][[1]]"}
 \usage{
-mget_safe(text, envir = rlang::caller_env())
+mget_safe(text, envir)
 }
 \arguments{
 \item{text}{A character either represents an object name or how to obtain a value}

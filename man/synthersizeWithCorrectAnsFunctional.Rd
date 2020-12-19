@@ -7,6 +7,7 @@
 synthersizeWithCorrectAnsFunctional(
   correctAnsFilename,
   needToFixFront = T,
+  fullMark = NULL,
   ...
 )
 }
@@ -14,6 +15,8 @@ synthersizeWithCorrectAnsFunctional(
 \item{correctAnsFilename}{A character of filepath to the correct answer Rmd}
 
 \item{needToFixFront}{A logical. Default=T. need to replace the front of your ansfile so to show rawGrade, finalGrade etc}
+
+\item{fullMark}{A numeric, default=NULL, each ans is 1pt}
 }
 \value{
 

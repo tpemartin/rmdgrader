@@ -8,7 +8,8 @@ copyCorrectAnsRmdToGDCannotSynthesizedFolder(
   correctAnsTemplateFilename,
   listRmdsInCannotSynthesizedFolder,
   title,
-  localGDReturnFolderPath
+  localGDReturnFolderPath,
+  turnInBonus
 )
 }
 \arguments{
