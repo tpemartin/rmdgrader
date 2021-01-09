@@ -53,6 +53,6 @@ recordAnsObjValues_withFlagExecutable <- function(flag_executable,
 
   } else {
     saveEnv$ansValues[[targetAnsLabel]] %>%
-      append(list("Error"))
+      append(list(NA))
   }
 }

@@ -15,7 +15,7 @@
 #' @export
 #'
 #' @examples none
-generate_studentRmdFromAnsRmd <- function(ansFilename){
+generate_studentRmdFromAnsRmd <- function(ansFilename, destfolderPath="."){
   require(dplyr); require(stringr); require(purrr)
   list_chunks <- get_listChunks(ansFilename = ansFilename)
   ansLabels <- str_subset(names(list_chunks), "ans")
@@ -23,10 +23,14 @@ generate_studentRmdFromAnsRmd <- function(ansFilename){
 
   reduce(reduceList, update_listChunks4students) -> list_updatedChunks
 
-  saveFilename <- str_remove(ansFilename, "-ans(?=\\.Rmd)")
+  saveFilename <- str_remove(basename(ansFilename), "-ans(?=\\.Rmd)")
+  browser()
+  destfile <- file.path(
+    destfolderPath, basename(saveFilename)
+  )
   unlist(list_updatedChunks) %>%
     xfun::write_utf8(
-      con="test.Rmd"
+      con=destfile
     )
   invisible(list_updatedChunks)
 }

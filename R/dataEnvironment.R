@@ -146,7 +146,7 @@ fillupDataEnv_with_ansEnvir <- function(codeChunksProcessed, targetPart, answerE
 
             } else {
               answerEnvironment$ansValues[[targetAnsLabel]] %>%
-                append(list("Error"))
+                append(list(NA))
             }
           })
       }
@@ -238,7 +238,7 @@ fillupDataEnv_with_ansEnvir2 <- function(codeChunksProcessed, targetPart){
                 # }
               } else {
                 answerEnvironment$ansValues[[targetAnsLabel]] %>%
-                  append(list("Error"))
+                  append(list(NA))
               }
             })
         }

@@ -39,7 +39,8 @@ mget_safe <- function(text, envir){
     eval(parse(text=text), envir = envir)
   },
   error=function(e){
-    paste0("Parsing Error of ", text)
+    NA
+    #paste0("Parsing Error of ", text)
   })-> objValue
   objValue
 }
