@@ -31,13 +31,14 @@ allequalService <- function(targetLabel = targetLabel, .transform=NULL, switchTa
   ae$result <- list(
     messages =
       get_allequalSummary(targetLabel = targetLabel, .transform=.transform, switchTargetCurrent=F))
-
+  # browser()
   ae$.yield_messageGroup <- function(){
-    ae$result$messageGroups <- vector("list", length(ae$result$uniqueMessageGroups))
+    ae$result$messages_category <- unique(ae$result$messages)
+    ae$result$messageGroups <- vector("list", length(ae$result$messages_category))
     purrr::walk(
-      seq_along(ae$result$uniqueMessageGroups),
+      seq_along(ae$result$messages_category),
       ~{
-        ae$result$messageGroups[[.x]]$messages <- ae$result$uniqueMessageGroups[[.x]]
+        ae$result$messageGroups[[.x]]$messages <- ae$result$messages_category[[.x]]
         ae$result$messageGroups[[.x]]$Rmds <- character(0)
         ae$result$messageGroups[[.x]]$grade <- as.numeric(NA)
         ae$result$messageGroups[[.x]]$comment <- character(0)
@@ -47,8 +48,9 @@ allequalService <- function(targetLabel = targetLabel, .transform=NULL, switchTa
     Rmdnames <- names(ae$result$messages)
     for(.it in seq_along(Rmdnames))
     {
+      # if(Rmdnames[[.it]] == "HW6_410973083.Rmd") browser()
       whichGroupBelong <- which(map_lgl(
-        ae$result$uniqueMessageGroups,
+        ae$result$messages_category,
         ~identical(ae$result$messages[[.it]], .x)
       ))
       ae$result$messageGroups[[whichGroupBelong]]$Rmds <-
@@ -66,7 +68,7 @@ allequalService <- function(targetLabel = targetLabel, .transform=NULL, switchTa
   ae$.update <- function(){
     ae$result$types_of_messages <-
       get_vectorOfAllPossibleMsgs(ae$result$messages)
-    ae$result$uniqueMessageGroups <- unique(ae$result$messages)
+    ae$result$messages_category <- unique(ae$result$messages)
     ae$.yield_messageGroup()
     ae$filterMessage=
       filterMessage_Functional(ae$result$messages)
@@ -91,7 +93,7 @@ allequalService <- function(targetLabel = targetLabel, .transform=NULL, switchTa
       whichIsGroupIt <- which(names(mgetxy) %in% ae$result$messageGroups[[.it]]$Rmds)
       ae$xy[[.it]] <- execute_mgetxy(mgetxy[whichIsGroupIt], targetLabel, .transform=.transform)
     }
-
+    browser()
     ae$check_messageGroups <- {
       list_.x <- vector("list", length(ae$result$messageGroups))
       for(.x in seq_along(ae$result$messageGroups)){
@@ -224,7 +226,7 @@ get_allequalSummary <- function (targetLabel, whichCorrectAnsvalue = 1, .transfo
 {
   assertthat::assert_that(exists("studentValues", envir = .GlobalEnv),
                           exists("correctValues", envir = .GlobalEnv))
-  msg_allEqual <- vector("list", length(studentValues))
+  msg_allEqual <- vector("list", length(names(studentValues)))
   y<-correctValues[[targetLabel]][[whichCorrectAnsvalue]]
   if(!is.null(.transform)) y <- .transform(y)
   for (.x in seq_along(studentValues)) {
@@ -487,7 +489,7 @@ generate_.x_functions <- function(ae, .x) {
       message("抽出的檔案\n")
       print(Rmd1) # 抽出的檔案
       message("原始程式碼\n")
-      mgetxy[[Rmd1]](ae31$targetLabel)
+      mgetxy[[Rmd1]](ae$targetLabel)
       print(x) # 原始程式碼
       message("transform後，沒transform則與上面相同\n")
       print(head(ae$xy[[!!.x]][[Rmd1]]$x)) # transform後，沒transform則與上面相同
