@@ -93,7 +93,7 @@ allequalService <- function(targetLabel = targetLabel, .transform=NULL, switchTa
       whichIsGroupIt <- which(names(mgetxy) %in% ae$result$messageGroups[[.it]]$Rmds)
       ae$xy[[.it]] <- execute_mgetxy(mgetxy[whichIsGroupIt], targetLabel, .transform=.transform)
     }
-    browser()
+    # browser()
     ae$check_messageGroups <- {
       list_.x <- vector("list", length(ae$result$messageGroups))
       for(.x in seq_along(ae$result$messageGroups)){
