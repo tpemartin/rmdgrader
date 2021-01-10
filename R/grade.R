@@ -76,33 +76,44 @@ allequalService <- function(targetLabel = targetLabel, .transform=NULL, switchTa
     }
   }
 
-  ae$generate_mgetxy4messageGroups <- function(){
-    ae$mgetxy <- vector("list", length(ae$result$messageGroups))
-    for(.it in seq_along(ae$result$messageGroups)){
+  ae$generate_xy4messageGroups <- function(mgetxy){
+    ae$xy <- vector("list", length(ae$result$messageGroups))
+    for (.it in seq_along(ae$result$messageGroups)) {
       whichIsGroupIt <- which(names(mgetxy) %in% ae$result$messageGroups[[.it]]$Rmds)
-      map(
-        mgetxy[whichIsGroupIt],
-        ~{function() .x(ae$targetLabel, .transform=ae$transform)}
-      ) -> ae$mgetxy[[.it]]
+      ae$xy[[.it]] <- execute_mgetxy(mgetxy[whichIsGroupIt], targetLabel, .transform=.transform)
     }
-    ae$xy <- {
-      purrr::map(
-        ae$mgetxy,
-        ~{
-          .x[[1]]()
-          list(
-            x=x,y=y
-          )
-        }
-      )
-    }
-
+    # ae$xy <- execute_mgetxy(mgetxy, targetLabel, .transform=.transform)
   }
 
 
   ae
 }
-
+#' Execute mgetxy for some ansXXX with transform function possibility
+#'
+#' @param mgetxy An mgetxy object
+#' @param targetLabel A ansXXX label
+#' @param .transform  default=NULL, a transform function
+#'
+#' @return a list of xy
+#' @export
+#'
+#' @examples none
+execute_mgetxy <- function(mgetxy, targetLabel, .transform=NULL)
+{
+  list_output <- vector("list", length(mgetxy))
+  for(.it in seq_along(mgetxy))
+  {
+    mgetxy[[.it]](targetLabel)
+    x <- .GlobalEnv$x
+    y <- .GlobalEnv$y
+    x <- if(is.null(.transform)) x else .transform(x)
+    # browser()
+    y <- if(is.null(.transform)) y else .transform(y)
+    list_output[[.it]] <- list(x=x,y=y)
+  }
+  names(list_output) <- names(mgetxy)
+  list_output
+}
 #' When all.equal msg shows pattern, turn msg to NULL (i.e. error)
 #'
 #' @param summary31 list of all.equal messages
