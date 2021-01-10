@@ -25,7 +25,7 @@ transformFunctional <- function(...){
 #' @examples none
 allequalService <- function(targetLabel = targetLabel, .transform=NULL, switchTargetCurrent=F){
   ae <- new.env(parent=.GlobalEnv)
-
+  class(ae) <- c(class(ae), "all.equal_env")
   ae$targetLabel <- targetLabel
   ae$transform <- .transform
   ae$result <- list(
@@ -39,6 +39,8 @@ allequalService <- function(targetLabel = targetLabel, .transform=NULL, switchTa
       ~{
         ae$result$messageGroups[[.x]]$messages <- ae$result$uniqueMessageGroups[[.x]]
         ae$result$messageGroups[[.x]]$Rmds <- character(0)
+        ae$result$messageGroups[[.x]]$grade <- as.numeric(NA)
+        ae$result$messageGroups[[.x]]$comment <- character(0)
       }
     )
 
@@ -52,6 +54,13 @@ allequalService <- function(targetLabel = targetLabel, .transform=NULL, switchTa
       ae$result$messageGroups[[whichGroupBelong]]$Rmds <-
         c(ae$result$messageGroups[[whichGroupBelong]]$Rmds, Rmdnames[[.it]])
     }
+
+    ae$.yield_messageGroupTable <- function(){
+      list2DF(purrr::transpose(ae$result$messageGroups)) ->
+        ae$result$table_messageGroups
+    }
+
+
   }
 
   ae$.update <- function(){
@@ -65,9 +74,9 @@ allequalService <- function(targetLabel = targetLabel, .transform=NULL, switchTa
 
   ae$.update()
 
-  ae$categorize_targetIs=categorize_targetIs
+  ae$.categorize_targetIs=categorize_targetIs
 
-  ae$turnMsg2Null_byPattern=function(pattern){
+  ae$.turnMsg2Null_byPattern=function(pattern){
     ae$nulifyResult <- list()
     turnMsg2Null_byPattern(ae$result$messages, pattern) -> ae$nulifyResult$messages
     ae$nulifyResult$update_result_messages=function(){
@@ -82,9 +91,18 @@ allequalService <- function(targetLabel = targetLabel, .transform=NULL, switchTa
       whichIsGroupIt <- which(names(mgetxy) %in% ae$result$messageGroups[[.it]]$Rmds)
       ae$xy[[.it]] <- execute_mgetxy(mgetxy[whichIsGroupIt], targetLabel, .transform=.transform)
     }
+
+    ae$check_messageGroups <- {
+      list_.x <- vector("list", length(ae$result$messageGroups))
+      for(.x in seq_along(ae$result$messageGroups)){
+        rlang::expr(generate_.x_functions(ae, !!.x)) -> expr_generate.X
+        eval(expr_generate.X) -> list_.x[[.x]]
+      }
+      list_.x
+    }
+    names(ae$check_messageGroups) <- paste0("G", seq_along(ae$result$messageGroups))
     # ae$xy <- execute_mgetxy(mgetxy, targetLabel, .transform=.transform)
   }
-
 
   ae
 }
@@ -450,3 +468,42 @@ grademFunctional <- function(.mgetxy){
     )
   }
 }
+
+
+# helpers -----------------------------------------------------------------
+
+
+generate_.x_functions <- function(ae, .x) {
+  function(){
+    rlang::expr({
+      # Group 1's all.equal messages
+      message("all.equal Messages: \n")
+      print(head(ae$result$messageGroups[[!!.x]]$messages, 10))
+      # Group 1's x y
+      # .temp <- ae$xy[[!!.x]]
+      # View(.temp)
+
+      Rmd1 <- sample(ae$result$messageGroups[[!!.x]]$Rmds, 1)
+      message("抽出的檔案\n")
+      print(Rmd1) # 抽出的檔案
+      message("原始程式碼\n")
+      mgetxy[[Rmd1]](ae31$targetLabel)
+      print(x) # 原始程式碼
+      message("transform後，沒transform則與上面相同\n")
+      print(head(ae$xy[[!!.x]][[Rmd1]]$x)) # transform後，沒transform則與上面相同
+      ae$check_messageGroups[[paste0("G",!!.x,"grade")]] <-
+        list(
+          comment=function(comment){
+            comment -> ae$result$messageGroups[[!!.x]]$comment
+          },
+          grade=function(grade){
+            grade -> ae$result$messageGroups[[!!.x]]$grade
+          }
+        )
+
+    }) -> expr_.x
+    eval(expr_.x)
+  }
+
+}
+
