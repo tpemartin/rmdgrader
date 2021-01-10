@@ -1,4 +1,34 @@
-#' Generate transform function for function grading
+#' Grade student Rmds based on all.equal messages
+#'
+#' @param ae An all.equal_env object after assigning grades for all messages groups
+#'
+#' @return A list of grades and comments
+#' @export
+#'
+#' @examples none
+grade_by_all.equalMessages <- function(ae)
+{
+  assertthat::assert_that(exists("studentValues", envir = .GlobalEnv),
+                          exists("correctValues", envir = .GlobalEnv))
+  ae$result$table_messageGroups -> tb
+  tb$group <- 1:nrow(tb)
+  tb[,c("group", "grade", "comment", "Rmds")] %>%
+    as_tibble() -> tb
+  tb$grade %>% unlist() -> tb$grade
+  tb$comment <-
+    map_chr(tb$comment,
+            ~{ifelse(length(.x)==0, "", .x)})
+
+  tidyr::unnest(tb, cols = c(Rmds)) -> tb_unnested
+
+  grades <- list(
+    grade=tb_unnested$grade,
+    comment=tb_unnested$comment
+  )
+  names(grades$grade) <- tb_unnested$Rmds
+  names(grades$comment) <- tb_unnested$Rmds
+  return(grades)
+}#' Generate transform function for function grading
 #'
 #' @param ... A name-value pairs for function-to-grade's inputs
 #'
