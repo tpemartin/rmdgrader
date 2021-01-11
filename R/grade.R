@@ -1,3 +1,43 @@
+#' A mixture of m grading and all.equal grading
+#'
+#' @param ae A all.equal_env object, which has .yield_messageGroupTable method already applied.
+#' @param gradingMethod A function of m grading
+#' @param whichCorrectAnsvalue An integer indicating which object value to be used as answer
+#'
+#' @return a list of grades with Rmd names as element names
+#' @export
+#'
+#' @examples none
+gradeMix <- function(ae, gradingMethod, whichCorrectAnsvalue=1){
+  assertthat::assert_that(
+    exists("studentValues", envir=.GlobalEnv),
+    exists("correctValues", envir = .GlobalEnv)
+  )
+  ae$result$table_messageGroups %>%
+    filter(
+      map_lgl(grade, function(x) !is.na(x))
+    ) %>% select(grade, Rmds) %>%
+    tidyr::unnest(cols=Rmds) -> gradesAssignedFromAE
+
+  unlist(gradesAssignedFromAE$grade) -> gradesAE
+  unlist(gradesAssignedFromAE$Rmds) -> RmdsAE
+
+  targetLabel <- ae$targetLabel
+  correctValues[[targetLabel]][[whichCorrectAnsvalue]] ->> y
+  whichAreUngraded <- which(!(names(studentValues) %in% RmdsAE))
+  studentValuesUngraded <- studentValues[whichAreUngraded]
+  studentNames <- names(studentValuesUngraded)
+  seq_along(studentValuesUngraded) %>%
+    purrr::map(
+      ~gradingMethod(studentValuesUngraded[[.x]][[targetLabel]][[1]],y)
+    ) -> gradesNonAE
+  append(
+    gradesAE, gradesNonAE
+  ) -> grades
+  names(grades) <- c(RmdsAE, studentNames)
+  grades
+}
+
 #' Decompose an object for systematic grading
 #'
 #' @param y an object
@@ -44,7 +84,6 @@ decomposeObject <- function(y){
 #' @export
 #'
 #' @examples none
-
 grade <- function(targetLabel, gradingMethod, whichCorrectAnsvalue=1){
   assertthat::assert_that(
     exists("studentValues", envir=.GlobalEnv),
@@ -169,6 +208,7 @@ ifelsethen <- function(cond, v1, v2, errorMsg) {
       errorMsg
     }
   ) -> result
+  if(length(result)==0) result <- errorMsg
   return(result)
 }
 get_errorStatus <- function(list_expectations){
