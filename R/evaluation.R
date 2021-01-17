@@ -39,6 +39,7 @@ get_answerObjectValues <- function(studentsRmds, correctAnsFilename)
       }
     # browser()
     # prepare dataEnvironment for the part
+    # browser()
     prepare_dataEnvironment(correctAnsFilename, part=targetPart) ->> dataEnvironment
 
     {
@@ -84,7 +85,9 @@ get_answerObjectValues <- function(studentsRmds, correctAnsFilename)
         answerEnvironment <<- new.env(parent=dataEnvironment)
         # browser()
   #### Core step: 執行各chunk並存下答案物件值
-        fillupDataEnv_with_ansEnvir(codeChunksProcessed, targetPart, answerEnvironment, isAnsFile=isAnsFile, isStudentRmd=isStudentRmd )
+
+          fillupDataEnv_with_ansEnvir(codeChunksProcessed, targetPart, answerEnvironment, isAnsFile=isAnsFile, isStudentRmd=isStudentRmd )
+
 
         # browser()
         studentValues[[.x]] <- append(

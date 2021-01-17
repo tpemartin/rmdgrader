@@ -37,9 +37,8 @@ fillup_dataEnvironment <- function(envir, correctAnsFilepath, targetPart){
         ) %>%
         .$label
     }
-
-    dataLabels %>%
-      processDataExprs2getDataEnvironment(
+    processDataExprs2getDataEnvironment(
+        dataLabels,
         codeChunksProcessed,
         dataEnvironment = envir
       )
@@ -140,7 +139,7 @@ fillupDataEnv_with_ansEnvir <- function(codeChunksProcessed, targetPart, answerE
 
             if(flag_executable){
 
-              # if(targetAnsLabel=="ans61") browser()
+              # if(targetAnsLabel=="ans131") browser()
               answerEnvironment$ansValues[[targetAnsLabel]] <- list(get_ansObjectValueFromAnswerEnvironment(answerEnvironment, targetAnsLabel,
                                                                                                             isStudentRmd=argList$isStudentRmd))
 
@@ -250,8 +249,8 @@ fillupDataEnv_with_ansEnvir2 <- function(codeChunksProcessed, targetPart){
 prepare_dataEnvironment <- function(correctAnsFilename, part){
 
   dataEnvironment <<- new.env(parent=.GlobalEnv)
-  dataEnvironment %>%
     fillup_dataEnvironment(
+      dataEnvironment,
       correctAnsFilepath = correctAnsFilename,
       targetPart = part
     )

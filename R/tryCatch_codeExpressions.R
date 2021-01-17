@@ -1,8 +1,10 @@
 tryCatch_eval_inAnsEnv <- function(answerCodeExpressions, answerEnvironment){
-  tryCatch({
+  flag_executable <- F
+  tryCatch(
+    R.utils::withTimeout({
     answerCodeExpressions %>% eval_inAnsEnv(answerEnvironment)
     T
-  },
+  }, timeout=15),
   error=function(e){
     "Error: codes cannot be processed"
     F

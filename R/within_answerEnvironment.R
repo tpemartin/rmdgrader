@@ -34,9 +34,14 @@ get_ansObjectValueFromAnswerEnvironment <- function(envir, targetAnsLabel, isStu
 #' @export
 #'
 #' @examples none
+
 mget_safe <- function(text, envir){
   tryCatch({
-    eval(parse(text=text), envir = envir)
+    # eval(parse(text=text), envir = envir)
+    R.utils::withTimeout(
+      {eval(parse(text=text), envir = envir)},
+      timeout = 15
+    )
   },
   error=function(e){
     NA
