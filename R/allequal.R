@@ -76,6 +76,12 @@ allequalService <- function(targetLabel = targetLabel, .transform=NULL, switchTa
     ae$.yield_messageGroupTable <- function(){
       list2DF(purrr::transpose(ae$result$messageGroups)) ->
         ae$result$table_messageGroups
+
+        ae$result$table_messageGroups$Rmd_count <-
+        purrr::map_int(
+          ae$result$table_messageGroups$Rmds,
+          length
+        )
     }
 
 
