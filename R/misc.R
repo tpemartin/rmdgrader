@@ -1,3 +1,34 @@
+#' Categorise a character vector's element names by its element values
+#'
+#' @param rmdNamed_char. A named vector.
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+#' x <- sample(1:5, 10, replace = T)
+#' names(x) <- sample(LETTERS, 10)
+#' cat_x <-
+#'   categorise_elementNames_ByElementValues(x)
+categorise_elementNames_ByElementValues <- function(rmdNamed_char) {
+  rmdNames <- names(rmdNamed_char)
+  types <- unique(rmdNamed_char)
+  purrr::map(
+    types,
+    ~{
+      list(
+        el_names = rmdNames[rmdNamed_char==.x],
+        el_values = .x,
+        comment=character(0),
+        grade=0
+      )
+    }
+  ) -> catResults
+
+  catResults
+}
+
 #' Safely unlist a list where element with zero length will be list(0)
 #'
 #' @param listObj A list

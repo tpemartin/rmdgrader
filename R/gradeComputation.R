@@ -1,3 +1,42 @@
+#' get max grade out of grade vectors
+#'
+#' @param ... grade vectors with rmd as element names
+#'
+#' @return a grade vector with rmd as element names
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' getMaxGrade(grade111, grade112, grade113)
+#' }
+getMaxGrade <- function(...){
+  tb_grade <- merge_gradeVectors(...)
+  do.call("pmax", tb_grade[,-1]) -> tb_grade$max
+  setNames(tb_grade$max, tb_grade$rmd)
+}
+
+#' Merge several named numerical \\(grade\\) vectors into a tibble
+#'
+#' @param ... arguments of grade vectors
+#'
+#' @return A tibble with Rmd column as the merging key.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' merge_gradeVectors(grade111, grade112, grade113)
+#' }
+merge_gradeVectors <- function(...){
+  argSyms <- rlang::ensyms(...)
+  argQuos <- rlang::enquos(...)
+  purrr::map(
+    seq_along(argSyms),
+    ~tibble::tibble(
+      rmd=names(!!argQuos[[.x]]),
+      !!argSyms[[.x]]:=!!argQuos[[.x]])
+  ) -> list_tibbles
+  purrr::reduce(list_tibbles, merge)
+}
 #' Convert list of grades into a data frame with total computed
 #'
 #' @param ... A name=value pair, such as ans11=grade11, ans12=grade12,...

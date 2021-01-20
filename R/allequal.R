@@ -1,35 +1,5 @@
 #' Grade student Rmds based on all.equal messages
 #'
-#' @param ae An all.equal_env object after assigning grades for all messages groups
-#'
-#' @return A list of grades and comments
-#' @export
-#'
-#' @examples none
-grade_by_all.equalMessages <- function(ae)
-{
-  assertthat::assert_that(exists("studentValues", envir = .GlobalEnv),
-                          exists("correctValues", envir = .GlobalEnv))
-  ae$result$table_messageGroups -> tb
-  tb$group <- 1:nrow(tb)
-  tb[,c("group", "grade", "comment", "Rmds")] %>%
-    as_tibble() -> tb
-  tb$grade %>% unlist() -> tb$grade
-  tb$comment <-
-    map_chr(tb$comment,
-            ~{ifelse(length(.x)==0, "", .x)})
-
-  tidyr::unnest(tb, cols = c(Rmds)) -> tb_unnested
-
-  grades <- list(
-    grade=tb_unnested$grade,
-    comment=tb_unnested$comment
-  )
-  names(grades$grade) <- tb_unnested$Rmds
-  names(grades$comment) <- tb_unnested$Rmds
-  return(grades)
-}
-
 #' Service initiator for all.equal comparisons
 #'
 #' @return
@@ -128,7 +98,39 @@ allequalService <- function(targetLabel = targetLabel, .transform=NULL, switchTa
     # ae$xy <- execute_mgetxy(mgetxy, targetLabel, .transform=.transform)
   }
 
+  ae$extract_grades <- get_gradesFromAeFunctional(ae)
+
   ae
+}
+
+#' @param ae An all.equal_env object after assigning grades for all messages groups
+#'
+#' @return A list of grades and comments
+#' @export
+#'
+#' @examples none
+grade_by_all.equalMessages <- function(ae)
+{
+  assertthat::assert_that(exists("studentValues", envir = .GlobalEnv),
+                          exists("correctValues", envir = .GlobalEnv))
+  ae$result$table_messageGroups -> tb
+  tb$group <- 1:nrow(tb)
+  tb[,c("group", "grade", "comment", "Rmds")] %>%
+    as_tibble() -> tb
+  tb$grade %>% unlist() -> tb$grade
+  tb$comment <-
+    map_chr(tb$comment,
+            ~{ifelse(length(.x)==0, "", .x)})
+
+  tidyr::unnest(tb, cols = c(Rmds)) -> tb_unnested
+
+  grades <- list(
+    grade=tb_unnested$grade,
+    comment=tb_unnested$comment
+  )
+  names(grades$grade) <- tb_unnested$Rmds
+  names(grades$comment) <- tb_unnested$Rmds
+  return(grades)
 }
 
 
@@ -306,4 +308,97 @@ populate_aeWith_basicInfo <- function(ae, targetLabel, .transform, switchTargetC
     )
   )
 
+}
+#' When facing list of ae's, use this to compute grades as sum/mean across all ae's extracted grades
+#'
+#' @param list_ae A list of ae's.
+#'
+#' @return A data frame with sum and mean of grades across all versions of ae's
+#' @export
+#'
+#' @examples none
+compute_gradesFromMultipleAes <- function(list_ae){
+  assertthat::assert_that(
+    is.list(list_ae) &&
+      all(purrr::map_lgl(list_ae, is, "all.equal_env")),
+    msg="Input must be a list of multiple all.equal_env objects")
+
+  map(
+    list_ae,
+    ~.x$extract_grades()
+  ) -> list_grades
+
+  map(
+    list_grades,
+    names
+  ) -> list_names
+  reduce(list_names, union) -> allRmdNames
+
+  map_dfc(
+    list_grades,
+    ~.x[allRmdNames]
+  ) -> df_grades
+
+  df_grades %>%
+    mutate(
+      sum=sum(c_across()),
+      mean=mean(c_across()),
+      Rmd=allRmdNames
+    ) -> df_grades2
+  return(df_grades2)
+
+}
+get_gradesFromAeFunctional <- function(ae){
+  function(naIsZero=T){
+    ae$.yield_messageGroupTable()
+    list_grade <- grade_by_all.equalMessages(ae)
+    grade <- list_grade$grade
+    if(naIsZero){
+      grade[
+        is.na(grade)
+      ] <- 0
+    }
+    grade
+  }
+
+}
+useSubcat2ReviseGrade <- function(ae) {
+  function(grades){
+    # grades <- ae$extract_grades()
+    cat_errors <- ae$subcat$cat_errors
+    purrr::map(
+      cat_errors,
+      ~ {
+        grade <- rep(.x$grade, length(.x$el_names))
+        names(grade) <- .x$el_names
+        grade
+      }
+    ) -> revisedGrade
+    unlist(revisedGrade) -> revisedGrade
+    rmdnames <- names(revisedGrade)
+    grades[rmdnames] <- revisedGrade
+    grades
+  }
+}
+#' Categorise rmd based on manually defined list of msg and rmd elements
+#'
+#' @param ae An ae environment to attach subcat element
+#' @param list_msg_rmd_pairs A list of msg and rmd elements
+#'
+#' @return none. but attach subcat in ae
+#' @export
+#'
+#' @examples none
+subcategorise_byMsgRmdPairs <- function(ae, list_msg_rmd_pairs){
+  assertthat::assert_that(
+    all(c("msg", "rmd") %in% names(list_msg_rmd_pairs)),
+    msg="list_msg_rmd_pairs must be a list with two elements named msg and rmd"
+  )
+  resultsTxt <- setNames(
+    list_msg_rmd_pairs$msg,
+    list_msg_rmd_pairs$rmd)
+  ae$subcat <- list(
+    cat_errors= categorise_elementNames_ByElementValues(resultsTxt),
+    accommodate_grades = useSubcat2ReviseGrade(ae)
+  )
 }

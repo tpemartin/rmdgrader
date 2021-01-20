@@ -1,0 +1,183 @@
+---
+title: "Grade"
+drake_cache: ".Finalstep3"
+output: html_document
+params:
+  title: "Final" # google classroom上公告作業時所用的標題
+  ansfilename: "grading_flow/Final-ans.Rmd"
+  submissionFolder: "studentsSubmission"
+  gradingFolder: "grading_flow"
+---
+
+
+```{r setup, include=FALSE, drake=F}
+knitr::opts_chunk$set(echo = TRUE, eval=F)
+library(drake)
+library(econDV)
+library(dplyr)
+```
+
+## makecondition
+
+```{r makecondition}
+library(drake)
+library(rmd2drake)
+library(dplyr)
+library(googleclassroom)
+library(readr)
+library(rmdgrader)
+library(purrr)
+library(rlang)
+library(testthat)
+library(withr)
+library(lubridate)
+library(stringr)
+# rprojroot::is_rstudio_project$make_fix_file() -> .root
+.root <- function(){
+  "/Users/martinl/Github/course-dashboard-programming-for-data-science/"
+}
+datafilename <- 
+    file.path(.root(),params$gradingFolder,params$title,"data4step3.Rdata")
+load(datafilename, envir = .GlobalEnv)
+gradeSavingFilename <- 
+  file.path(.root(),params$gradingFolder,params$title,"data4step4.Rdata")
+allValues <<- objectValues$studentValues
+correctValues <<- allValues[[1]]
+studentValues <<- allValues[-1]
+mgetxy <- rmdgrader::generate_mgetxy(basename(allRmds[-1]))
+studentRmds <- allRmds[-1]
+submissionPath <- 
+    file.path(
+      .root(),
+      params$submissionFolder,
+      params$title
+    )
+mfile.edit <- mfile.editFunctional(studentRmds, submissionPath)
+```
+
+## Grading
+
+### ans2
+
+```{r makecondition}
+ae2 <- allequalService('ans2')
+ae2$generate_xy4messageGroups(mgetxy)
+```
+
+```{r ae2check}
+ae2check = {
+  ae2$check_messageGroups$G1()
+  ae2$check_messageGroups$G1grade$grade(0)
+  
+  ae2$check_messageGroups$G2()
+  ae2$check_messageGroups$G2grade$grade(0)
+  
+  ae2$check_messageGroups$G3()
+  
+  ae2$.yield_messageGroupTable()
+  View(ae2$result$table_messageGroups)
+  
+  
+  map(
+    ae2$xy[[3]],
+   function(.x) {
+    R.utils::withTimeout(
+      try(
+        {
+          .x$x("民國101年8月27日")
+        },
+        silent = T
+      ),
+      timeout = 5
+      )
+    }) -> results
+  
+  list_msg_rmd_pairs <- 
+    list(
+      msg=unlist(results),
+      rmd=names(ae2$xy[[3]])
+    )
+  ae <- ae2
+  
+  subcategorise_byMsgRmdPairs(ae2, list_msg_rmd_pairs)
+  
+  ae2$subcat$cat_errors[[1]]$el_values
+  ae2$subcat$cat_errors[[1]]$el_values
+  ae2$subcat$cat_errors[[1]]$el_names
+  ae2$subcat$cat_errors[[1]]$comment <- 'only put textbook get_horoscope function there.'
+  ae2$subcat$cat_errors[[1]]$grade <- 0
+  
+  ae2$subcat$cat_errors[[2]]$el_names
+  ae2$subcat$cat_errors[[2]]$el_values 
+  ae2$subcat$cat_errors[[2]]$comment <-  ae2$subcat$cat_errors[[1]]$comment
+  
+  ae2$subcat$cat_errors[[3]]$el_names
+  ae2$subcat$cat_errors[[3]]$el_values
+  ae2$subcat$cat_errors[[3]]$comment <- "almost correct"
+  ae2$subcat$cat_errors[[3]]$grade <- 0.8
+  
+  ae2$subcat$cat_errors[[4]]$el_names
+  ae2$subcat$cat_errors[[4]]$el_values
+  ae2$subcat$cat_errors[[4]]$comment <- 'nice twist on task condition'
+  ae2$subcat$cat_errors[[4]]$grade <- 0.1
+  
+  ae2$subcat$cat_errors[[5]]$el_names
+  ae2$subcat$cat_errors[[5]]$el_values
+  
+  ae2$subcat$cat_errors[[6]]$el_names
+  ae2$subcat$cat_errors[[6]]$el_values
+  
+  ae2$subcat$cat_errors[[7]]$el_names
+  ae2$subcat$cat_errors[[7]]$el_values
+}
+```
+
+
+```{r grade2}
+grade2 = {
+  grade2_init <- ae2$extract_grades()
+  grade2 <- ae2$subcat$accommodate_grades(grade2_init)
+}
+```
+
+
+### All Grades
+
+算了一下，總共10題（5+2+2+1），所以我覺得可以考慮每填都是一分。這樣剛好就是Google Classroom表定的10分。
+
+You don't need this if you have updated rmdgrader package.
+
+```{r tb_grades}
+tb_grades = convert_gradeList2dataframe(
+    ans11=grade11,
+    ans12=grade12,
+    ans13=grade13,
+    ans14=grade14,
+    ans15=grade15,
+    ans16=grade16,
+    ans21=grade21,
+    ans22=grade22
+)
+```
+
+```{r saveGrades}
+saveGrades = {
+  save(tb_grades, file=gradeSavingFilename)
+  gradeSavingFilename
+}
+```
+
+```{r}
+tb_grades
+```
+
+```{r}
+tb_grades %>% select(total) %>% summary
+```
+
+```{r histgram, drake=F}
+hist(
+  tb_grades$total
+) 
+```
+

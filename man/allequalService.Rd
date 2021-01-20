@@ -2,7 +2,7 @@
 % Please edit documentation in R/allequal.R
 \name{allequalService}
 \alias{allequalService}
-\title{Service initiator for all.equal comparisons}
+\title{Grade student Rmds based on all.equal messages}
 \usage{
 allequalService(
   targetLabel = targetLabel,
