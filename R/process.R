@@ -18,7 +18,7 @@ Process <- function(){
   pe$correctAnsFilename$tryGet_list_codeChunks =
     tryGet_list_codeChunksFunctional(
       pe,"correctAnsFilename",
-      pe$correctAnsFilename$filename, filenameAsElementName=F)
+      pe$correctAnsFilename$filename, filenameAsElementName=F, codeChunksFromAnsFile=T)
 
 
   pe$studentsRmds <- list()
@@ -72,36 +72,72 @@ population_peWithStudentsRmds <- function(pe){
     ~list(
       filename=studentsRmds[[.x]],
       basename=basename(studentsRmds[[.x]]),
-      tryGet_list_codeChunks= tryGet_list_codeChunksFunctional(pe,"studentsRmds",studentsRmds[[.x]])
+      tryGet_list_codeChunks= tryGet_list_codeChunksFunctional(pe,"studentsRmds",studentsRmds[[.x]], codeChunksFromAnsFile=F)
     )
   ) -> list_studentRmds
   pe$studentsRmds = setNames(list_studentRmds, basename(studentsRmds))
 }
-tryGet_list_codeChunksFunctional <- function(pe, objectname, filename, filenameAsElementName=T){
+tryGet_list_codeChunksFunctional <- function(pe, objectname, filename, codeChunksFromAnsFile=F, filenameAsElementName=T){
   function(){
     if(filenameAsElementName){
-      pe[[objectname]][[basename(filename)]]$list_codeChunks <- tryGet_list_codeChunks(filename)
+      pe[[objectname]][[basename(filename)]]$codeChunksProcessed <- tryGet_list_codeChunks(filename, codeChunksFromAnsFile)
     } else {
-      pe[[objectname]]$list_codeChunks <- tryGet_list_codeChunks(filename)
+      pe[[objectname]]$codeChunksProcessed <- tryGet_list_codeChunks(filename, codeChunksFromAnsFile)
     }
 
   }
 }
-tryGet_list_codeChunks <- function(filename){
+tryGet_list_codeChunks_bk <- function(filename, codeChunksFromAnsFile){
   # filenames <- process$studentsRmds
   # filename <- filenames[[1]]
 
-  xfun::read_utf8(filename) -> rmdlines
+  # xfun::read_utf8(filename) -> rmdlines
+  #
+  # try(
+  #   get_listCodeChunksFromRmdlines(rmdlines, requireLabel = T),
+  #   silent=T) ->
+  #   list_codeChunks
 
   try(
-    get_listCodeChunksFromRmdlines(rmdlines, requireLabel = T),
+    get_codeChunkProcessed_from_filepath(filename, codeChunksFromAnsFile=codeChunksFromAnsFile),
     silent=T) ->
-    list_codeChunks
+    codeChunksProcessed
 
-  if(is(list_codeChunks,"try-error")){
+
+  if(is(codeChunksProcessed,"try-error")){
     return(list(NULL))
   } else {
-    return(list_codeChunks)
+    return(codeChunksProcessed)
+  }
+}
+tryGet_list_codeChunks <- function(filename, codeChunksFromAnsFile){
+  # filenames <- process$studentsRmds
+  # filename <- filenames[[1]]
+
+  # xfun::read_utf8(filename) -> rmdlines
+  #
+  # try(
+  #   get_listCodeChunksFromRmdlines(rmdlines, requireLabel = T),
+  #   silent=T) ->
+  #   list_codeChunks
+
+  rmdlines <- xfun::read_utf8(filename)
+  if(codeChunksFromAnsFile)
+  {
+    return(list(
+      chunkTable = rmd_chunkTable(rmdlines),
+      list_codeChunks = rmd_list_codeChunks(rmdlines)
+    ))
+  } else {
+    try(
+      list(
+      list_codeChunks = rmd_list_codeChunks(rmdlines)),
+      silent = T) -> result
+    if(is(result,"try-error")){
+      return(list(NULL))
+    } else {
+      return(result)
+    }
   }
 }
 

@@ -5,6 +5,7 @@ get_codeChunkProcessed_from_filepath <- function(filename, codeChunksFromAnsFile
     Rmdlines %>%
       get_codeChunks()
   }
+  # browser()
   if(codeChunksFromAnsFile){
     map(
       list(
@@ -25,5 +26,6 @@ get_codeChunkProcessed_from_filepath <- function(filename, codeChunksFromAnsFile
       !!!list(codeChunks=codeChunks)
     ) -> codeChunksProcessed
   }
+  codeChunksProcessed$list_codeChunks <- codeChunks
   codeChunksProcessed
 }
