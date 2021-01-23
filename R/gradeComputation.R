@@ -62,7 +62,7 @@ convert_gradeList2dataframe <- function(..., turnInBonus=3, maxPoint=10, fullMar
       }
     ) -> list_df
   reduce(list_df, full_join, by = "name") -> df_grades
-  assertthat::assert_that(is.numeric(fullMark))
+  # assertthat::assert_that(is.numeric(fullMark))
   fullMark = ifelse(is.null(fullMark), length(ansLabels), fullMark)
   df_grades %>%
     rowwise() %>%
