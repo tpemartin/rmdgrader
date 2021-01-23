@@ -43,6 +43,18 @@ Process <- function(){
       )
     }
   )
+
+  # add file.edit method
+  pathname <- dirname(pe$studentsRmds[[2]]$filename)
+  studentRmds <- names(pe$studentsRmds)
+  pe$file.edit <- mfile.editFunctional(studentRmds, pathname)
+
+  # add move2problem method
+  purrr::walk(
+    seq_along(pe$studentsRmds),
+    ~{pe$studentsRmds[[.x]]$move2problem <-
+      generate_move2problemFunction(problemFolder, process, .x)}
+  )
   return(pe)
 }
 
@@ -138,6 +150,27 @@ tryGet_list_codeChunks <- function(filename, codeChunksFromAnsFile){
     } else {
       return(result)
     }
+  }
+}
+generate_move2problemFunction <- function(problemFolder, pe, .it) {
+  function() {
+
+    pe$.nullify <- function(){
+      # null the Rmd
+      pe$studentsRmds[[.it]] <- NULL
+      pe$file.edit[[.it]] <- NULL
+    }
+
+    if (!dir.exists(problemFolder)) dir.create(problemFolder)
+    file.link(
+      from = pe$studentsRmds[[.it]]$filename,
+      to = file.path(
+        problemFolder, pe$studentsRmds[[.it]]$basename
+      )
+    )
+    message(
+      glue::glue("file {pe$studentsRmds[[.it]]$basename} is moved to the following folder:\n\n{problemFolder}\n\nto reverse the operation, move the file back and initiate the Process instance again.\n\nDon't forget to pe$.nullify() before moving to Evaluation stage")
+    )
   }
 }
 

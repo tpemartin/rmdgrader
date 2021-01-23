@@ -178,6 +178,92 @@ processDataExprs2getDataEnvironment <- function(
   }
 
 }
+#' Initiate an Evaluation instance after Process instance is done
+#'
+#' @param pe A Process instance that has been processed.
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' pe <- Process()
+#' ei <- Evalutate(pe)
+#' }
+Evaluate <- function(pe){
+  require(stringr)
+  # pe <- process
+  ee <- new.env(parent = pe)
+
+  ee$allRmds <- get_allRmds(pe)
+
+  # generate environments for each running sequence
+  ee$running_sequence <- generate_environment4eachRunningSequence(pe, ee)
+
+  # each environment is equipped with a sequential answer environment generator. To use, see the following examples:
+  # ee$running_sequence$part12$generate_runningSeqEnvironments() # generate a new sequential answer environments for part12
+  # ee$running_sequence$part13$generate_runningSeqEnvironments() # generate a new sequential answer environments for part13
+
+  # activeEE <- ee$running_sequence$part12
+  runningSeqEnvironments <- ee$running_sequence
+  attach_run_correctAnsFunctions(
+    runningSeqEnvironments = runningSeqEnvironments,
+    pe
+  )
+
+  # # Once run_correctAns() attached, users can run correct answer codes under each running sequence as the following:
+  # ee$running_sequence$part12$run_correctAns() #-> corrAnsEnvironments
+  # ee$running_sequence$part12$corrAnsEnvironments$ans12.1$diagX
+  #
+  # ee$running_sequence$part13$run_correctAns()
+  # ee$running_sequence$part13$corrAnsEnvironments$ans13.1s$codes
+  # ee$running_sequence$part13$corrAnsEnvironments$ans13.2s$codes
+
+  # add ansObjectnames
+  ee$ansObjectnames <- extract_ansObjnames(pe)
+
+  # generate correctAnsEnvironments
+  purrr::walk(
+    ee$running_sequence,
+    ~{
+      .x$run_correctAns()
+    }
+  )
+
+  # create answerValues
+  ee$answerValues <-
+    setNames(vector("list", length(ee$allRmds)), ee$allRmds)
+
+  # add resolve methods to every Rmds
+  purrr::walk(
+    ee$allRmds,
+    ~generate_ansValuesResolvingFunction(pe, ee, basenameRmd = .x)
+  )
+
+  # add batch resolution method
+  # browser()
+  names(ee$running_sequence) -> allPartnames
+  for(.y in seq_along(allPartnames))
+  {
+    Ypartname <- allPartnames[[.y]]
+    ee$answerValues$batch$resolve[[Ypartname]] <-
+      generate_answerValueBatchResolveFunction(pe, ee, Ypartname)
+  }
+
+  # attach
+  attach_run_correctAnsFunctions(ee$running_sequence, pe)
+  partnames <- names(ee$running_sequence)
+  correctAnsBasename <- pe$correctAnsFilename$basename
+  for(.part in seq_along(partnames)){
+    ee$answerValues[[correctAnsBasename]]$resolve[[partnames[[.part]]]] <-
+      generate_resolutionMethods4correctAnsBasename(.part, correctAnsBasename, ee)
+  }
+
+  # attach save method
+  ee$save <- save_objectValues(ee)
+
+  ee
+}
 
 # helpers -----------------------------------------------------------------
 
@@ -368,14 +454,11 @@ ansValueResolveFunctional <- function(.part, tempEnv, ee, pe, basenameRmd){
     tempEnv[[.part]]$generate_runningSeqEnvironments() ->
       tempEnv[[.part]]$resolved
 
-    correctRunningSequenceLabels <- ee$running_sequence[[.part]]$labels
-    setup_dataLabels <- stringr::str_subset(
-      correctRunningSequenceLabels, "(data|setup)"
-    )
-    setdiff(
-      correctRunningSequenceLabels,
-      setup_dataLabels
-    ) -> ansLabels
+    list_ansLabels_setup_dataLabels <-
+      get_ansLabels_setupdataLabels(ee, .part = .part)
+    ansLabels = list_ansLabels_setup_dataLabels$ansLabels
+    setup_dataLabels = list_ansLabels_setup_dataLabels$setup_dataLabels
+
     # attach setup and data
     if(!inBatch){
       purrr::walk(
@@ -386,26 +469,34 @@ ansValueResolveFunctional <- function(.part, tempEnv, ee, pe, basenameRmd){
       )
     }
 
-    ee$answerValues[[basenameRmd]]$values <-
-      setNames(vector("list", length(ansLabels)), ansLabels)
+    ee$answerValues[[basenameRmd]]$values[[.part]] <-
+        setNames(vector("list", length(ansLabels)), ansLabels)
     for (.it in seq_along(ansLabels))
     {
       # .it <- 1
       Xlabel <- ansLabels[[.it]]
       # get codes from one Rmd
       Xcodes <- pe$studentsRmds[[basenameRmd]]$codeChunksProcessed$list_codeChunks[[Xlabel]]
-      Xexpression <- rlang::expr(
-        eval(parse(text = Xcodes), envir = tempEnv[[.part]]$resolved[[Xlabel]])
-      )
-      tryResult <- try(rlang::eval_bare(Xexpression), silent = T)
 
-      XansObjname <- ee$ansObjectnames[[Xlabel]]
-      if (is(tryResult, "try-error")) {
-        tempEnv[[.part]]$resolved[[Xlabel]][[XansObjname]] <- tryResult
+      # label suffix resolution branching
+      if(stringr::str_detect(Xlabel, "s$")){
+        XansObjname <- "codes"
+        tempEnv[[.part]]$resolved[[Xlabel]][[XansObjname]] <- Xcodes
+      } else {
+        Xexpression <- rlang::expr(
+          eval(parse(text = Xcodes), envir = tempEnv[[.part]]$resolved[[Xlabel]])
+        )
+        tryResult <- try(rlang::eval_bare(Xexpression), silent = T)
+
+        XansObjname <- ee$ansObjectnames[[Xlabel]]
+        if (is(tryResult, "try-error")) {
+          tempEnv[[.part]]$resolved[[Xlabel]][[XansObjname]] <- tryResult
+        }
       }
 
+
       tempEnv[[.part]]$resolved[[Xlabel]][[XansObjname]] ->
-        ee$answerValues[[basenameRmd]]$values[[Xlabel]]
+        ee$answerValues[[basenameRmd]]$values[[.part]][[Xlabel]][[1]]
     }
     if(!inBatch) detach_runningSequence()
 
@@ -431,14 +522,18 @@ generate_ansValuesResolvingFunction <- function(pe, ee, basenameRmd){
 }
 generate_answerValueBatchResolveFunction <- function(pe, ee,Ypartname)
 {
-  correctRunningSequenceLabels <- ee$running_sequence[[Ypartname]]$labels
-  setup_dataLabels <- stringr::str_subset(
-    correctRunningSequenceLabels, "(data|setup)"
-  )
+  # correctRunningSequenceLabels <- ee$running_sequence[[Ypartname]]$labels
+  # setup_dataLabels <- stringr::str_subset(
+  #   correctRunningSequenceLabels, "(data|setup)"
+  # )
+  list_ansLabels_setup_dataLabels <-
+    get_ansLabels_setupdataLabels(ee, .part = Ypartname)
+  setup_dataLabels = list_ansLabels_setup_dataLabels$setup_dataLabels
+
   function(){
     stringr::str_subset(
       names(ee$answerValues),
-      "batch|ans", T
+      "batch", T
     ) -> allStudentRmds
     # names(ee$running_sequence) -> allPartnames
 
@@ -463,3 +558,62 @@ generate_answerValueBatchResolveFunction <- function(pe, ee,Ypartname)
     detach_runningSequence()
   }
 }
+save_objectValues <- function(ee) {
+  function(filename) {
+    whichIsBatch <- stringr::str_which(names(ee$answerValues), "batch")
+    purrr::map(
+      ee$answerValues[-whichIsBatch],
+      ~ .x$values
+    ) -> objectValues
+    purrr::map(
+      objectValues,
+      ~{
+       if(is.null(.x)) .x else
+        purrr::flatten(.x)
+      }
+    ) -> objectValues
+    allRmds <- ee$allRmds
+    save(objectValues, allRmds, file = filename)
+  }
+}
+get_ansLabels_setupdataLabels <- function(ee, .part){
+  correctRunningSequenceLabels <- ee$running_sequence[[.part]]$labels
+  setup_dataLabels <- stringr::str_subset(
+    correctRunningSequenceLabels, "(data|setup)"
+  )
+  setdiff(
+    correctRunningSequenceLabels,
+    setup_dataLabels
+  ) -> ansLabels
+  list(
+    setup_dataLabels=setup_dataLabels,
+    ansLabels=ansLabels
+  )
+}
+generate_resolutionMethods4correctAnsBasename <- function(.part, correctAnsBasename, ee){
+  partnames <- names(ee$running_sequence)
+  Xpartname <- partnames[[.part]]
+  list_ansLabels_setup_dataLabels <-
+    get_ansLabels_setupdataLabels(ee, .part = Xpartname)
+  ansLabels = list_ansLabels_setup_dataLabels$ansLabels
+  setup_dataLabels = list_ansLabels_setup_dataLabels$setup_dataLabels
+  function(...){
+    ee$running_sequence[[Xpartname]]$run_correctAns()
+    ee$answerValues[[correctAnsBasename]]$values[[.part]] <-
+      setNames(vector("list", length(ansLabels)), ansLabels)
+    for (.it in seq_along(ansLabels))
+    {
+      # .it <- 1
+      Xlabel <- ansLabels[[.it]]
+      if(stringr::str_detect(Xlabel, "s$")){
+        XansObjname <- "codes"
+      } else {
+        XansObjname <- ee$ansObjectnames[[Xlabel]]
+      }
+      ee$running_sequence[[.part]]$corrAnsEnvironments[[Xlabel]][[XansObjname]] ->
+        ee$answerValues[[correctAnsBasename]]$values[[.part]][[Xlabel]][[1]]
+    }
+  }
+
+}
+

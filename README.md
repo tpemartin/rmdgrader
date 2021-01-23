@@ -1,3 +1,9 @@
+v 0.3.0
+
+new 
+
+for step2_process, it is streamlined into a clear and more efficient approach: using Process and Evaluate instance initiators.
+
 v 0.2.7
 
 new
