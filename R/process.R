@@ -162,11 +162,14 @@ generate_move2problemFunction <- function(problemFolder, pe, .it) {
     }
 
     if (!dir.exists(problemFolder)) dir.create(problemFolder)
-    file.link(
+    file.copy(
       from = pe$studentsRmds[[.it]]$filename,
       to = file.path(
         problemFolder, pe$studentsRmds[[.it]]$basename
-      )
+      ), overwrite = T
+    )
+    file.remove(
+      pe$studentsRmds[[.it]]$filename
     )
     message(
       glue::glue("file {pe$studentsRmds[[.it]]$basename} is moved to the following folder:\n\n{problemFolder}\n\nto reverse the operation, move the file back and initiate the Process instance again.\n\nDon't forget to pe$.nullify() before moving to Evaluation stage")
