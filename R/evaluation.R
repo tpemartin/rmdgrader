@@ -362,8 +362,8 @@ detach_runningSequence <- function(){
     ~eval(rlang::expr(detach(!!exprToDetach[[.x]])))
   )
 }
-ansValueResolveFunctional <- function(.part, tempEnv, ee, basenameRmd){
-  function() {
+ansValueResolveFunctional <- function(.part, tempEnv, ee, pe, basenameRmd){
+  function(inBatch=F) {
     # browser()
     tempEnv[[.part]]$generate_runningSeqEnvironments() ->
       tempEnv[[.part]]$resolved
@@ -377,12 +377,15 @@ ansValueResolveFunctional <- function(.part, tempEnv, ee, basenameRmd){
       setup_dataLabels
     ) -> ansLabels
     # attach setup and data
-    purrr::walk(
-      setup_dataLabels,
-      ~ attach(
-        ee$running_sequence[[.part]]$corrAnsEnvironments[[.x]]
+    if(!inBatch){
+      purrr::walk(
+        setup_dataLabels,
+        ~ attach(
+          ee$running_sequence[[.part]]$corrAnsEnvironments[[.x]]
+        )
       )
-    )
+    }
+
     ee$answerValues[[basenameRmd]]$values <-
       setNames(vector("list", length(ansLabels)), ansLabels)
     for (.it in seq_along(ansLabels))
@@ -404,7 +407,7 @@ ansValueResolveFunctional <- function(.part, tempEnv, ee, basenameRmd){
       tempEnv[[.part]]$resolved[[Xlabel]][[XansObjname]] ->
         ee$answerValues[[basenameRmd]]$values[[Xlabel]]
     }
-    detach_runningSequence()
+    if(!inBatch) detach_runningSequence()
 
 
     # tempEnv[[.part]] -> tempEnv[[.part]]$resolvedEnvironment
@@ -421,8 +424,42 @@ generate_ansValuesResolvingFunction <- function(pe, ee, basenameRmd){
   setNames(
     purrr::map(
       seq_along(partNames),
-      ~ansValueResolveFunctional(.x, ee$.tempEnv, ee, basenameRmd)
+      ~ansValueResolveFunctional(.x, ee$.tempEnv, ee, pe, basenameRmd)
     ),
     partNames
   ) -> ee$answerValues[[basenameRmd]]$resolve
+}
+generate_answerValueBatchResolveFunction <- function(pe, ee,Ypartname)
+{
+  correctRunningSequenceLabels <- ee$running_sequence[[Ypartname]]$labels
+  setup_dataLabels <- stringr::str_subset(
+    correctRunningSequenceLabels, "(data|setup)"
+  )
+  function(){
+    stringr::str_subset(
+      names(ee$answerValues),
+      "batch|ans", T
+    ) -> allStudentRmds
+    # names(ee$running_sequence) -> allPartnames
+
+    # attach library and setup, and data
+    {
+      purrr::walk(
+        setup_dataLabels,
+        ~ attach(
+          ee$running_sequence[[Ypartname]]$corrAnsEnvironments[[.x]]
+        )
+      )
+    }
+
+    for(.it in seq_along(allStudentRmds))
+    {
+      XstudentRmds <- allStudentRmds[[.it]]
+      ee$answerValues[[XstudentRmds]]$resolve[[Ypartname]](inBatch=T)
+    }
+
+
+    # detach library and setup, and data
+    detach_runningSequence()
+  }
 }
