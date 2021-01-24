@@ -21,7 +21,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r makecondition}
 library(dplyr)
-library(rmdgrader)
+# library(rmdgrader)
 library(econDS)
 library(tidyverse)
 library(googledrive)
@@ -56,69 +56,46 @@ load(
 if(!dir.exists(returnFolder)) dir.create(returnFolder)
 ```
 
-```{r}
-Return <- function(){
-  re <- new.env()
-  re$template$rmdlines <- xfun::read_utf8(correctAnsFilename)
-  
-  re$template$generate_holder <- function(){
-    whichHasThePattern <- stringr::str_which(
-      re$template$rmdlines,
-      "^(---|```|#+\\s+[0-9.]+)"
-    )
-    whatIsThePattern <- na.omit(stringr::str_extract(
-      re$template$rmdlines,
-      "^(---|```|#+\\s+[0-9.]+)"
-    ))
-    data.frame(
-      pattern=whatIsThePattern,
-      location=whichHasThePattern) -> re$template$placeholder$divisionTable
-    
-    re$template$placeholder$divisionTable %>%
-      filter(pattern=="```") %>%
-      pull(location)-> breaks
-    # breaks
-    cut(seq_along(re$template$rmdlines),
-        breaks=c(-Inf, breaks, Inf),
-        right = F) -> rmdlinesLocCuts
-    purrr::map(
-      levels(rmdlinesLocCuts),
-      ~subset(
-        re$template$rmdlines,
-        rmdlinesLocCuts==.x)
-    ) -> list_rmdlines_cut
-    purrr::map(
-      list_rmdlines_cut,
-      ~stringr::str_extract(.x[[1]],
-                            "(?<=(```\\{[a-zA-Z]\\s))\\b[:graph:]+\\b")
-    ) -> list_rmdlines_cutLabels
-    re$template$placeholder$rmdlines_cut <-  setNames(list_rmdlines_cut, list_rmdlines_cutLabels)
-  }
-  return(re)
-}
-```
+### Retrieve Process
 
-```{r}
-re <- Return()
-re$template$generate_holder()
-re$template$placeholder$rmdlines_cut
-```
+```{r retrieveProcess}
+pe <- Process()
+pe$inBatch_studentsRmds$tryGet_list_codeChunks()
 
-```{r}
-re$returnRmd$studentRmds[[1]]$generate()
-re$returnRmd$generate_inBatch()
-```
-
-
-# Obtain synthersizer
-
-```{r synthesizeWithCorrectAns}
-synthesizeWithCorrectAns ={
-  synthersizeWithCorrectAnsFunctional(
-    correctAnsFilename
+only4HW8 ={
+  purrr::walk(
+    seq_along(pe$studentsRmds),
+    ~{
+      names(pe$studentsRmds[[.x]]$codeChunksProcessed$list_codeChunks) %>%
+      stringr::str_replace("ans12", "ans12.") %>%
+      stringr::str_replace("ans13", "ans13.") %>%
+      stringr::str_replace("data12", "data12.") %>%
+      stringr::str_replace("data13", "data13.") ->
+      names(pe$studentsRmds[[.x]]$codeChunksProcessed$list_codeChunks)
+    }
   )
 }
+
+pe$correctAnsFilename$tryGet_list_codeChunks()
 ```
+
+
+### Return
+
+
+### Produce returnRmd
+
+```{r}
+re <- Return(pe)
+# generate a template from correct ans Rmd as a holder to fill in student's codes
+re$template$generate_holder()
+# generate one student's returnRmd lines
+re$studentRmds$HW8_410674270.Rmd$returnRmd_generate()
+re$studentRmds$HW8_410674270.Rmd$returnRmd$lines
+xfun::write_utf8(re[["studentRmds"]][["HW8_410674270.Rmd"]][["returnRmd"]][["lines"]], con="temp.Rmd")
+```
+
+
 
 # Synthesize return Rmds
 

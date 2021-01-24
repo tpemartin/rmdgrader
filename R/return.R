@@ -197,3 +197,172 @@ setup_attachAtAns <- function(rmdlines, chunkTable){
   )
 }
 
+
+# Return  -----------------------------------------------------------------
+Return <- function(pe){
+  re <- new.env()
+  re$template$rmdlines <- xfun::read_utf8(correctAnsFilename)
+
+  re$template$generate_holder <- function(){
+    whichHasThePattern <- stringr::str_which(
+      re$template$rmdlines,
+      "^(---|```|#+\\s+[0-9.]+)"
+    )
+    whatIsThePattern <- na.omit(stringr::str_extract(
+      re$template$rmdlines,
+      "^(---|```|#+\\s+[0-9.]+)"
+    ))
+    data.frame(
+      pattern=whatIsThePattern,
+      location=whichHasThePattern) -> re$template$placeholder$divisionTable
+
+    re$template$placeholder$divisionTable %>%
+      filter(pattern=="```") %>%
+      pull(location)-> breaks
+    # breaks
+    cut(seq_along(re$template$rmdlines),
+        breaks=c(-Inf, breaks, Inf),
+        right = F) -> rmdlinesLocCuts
+    purrr::map(
+      levels(rmdlinesLocCuts),
+      ~subset(
+        re$template$rmdlines,
+        rmdlinesLocCuts==.x)
+    ) -> list_rmdlines_cut
+    purrr::map(
+      list_rmdlines_cut,
+      ~stringr::str_extract(.x[[1]],
+                            "(?<=(```\\{[a-zA-Z]\\s))\\b[:graph:]+\\b")
+    ) -> list_rmdlines_cutLabels
+    re$template$placeholder$rmdlines_cut <-  setNames(list_rmdlines_cut, list_rmdlines_cutLabels)
+  }
+
+
+  # build each studentRmd environment
+  re$studentRmds <- list()
+  names_studentRmds <- names(pe$studentsRmds)
+  purrr::walk(
+    names_studentRmds,
+    ~{
+      re$studentRmds[[.x]] <- new.env(parent = re)
+    }
+  )
+ # browser()
+  re$placeholderAnsElementNames <- {
+    re$template$generate_holder()
+    na.omit(stringr::str_extract(
+      names(re$template$placeholder$rmdlines_cut),
+      "^ans[:graph:]+"))
+  }
+  # .it <-5
+  purrr::walk(
+    seq_along(names_studentRmds),
+    ~{
+      re$studentRmds[[names_studentRmds[[.x]]]]$returnRmd_generate <-
+        generate_returnRmd(re, pe, names_studentRmds[[.x]], .x)
+    }
+  )
+
+  return(re)
+}
+
+#' Record student grades and comments as a list of many students
+#'
+#' @param all_aeObjects A character vector of ae for each ansXX
+#' @param envir An environment where all_aeObjects names exist
+#'
+#' @return a list of many students, each is a list of many ansXX which has 3 elements, timestamp, grade, comment
+#' @export
+#'
+#' @examples none
+record_gradesCommentsWithTimestamp <- function(all_aeObjects, envir){
+  # browser()
+  purrr::map(
+    all_aeObjects,
+    ~{
+      print(.x)
+      Xae <- get(.x, envir)
+      extract_grades_commentsX(Xae)
+    }
+  ) -> allae_grades_comments
+  names(allae_grades_comments) <- all_aeObjects
+  purrr::transpose(allae_grades_comments) -> tr_allae_grades_comments
+  return(tr_allae_grades_comments)
+}
+
+
+extract_grades_commentsX <- function(Xae){
+  Xae$result$table_messageGroups
+  Xae$result$table_messageGroups -> Xtable
+  Xtable_unnest <- tidyr::unnest(Xtable, cols="Rmds")
+  Xtable_unnest
+
+  eachRmdResults <- vector("list", length(Xtable_unnest$Rmds))
+  setNames(purrr::map(
+    seq_along(eachRmdResults),
+    ~{
+      list(list(
+        time=timestamp(quiet = T),
+        grade=Xtable_unnest$grade[[.x]],
+        comment=ifelse(
+          length(Xtable_unnest$comment[[.x]])==0,
+          "", Xtable_unnest$comment[[.x]])
+      ))
+    }
+  ), Xtable_unnest$Rmds) -> eachRmdResults
+
+  return(eachRmdResults)
+}
+
+generate_returnRmd <- function(re, pe, Xnames_studentRmds, .it){
+  function(){
+    placeholderAnsElementNames <- re$placeholderAnsElementNames
+    re$studentRmds[[Xnames_studentRmds]]$returnRmd <- list()
+    re$studentRmds[[Xnames_studentRmds]]$returnRmd$lines <-
+      {
+        re$template$placeholder$rmdlines_cut -> placeholder0
+        placeholder0[placeholderAnsElementNames] <-
+          pe$studentsRmds[[Xnames_studentRmds]]$codeChunksProcessed$list_codeChunks[placeholderAnsElementNames]
+        placeholder0
+      }
+    xList <- pe$studentsRmds[[Xnames_studentRmds]]$codeChunksProcessed$list_codeChunks[placeholderAnsElementNames]
+    yList <- pe$correctAnsFilename$codeChunksProcessed$list_codeChunks[placeholderAnsElementNames]
+    # browser()
+    purrr::map2(
+        xList,
+        yList,
+      function(.x, .y){ c(
+        .x,
+        "\n\n#' 參考解答 ------------------\n",
+        "{",
+        .y,
+        "} %at% ans"
+      )}
+    ) ->
+      re$studentRmds[[Xnames_studentRmds]]$returnRmd$lines[placeholderAnsElementNames]
+
+    XreturnRmd <-re$studentRmds[[Xnames_studentRmds]]$returnRmd$lines
+    # remove redundant ```
+    purrr::map(
+      XreturnRmd,
+      ~{
+        if(stringr::str_detect(.x[[1]], "```")) .x[-1] else .x
+      }
+    ) -> XreturnRmd
+
+    # rebuild rmdlines for returnRmd
+    names_lines <- na.omit(names(XreturnRmd))
+    purrr::map(
+      names_lines,
+      ~{
+        c(
+          glue::glue("```{r <<.x>>}", .open="<<", .close = ">>"),
+          XreturnRmd[[.x]],
+          "```"
+        )
+      }
+    ) -> XreturnRmd[names_lines]
+    re$studentRmds[[Xnames_studentRmds]]$returnRmd$lines <- paste0(unlist(XreturnRmd))
+  }
+}
+
