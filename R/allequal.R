@@ -102,7 +102,8 @@ allequalService <- function(targetLabel = targetLabel, .transform=NULL, switchTa
 
   ae
 }
-
+#' Extract grades and comments from an all.equal_env grading result.
+#'
 #' @param ae An all.equal_env object after assigning grades for all messages groups
 #'
 #' @return A list of grades and comments

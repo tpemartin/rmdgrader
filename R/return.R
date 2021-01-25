@@ -199,6 +199,17 @@ setup_attachAtAns <- function(rmdlines, chunkTable){
 
 
 # Return  -----------------------------------------------------------------
+#' Return instance environment generator
+#'
+#' @description Initiate a return process instance.
+#'
+#' @param pe An process instance from Process instance initiator
+#' @param returnFolderpath A path under which all students' return folders lie in
+#'
+#' @return
+#' @export
+#'
+#' @examples none
 Return <- function(pe, returnFolderpath){
   re <- new.env()
   re$template$rmdlines <- xfun::read_utf8(correctAnsFilename)

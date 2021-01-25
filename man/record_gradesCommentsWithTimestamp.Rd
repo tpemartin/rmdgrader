@@ -4,7 +4,7 @@
 \alias{record_gradesCommentsWithTimestamp}
 \title{Record student grades and comments as a list of many students}
 \usage{
-record_gradesCommentsWithTimestamp(all_aeObjects, envir = rlang::current_env())
+record_gradesCommentsWithTimestamp(all_aeObjects, envir)
 }
 \arguments{
 \item{all_aeObjects}{A character vector of ae for each ansXX}

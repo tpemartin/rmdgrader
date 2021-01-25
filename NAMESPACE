@@ -2,6 +2,7 @@
 
 export(Evaluate)
 export(Process)
+export(Return)
 export(allequalService)
 export(augment_studentRmdsWithAtAnsFunctional)
 export(browseStudentCourseworkWebpageService)
