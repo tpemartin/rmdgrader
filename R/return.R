@@ -199,7 +199,7 @@ setup_attachAtAns <- function(rmdlines, chunkTable){
 
 
 # Return  -----------------------------------------------------------------
-Return <- function(pe){
+Return <- function(pe, returnFolderpath){
   re <- new.env()
   re$template$rmdlines <- xfun::read_utf8(correctAnsFilename)
 
@@ -259,7 +259,7 @@ Return <- function(pe){
     seq_along(names_studentRmds),
     ~{
       re$studentRmds[[names_studentRmds[[.x]]]]$returnRmd_generate <-
-        generate_returnRmd(re, pe, names_studentRmds[[.x]], .x)
+        generate_returnRmd(returnFolderpath,re, pe, names_studentRmds[[.x]], .x)
     }
   )
 
@@ -286,33 +286,11 @@ Return <- function(pe){
   )
 
   re$inBatch$generate_returnRmd <- generate_returnRmdInBatch(re)
+  re$inBatch$return <- generate_returnInBatch(re)
+  re$inBatch$delete <- generate_deleteInBatch(re)
 
-  # attach return method
-  studentIDs <- stringr::str_extract_all(names_studentRmds,"[0-9]{9,}")
 
-  allReturnFolders <- list.dirs(params$localGDReturnFolderPath, recursive=F)
-  # for(.x in seq_along(studentIDs))
-  purrr::walk(
-    seq_along(studentIDs),
-    ~{
-      XstudentID <- studentIDs[[.x]][[1]]
-      whichIsTheStudentRmd <- stringr::str_which(names_studentRmds, XstudentID)
-      XstudentRmd <- names_studentRmds[[whichIsTheStudentRmd]]
-      XreturnFolder <- stringr::str_subset(allReturnFolders, XstudentID)
-      XreturnFolder4HW <- file.path(XreturnFolder, params$title)
-      if(!dir.exists(XreturnFolder4HW)) dir.create(XreturnFolder4HW)
-      XreturnRmdfilepath <-
-        file.path(XreturnFolder4HW, names_studentRmds[[whichIsTheStudentRmd]])
-
-      re$studentRmds[[XstudentRmd]]$returnRmd$filepath <-
-        XreturnRmdfilepath
-      # if(.x == 4L) browser()
-      re$studentRmds[[XstudentRmd]]$returnRmd$return <-
-        generate_returnMethods(XstudentRmd,
-                               re, re$studentRmds[[XstudentRmd]]$returnRmd$lines,XreturnRmdfilepath)
-
-    }
-  )
+  # browser()
   return(re)
 }
 
@@ -364,7 +342,7 @@ extract_grades_commentsX <- function(Xae){
   return(eachRmdResults)
 }
 
-generate_returnRmd <- function(re, pe, Xnames_studentRmds, .it){
+generate_returnRmd <- function(returnFolderpath, re, pe, Xnames_studentRmds, .it){
   function(extraGradeComputation = ""){
     placeholderAnsElementNames <- re$placeholderAnsElementNames
     re$studentRmds[[Xnames_studentRmds]]$returnRmd <- list()
@@ -430,6 +408,16 @@ generate_returnRmd <- function(re, pe, Xnames_studentRmds, .it){
         )
     }
     re$studentRmds[[Xnames_studentRmds]]$returnRmd$lines <- paste0(unlist(XreturnRmd))
+
+    # attach returnMethod
+    XstudentID <- stringr::str_extract(Xnames_studentRmds,"[0-9]{9,}")
+    XreturnFolder4HW <- file.path(returnFolderpath, XstudentID, params$title)
+    if(!dir.exists(XreturnFolder4HW)) dir.create(XreturnFolder4HW)
+    XreturnRmdfilepath <-
+      file.path(XreturnFolder4HW, Xnames_studentRmds)
+
+    re$studentRmds[[Xnames_studentRmds]]$returnRmd$return <- generate_returnMethods(Xnames_studentRmds, re, re$studentRmds[[Xnames_studentRmds]]$returnRmd$lines, XreturnRmdfilepath)
+
   }
 }
 generate_gradeSectionContentFunction <-
@@ -480,6 +468,26 @@ generate_returnRmdInBatch <- function(re){
       seq_along(re$studentRmds),
       ~{
         re$studentRmds[[.x]]$returnRmd_generate(extraGradeComputation)
+      }
+    )
+  }
+}
+generate_returnInBatch <- function(re){
+  function(){
+    purrr::walk(
+      seq_along(re$studentRmds),
+      ~{
+        re$studentRmds[[.x]]$returnRmd$return()
+      }
+    )
+  }
+}
+generate_deleteInBatch <- function(re){
+  function(){
+    purrr::walk(
+      seq_along(re$studentRmds),
+      ~{
+        re$studentRmds[[.x]]$returnRmd$delete()
       }
     )
   }

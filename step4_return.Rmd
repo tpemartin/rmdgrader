@@ -79,86 +79,46 @@ only4HW8 ={
 pe$correctAnsFilename$tryGet_list_codeChunks()
 ```
 
-
 ### Return
 
-
-### Produce returnRmd
+#### Produce returnRmd
 
 ```{r}
-re <- Return(pe)
+re <- Return(pe, returnFolderpath = params$localGDReturnFolderPath)
 # generate a template from correct ans Rmd as a holder to fill in student's codes
 re$template$generate_holder()
-# generate one student's returnRmd lines
-re$studentRmds$HW8_410674270.Rmd$returnRmd_generate()
-re$studentRmds$HW8_410674270.Rmd$returnRmd$lines
-xfun::write_utf8(re[["studentRmds"]][["HW8_410674270.Rmd"]][["returnRmd"]][["lines"]], con="temp.Rmd")
+# generate students returnRmd in batch
+re$inBatch$generate_returnRmd()
+# Each student's returnRmd lines will be:
+re$studentRmds$HW8_410672033.Rmd$returnRmd$lines
 ```
 
-
-
-# Synthesize return Rmds
-
-```{r generateReturnRmds}
-generateReturnRmds = {
-  allRmds <- 
-    file.path(.root(), params$submissionFolder, params$title, tb_grades$name)
-
-  for(.x in seq_along(allRmds)){
-  cat(.x, " ", basename(allRmds[[.x]]),"\n")
-  tryCatch(
-    {
-      synthesize_returnRmd(
-        allRmds[[.x]], tb_grades[.x,],
-        synthesizeWithCorrectAns,
-        returnFolder)
-    }, 
-    error=function(e){
-      cat(basename(allRmds[[.x]]), " can not be synthesized.\n")
-      file.copy(
-        from = allRmds[[.x]],
-        to = file.path(
-          problemFolder, basename(allRmds[[.x]])
-        )
-      )
-    }
-  )
-  
-  }
-  
-}
-```
-
-
+You can also generate only one student's returnRmd at a time:
 ```{r}
-list.files(file.path(root(), "studentsSubmission/hw1/return/"), full.names = T) -> returnRmds
-file.edit(returnRmds[[2]])
+# Generate one student's returnRmd lines
+re$studentRmds$HW8_410674270.Rmd$returnRmd_generate()
 ```
 
-## Copy to google drive
+#### Return to google drive
 
-```{r result_copy2returnGDfolder}
-result_copy2returnGDfolder = {
-  title=params$title
-  correctAnsTemplateFilename =
-    file.path(.root(),"homeworks",basename(correctAnsFilename))
-  localGDReturnFolderPath=params$localGDReturnFolderPath
-  # 如果是TA在做的話，就需要改用這行（前提是frontmatter的parameter有設定對）
-  # localGDReturnFolderPath=params$localGDReturnFolderPath_ByTA 
-  
-  generateReturnRmds_then_copy2googleDriveReturnFolder(
-    title,
-    completeRoster,
-    correctAnsFilename,
-    localGDReturnFolderPath
-  ) -> result_copy2returnGDfolder
-  save(
-    result_copy2returnGDfolder,
-    file = copy2returnGDfolderFilename
-  )
-  result_copy2returnGDfolder
-}
+Once returnRmd lines are generated, user can return them in batch:
+```{r}
+re$inBatch$return()
+
+# If regret, user can delete them in batch as well:
+re$inBatch$delete()
 ```
+
+Individual return/delete is also possible:
+```{r}
+# return to one student:
+re$studentRmds$HW8_410672033.Rmd$returnRmd$return()
+# if somehow user regret, he/she can delete it:
+re$studentRmds$HW8_410672033.Rmd$returnRmd$delete()
+```
+
+
+
 
 ## Fire dispute issue
 
@@ -188,10 +148,8 @@ post_disputeIssue2Github(
 ) -> response
 ```
 
-
-
 ## Setup individual return GD folder
-
+THIS IS DONE ONLY ONCE EACH SEMESTER to setup each student's return folder:
 ```{r result_setupIndividualReturnFolder, drake=F}
 result_setupIndividualReturnFolder = {
   gd_returnFolderIndividuals <-
@@ -210,9 +168,6 @@ result_setupIndividualReturnFolder = {
 }
 ```
 
-```{r}
-load(destfile)
-```
 
 ```{r generate_emailContent, drake=F}
 replacement <- list(
@@ -239,5 +194,3 @@ generate_emailContent <- function(contentTemplate, replacement){
 
 generate_emailContent(contentTemplate, replacement)
 ```
-
-
