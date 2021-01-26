@@ -467,7 +467,8 @@ within(
         how2computeTotalGrade,
         "print(df_grade)
 print(totalGrade)
-library(econDS); ans <- new.env(parent=.GlobalEnv) #對答案用"
+library(econDS); ans <- new.env(parent=.GlobalEnv) #對答案用",
+"# 如果沒有econDS, 請先remotes::install_github(\"tpemartin/econDS\", force=T)"
       )
 
     gradeSectionContent -> re$studentRmds[[XstudentRmd]]$returnRmd$gradeText
