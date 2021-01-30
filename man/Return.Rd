@@ -4,7 +4,7 @@
 \alias{Return}
 \title{Return instance environment generator}
 \usage{
-Return(pe, returnFolderpath)
+Return(pe, returnFolderpath, PR = NULL, extraGradeComputationBatch = "")
 }
 \arguments{
 \item{pe}{An process instance from Process instance initiator}

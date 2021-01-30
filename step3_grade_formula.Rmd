@@ -1,0 +1,404 @@
+---
+title: "Grade"
+drake_cache: ".formulaSheetsstep3"
+output: html_document
+params:
+  title: "formulaSheets" # google classroom上公告作業時所用的標題
+  ansfilename: "homeworks/homework2-ans.Rmd" #assume we have homework2
+  submissionFolder: "studentsSubmission"
+  gradingFolder: "grading_flow"
+  localGDReturnFolderPath_ByTA: "/Users/chenpoming/Google 雲端硬碟/Classroom/109-1 資料科學程式設計（一）/Return"
+  classDriveFolderPath: "https://drive.google.com/drive/folders/0B7BgScbXrgfNfjRGVnp0V0NKbGVjVEN0UVRMdHB0czhnNVBXYVB4R2liTlZxclJFQWRXb1E"
+---
+
+
+```{r setup, include=FALSE, drake=F}
+knitr::opts_chunk$set(echo = TRUE, eval=F)
+library(drake)
+library(econDV)
+library(dplyr)
+```
+
+## makecondition
+
+```{r makecondition}
+library(drake)
+library(rmd2drake)
+library(dplyr)
+library(assertthat)
+library(tidyr)
+library(googleclassroom)
+library(readr)
+library(stringr)
+library(glue)
+library(lubridate)
+library(stringr)
+library(jsonlite)
+library(readr)
+library(xfun)
+library(rmdgrader)
+library(purrr)
+library(rlang)
+library(testthat)
+library(withr)
+`%notin%` <- Negate(`%in%`)
+rprojroot::is_rstudio_project$make_fix_file() -> .root
+.root <- function(){
+  "/Users/martinl/Github/course-dashboard-programming-for-data-science/"
+}
+datafilename <- 
+    file.path(.root(),params$gradingFolder,params$title,"data4step3.Rdata")
+datafilename
+load(datafilename, envir = .GlobalEnv)
+gradeSavingFilename <- 
+  file.path(.root(),params$gradingFolder,params$title,"data4step4.Rdata")
+verify_functions <- function(FunctionUniqueList) {
+  FunctionUniqueList %>%
+    # stringr::str_extract(
+    #   "[^0-9\\.\\(]*"
+    # ) %>%
+    stringr::str_remove_all(
+      "\\s+"
+    ) -> FunctionUniqueListV5
+
+  funList <- vector("list", length(FunctionUniqueListV5))
+  for (.it in seq_along(funList))
+  {
+    # cat(.it, '\n\n')
+    if (FunctionUniqueListV5[[.it]] == "" || is.na(FunctionUniqueListV5[[.it]])) next
+    try(rlang::sym(FunctionUniqueListV5[[.it]]),
+      silent = T
+    ) -> result
+    if (is(result, "try-error")) next
+
+    result ->
+    funList[[.it]]
+  }
+
+  # verify if a function
+  list_class <- vector("list", length(funList))
+  for (.it in seq_along(funList)) {
+    # .it <- 55
+    if (length(funList[[.it]]) == 0) next
+
+    try(
+      class(eval(funList[[.it]])),
+      silent = T
+    ) -> result
+    if (is(result, "try-error")) next
+
+    result -> list_class[[.it]]
+  }
+  map_dfr(
+    seq_along(funList),
+    ~ {
+      tibble::tibble(
+        class = ifelse(is.null(list_class[[.x]]), "", list_class[[.x]]),
+        fun = FunctionUniqueListV5[[.x]]
+      )
+    }
+  ) -> tb_functonUnion
+
+  output <-
+    list(
+      IsFunction = FunctionUniqueListV5[tb_functonUnion$class == "function"],
+      NotFunction =
+        FunctionUniqueListV5[tb_functonUnion$class != "function"],
+      tb_result = tb_functonUnion
+    )
+  return(output)
+}
+
+```
+
+## Grading
+
+### Original List
+
+```{r FuntionLists}
+FuntionLists = {
+  map(seq_along(getx),
+      .f = ~{as.list(getx[[.x]][1])}) -> FuntionLists
+  
+  unlist(FuntionLists) %>% 
+    stringr::str_remove("[:alpha:]+::") -> FuntionListsRemovedPkg
+  
+  # stringr::str_remove("purrr::map","[:alpha:]+::")
+}
+```
+
+### Grouping
+
+```{r}
+# debug(Group)
+ge <- Group(FuntionListsRemovedPkg)
+names(ge$groups)
+ge$regroup(
+  ge$groups[["as."]],
+  ge$groups[["as.raster"]],
+  "as"
+)
+
+ge$regroup(
+  ge$groups$attributes,
+  ge$groups$attribute,
+  "attributes"
+)
+ge$regroup(
+  ge$groups$data.frame,
+  ge$groups$date.frame,
+  "data.frame"
+)
+ge$regroup(
+  ge$groups[["for"]],
+  ge$groups[["for-loop"]],
+  "for"
+)
+
+ge$regroup(
+  ge$groups$`if`,
+  ge$groups$ifelseelse,
+  "if"
+)
+ge$regroup(
+  ge$groups$insatll.packages,
+  ge$groups$install.package,
+  "install.packages"
+)
+ge$regroup(
+  ge$groups["is"],
+  ge$groups$`is.xxx`,
+  "is"
+)
+ge$regroup(
+  ge$groups$level,
+  ge$groups$`levels:`,
+  "levels"
+)
+ge$regroup(
+  ge$groups$name,
+  ge$groups$names,
+  "names"
+)
+ge$regroup(
+  ge$groups$paste0,
+  ge$groups$pasted0
+)
+ge$regroup(
+  ge$groups$`pattern="you"`,
+  ge$groups$pattern,
+  "pattern"
+)
+ge$regroup(
+  ge$groups$readline,
+  ge$groups$readlines
+)
+ge$regroup(
+  ge$groups$sampe,
+  ge$groups$sample,
+  "sample"
+)
+ge$regroup(
+  ge$groups$str_count,
+  ge$groups[["str_系列"]],
+  "cheatsheet"
+)
+ge$regroup(
+  ge$groups$view,
+  ge$groups$View,
+  "View"
+)
+```
+
+
+### Verify function
+
+```{r}
+groupNames <- names(ge$groups)
+groupNames
+library(jsonlite); library(purrr); library(lubridate)
+verify_functions(groupNames) -> verified_results
+verified_results$IsFunction
+
+ge$groups[
+  which(groupNames %in%
+          verified_results$IsFunction)
+] -> functionGroups
+ge$groups[
+  -which(groupNames %in%
+          verified_results$IsFunction)
+] -> nonfunctionGroups
+
+```
+
+## List Functions
+
+```{r}
+.x=1
+allFunNames <- names(functionGroups)
+
+purrr::map(
+  seq_along(getx),
+  ~{
+    getx[[.x]]$`function name` %>% 
+        stringr::str_remove("[:alpha:]+::") ->     
+        Xfunlist
+    XvalidFunlist <- c()
+    for(.it in seq_along(allFunNames))
+    {
+      if(any(Xfunlist %in% functionGroups[[.it]])){
+        XvalidFunlist <- c(XvalidFunlist, allFunNames[[.it]])
+      }
+    }
+    XvalidFunlist
+  }
+) -> list_studentValidFunlist
+table(unlist(list_studentValidFunlist)) -> tb_funlisted
+
+tb_funlisted/sum(tb_funlisted) -> tb_funPoints
+
+purrr::map(
+  seq_along(list_studentValidFunlist),
+  ~{
+    Xlist <- list_studentValidFunlist[[.x]]
+    sum(tb_funPoints[Xlist])
+  }
+) -> getxProportion
+  
+names(getxProportion) <- 
+  names(getx) %>% 
+  str_extract(pattern = "[:digit:]{9}") 
+getxProportion
+
+data.frame(
+  ID=names(getxProportion),
+  formulaRate=unlist(getxProportion)
+) -> tb_formulaRate
+```
+
+```{r}
+load("~/Github/course-dashboard-programming-for-data-science/grading_flow/midterm2/data4step4.Rdata")
+tb_grades %>%
+  mutate(
+    ID=stringr::str_extract(name, "[0-9]{9}")
+  ) %>%
+  select(
+    ID, PR
+  ) -> mid2_grades
+```
+
+```{r}
+P4DS_OfficialList_1201 <- read_csv(file.path(.root(), "109-1_P4DS_NTPU_Official_List/P4DS_OfficialList_1201.csv"))
+P4DS_OfficialList_1201 %>% filter(姓名 %notin% "陳柏銘") -> roster
+roster$ID <- as.character(roster$帳號) 
+
+roster %>%
+  select(ID, 姓名) %>%
+  left_join(
+    mid2_grades,
+    by="ID"
+  ) %>% 
+  mutate(
+    PR=if_else(is.na(PR), 100, PR)
+  ) %>%
+    left_join(
+      tb_formulaRate,
+      by="ID"
+    ) -> IntegratedTable
+```
+
+- PR <= 10, 10%
+- PR [10~30), 40%
+- PR [30~60), 60%
+- PR [60,100), 90%
+
+```{r}
+cut(IntegratedTable$PR,
+    breaks=
+      c(0,10,30,60,100),
+    right = T) -> PRcut
+levels(PRcut) <- c(0.1, 0.4, 0.6, 0.9)
+IntegratedTable$PRcut <- as.numeric(as.character(PRcut))
+IntegratedTable %>%
+  mutate(
+    formulaSheetGrade = round(pmin(formulaRate/PRcut, 1)*10,2),
+    formulaSheetGrade = if_else(
+      is.na(formulaSheetGrade), 0, 
+      formulaSheetGrade
+    )
+  ) -> finalFormulaSheetGrade
+filename <- 
+  file.path(
+    .root(), "grading_flow", "final", "formulaSheetGrade.Rdata"
+  )
+save(
+  finalFormulaSheetGrade,
+  file=filename)
+```
+
+### 2 students who doesn't provide the xlsx file
+
+#### 410973013 馬皓展同學（pdf）
+
+基本上就是模板寫了其中 8 個就回傳。
+
+Midterm2 PR 18
+
+```{r IntegratedTableWith410973013}
+IntegratedTableWith410973013 = {
+  #馬皓展同學是第 60 筆
+  IntegratedTableWithGrade[60,4] <- 18
+  IntegratedTableWithGrade[60,5] <- round(8/length(finalFunList), digits = 3)
+  IntegratedTableWithGrade
+}
+```
+
+#### 410773111 郭如婷同學（Mac Numbers）
+
+基本上就是模板啥都沒寫就回傳
+
+Midterm2 PR 100
+
+```{r IntegratedTableWith410773111}
+IntegratedTableWith410773111 = {
+  #郭如婷同學是第 56 筆
+  # IntegratedTableWith410973013[56,]
+  IntegratedTableWith410973013[56,4] <- 0
+  IntegratedTableWith410973013[56,5] <- round(0/length(finalFunList), digits = 3)
+  IntegratedTableWith410773111 <- IntegratedTableWith410973013
+  IntegratedTableWith410773111
+}
+```
+
+```{r IntegratedTableFinal}
+IntegratedTableFinal = {IntegratedTableWith410773111}
+```
+
+
+### All Grades
+
+```{r tb_grades}
+tb_grades = {IntegratedTableFinal}
+```
+
+```{r}
+saveGrades = {
+  save(tb_grades, file=gradeSavingFilename)
+  gradeSavingFilename
+}
+```
+
+```{r}
+tb_grades
+```
+
+```{r}
+tb_grades %>% select(formulaSheetGrade) %>% summary
+```
+
+```{r histgram, drake=F}
+hist(
+  tb_grades$formulaSheetGrade
+) 
+```
+

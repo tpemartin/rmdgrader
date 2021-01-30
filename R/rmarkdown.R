@@ -77,7 +77,7 @@ rmd_chunkTable <- function(rmdlines){
 
      chunkTable[c("part", "subseq")] <- {
        part0 <-
-         stringr::str_extract(chunkTable$label,"(?<=(ans|data))[0-9]+(?=.)")
+         stringr::str_extract(chunkTable$label,"(?<=(ans|data))[0-9]+(?=\\.)")
        partNumber <- dplyr::if_else(
          is.na(part0),
          stringr::str_extract(chunkTable$label,"(?<=(ans|data))[0-9]{1}"),

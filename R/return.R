@@ -210,7 +210,7 @@ setup_attachAtAns <- function(rmdlines, chunkTable){
 #' @export
 #'
 #' @examples none
-Return <- function(pe, returnFolderpath){
+Return <- function(pe, returnFolderpath, PR=NULL, extraGradeComputationBatch=""){
   re <- new.env()
   re$template$rmdlines <- xfun::read_utf8(correctAnsFilename)
 
@@ -284,19 +284,22 @@ Return <- function(pe, returnFolderpath){
     stringr::str_replace(aeNames, "ae", "ans")) ->
     tr_records_gradeComment
   purrr::transpose(tr_records_gradeComment) -> records_gradeComment
+  # browser()
   purrr::walk(
     names_studentRmds,
     ~{
+      X_Pr=ifelse(is.null(PR), NULL, PR[[.x]])
       re$studentRmds[[.x]]$gradeText_generate <-
         generate_gradeSectionContentFunction(
           .x,
           ansLabels,
-          re
+          re,
+          PR=X_Pr
         )
     }
   )
 
-  re$inBatch$generate_returnRmd <- generate_returnRmdInBatch(re)
+  re$inBatch$generate_returnRmd <- generate_returnRmdInBatch(re, extraGradeComputationBatch=extraGradeComputationBatch)
   re$inBatch$return <- generate_returnInBatch(re)
   re$inBatch$delete <- generate_deleteInBatch(re)
 
@@ -354,7 +357,7 @@ extract_grades_commentsX <- function(Xae){
 }
 
 generate_returnRmd <- function(returnFolderpath, re, pe, Xnames_studentRmds, .it){
-  function(extraGradeComputation = ""){
+  function(extraGradeComputation =""){
     placeholderAnsElementNames <- re$placeholderAnsElementNames
     re$studentRmds[[Xnames_studentRmds]]$returnRmd <- list()
     re$studentRmds[[Xnames_studentRmds]]$returnRmd$lines <-
@@ -404,6 +407,7 @@ generate_returnRmd <- function(returnFolderpath, re, pe, Xnames_studentRmds, .it
     # browser()
     whichHasGradeSection <- stringr::str_which(XreturnRmd[[1]],"^##\\s*(成績|Grade)")
     if(length(whichHasGradeSection)==1){
+      # browser()
       re$studentRmds[[Xnames_studentRmds]]$gradeText_generate(extraGradeComputation)
       XreturnRmd[[1]] <-
         c(
@@ -432,7 +436,7 @@ generate_returnRmd <- function(returnFolderpath, re, pe, Xnames_studentRmds, .it
   }
 }
 generate_gradeSectionContentFunction <-
-function(XstudentRmd, ansLabels, re) {
+function(XstudentRmd, ansLabels, re, PR=NULL) {
   records_gradeComment[[XstudentRmd]] -> Xrecords_gradeComment
   function(extraGradeComputation = "") {
     purrr::map(
@@ -461,10 +465,13 @@ within(
       } else {
         extraGradeComputation
       }
+    PRtext <-
+      ifelse(is.null(PR), "", glue::glue("PR = {PR}\nprint(PR)"))
     gradeSectionContent <-
       c(
         gradeChr,
         how2computeTotalGrade,
+        PRtext,
         "print(df_grade)
 print(totalGrade)
 library(econDS); ans <- new.env(parent=.GlobalEnv) #對答案用",
@@ -474,12 +481,17 @@ library(econDS); ans <- new.env(parent=.GlobalEnv) #對答案用",
     gradeSectionContent -> re$studentRmds[[XstudentRmd]]$returnRmd$gradeText
   }
 }
-generate_returnRmdInBatch <- function(re){
-  function(extraGradeComputation = ""){
+generate_returnRmdInBatch <- function(re, extraGradeComputationBatch){
+  function(){
     purrr::walk(
       seq_along(re$studentRmds),
       ~{
-        re$studentRmds[[.x]]$returnRmd_generate(extraGradeComputation)
+        if(extraGradeComputationBatch==""){
+          re$studentRmds[[.x]]$returnRmd_generate()
+        } else {
+          re$studentRmds[[.x]]$returnRmd_generate(extraGradeComputationBatch)
+        }
+
       }
     )
   }

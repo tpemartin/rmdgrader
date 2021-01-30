@@ -198,6 +198,7 @@ Evaluate <- function(pe){
   ee$allRmds <- get_allRmds(pe)
 
   # generate environments for each running sequence
+  # debug(generate_environment4eachRunningSequence)
   ee$running_sequence <- generate_environment4eachRunningSequence(pe, ee)
 
   # each environment is equipped with a sequential answer environment generator. To use, see the following examples:
@@ -222,6 +223,7 @@ Evaluate <- function(pe){
   # add ansObjectnames
   ee$ansObjectnames <- extract_ansObjnames(pe)
 
+  # browser()
   # generate correctAnsEnvironments
   purrr::walk(
     ee$running_sequence,

@@ -300,3 +300,37 @@ generate_.x_functions <- function(ae, .x) {
 
 }
 
+#' Generate records_gradeComment for step return from tb_grades
+#'
+#' @param tb_grades A data frame.
+#'
+#' @return
+#' @export
+#'
+#' @examples none
+generate_recordGradeCommentsFromTb_gradesWithoutComments <- function(tb_grades) {
+  record_gradesComments <- vector("list", nrow(tb_grades))
+  namesTb_grades <- names(tb_grades)
+  ansLabels <- stringr::str_subset(
+    namesTb_grades, "ans"
+  )
+  for (.y in 1:nrow(tb_grades)) {
+    record_gradesComments[[.y]] <- {
+      Ygrades <- tb_grades[.y, ansLabels]
+      setNames(purrr::map(
+        seq_along(ansLabels),
+        ~ {list(
+          list(
+            time = timestamp(),
+            grade = Ygrades[[ansLabels[[.x]]]],
+            comment = ""
+          )
+        )
+
+        }
+      ), ansLabels)
+    }
+  }
+  names(record_gradesComments) <- tb_grades$name
+  record_gradesComments
+}
