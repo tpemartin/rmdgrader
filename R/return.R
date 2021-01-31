@@ -288,7 +288,7 @@ Return <- function(pe, returnFolderpath, PR=NULL, extraGradeComputationBatch="")
   purrr::walk(
     names_studentRmds,
     ~{
-      X_Pr=ifelse(is.null(PR), NULL, PR[[.x]])
+      X_Pr=ifelse(is.null(PR), "", PR[[.x]])
       re$studentRmds[[.x]]$gradeText_generate <-
         generate_gradeSectionContentFunction(
           .x,
@@ -436,7 +436,7 @@ generate_returnRmd <- function(returnFolderpath, re, pe, Xnames_studentRmds, .it
   }
 }
 generate_gradeSectionContentFunction <-
-function(XstudentRmd, ansLabels, re, PR=NULL) {
+function(XstudentRmd, ansLabels, re, PR="") {
   records_gradeComment[[XstudentRmd]] -> Xrecords_gradeComment
   function(extraGradeComputation = "") {
     purrr::map(
@@ -466,7 +466,7 @@ within(
         extraGradeComputation
       }
     PRtext <-
-      ifelse(is.null(PR), "", glue::glue("PR = {PR}\nprint(PR)"))
+      ifelse(PR=="", "", glue::glue("PR = {PR}\nprint(PR)"))
     gradeSectionContent <-
       c(
         gradeChr,
