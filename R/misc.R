@@ -1,3 +1,68 @@
+#' Verify if a string name is a function name
+#'
+#' @param FunctionUniqueList A vector of characters
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' str_isFunction(c("names","name"))
+str_isFunction <- function(FunctionUniqueList) {
+  FunctionUniqueList %>%
+    # stringr::str_extract(
+    #   "[^0-9\\.\\(]*"
+    # ) %>%
+    stringr::str_remove_all(
+      "\\s+"
+    ) -> FunctionUniqueListV5
+
+  funList <- vector("list", length(FunctionUniqueListV5))
+  for (.it in seq_along(funList))
+  {
+    # cat(.it, '\n\n')
+    if (FunctionUniqueListV5[[.it]] == "" || is.na(FunctionUniqueListV5[[.it]])) next
+    try(rlang::sym(FunctionUniqueListV5[[.it]]),
+        silent = T
+    ) -> result
+    if (is(result, "try-error")) next
+
+    result ->
+      funList[[.it]]
+  }
+
+  # verify if a function
+  list_class <- vector("list", length(funList))
+  for (.it in seq_along(funList)) {
+    # .it <- 55
+    if (length(funList[[.it]]) == 0) next
+
+    try(
+      class(eval(funList[[.it]])),
+      silent = T
+    ) -> result
+    if (is(result, "try-error")) next
+
+    result -> list_class[[.it]]
+  }
+  map_dfr(
+    seq_along(funList),
+    ~ {
+      tibble::tibble(
+        class = ifelse(is.null(list_class[[.x]]), "", list_class[[.x]]),
+        fun = FunctionUniqueListV5[[.x]]
+      )
+    }
+  ) -> tb_functonUnion
+
+  output <-
+    list(
+      IsFunction = FunctionUniqueListV5[tb_functonUnion$class == "function"],
+      NotFunction =
+        FunctionUniqueListV5[tb_functonUnion$class != "function"],
+      tb_result = tb_functonUnion
+    )
+  return(output)
+}
 #' Categorise a character vector's element names by its element values
 #'
 #' @param rmdNamed_char. A named vector.
