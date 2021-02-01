@@ -200,8 +200,8 @@ generate_grade4JSONuploadUpdateFun <- function(rv, dribble, .title){
       names_studentRmds
     ) -> grade4JSON
 
-    googleDrive_uploadAsJson(grade4JSON, dribble, title)
-    googleDrive_updateGradeAllJson(grade4JSON, dribble, title)
+    googleDrive_uploadAsJson(grade4JSON, dribble, title=title)
+    googleDrive_updateGradeAllJson(grade4JSON, dribble, title=title)
   }
 }
 generate_revisionHistory_uploadUpdateFun <- function(rv, title, dribble){
