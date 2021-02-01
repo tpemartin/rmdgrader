@@ -1,0 +1,314 @@
+---
+title: "Step5_inspection"
+output: html_document
+drake_cache: ".final_extrastep5"
+params:
+  title: "final_extra"
+  gradingFolder: "grading_flow"
+  localGDReturnFolder: "/Users/martinl/Google Drive/Classroom/109-1 資料科學程式設計（一）/Return"
+  githubRepo: "tpemartin/109-1-inclass-practice"
+  localGDGradeFolder: "{localGDGradeFolder}"
+---
+  * 安裝google drive for mac設定同步Classroom/109-1 資料科學程式設計（一）下的 Return及Dispute檔案匣
+  
+  * 更新rmdgrader, gitterhub
+  
+  * !!!不使用drake，由1 執行到3, 接著用執行4, 一次選一個檔案來審查
+  
+  * 審查完執行5，再commit push你的dispute folder, then fire a pull request. 
+  
+  * 執行6送出回覆檔
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 1 Makecondition
+
+```{r makecondition}
+library(dplyr)
+library(stringr)
+library(rmdgrader)
+library(econDS)
+library(tidyverse)
+library(googledrive)
+library(gitterhub)
+library(purrr)
+rprojroot::is_rstudio_project$make_fix_file() -> .root
+gradingflowFolder <- file.path(
+  .root(), params$gradingFolder, params$title
+)
+gradeSavingFilename <- 
+  file.path(.root(),params$gradingFolder,params$title,"data4step4.Rdata")
+studentSubmissionFilename <- 
+  file.path(.root(), params$gradingFolder, params$title, "df_studentSubmissions.Rdata")
+load(gradeSavingFilename, envir=.GlobalEnv)
+disputeFolder <- file.path(
+  .root(), params$gradingFolder, params$title, "dispute"
+)
+if(!dir.exists(disputeFolder)) dir.create(disputeFolder)
+# obtain result_copy2returnGDfolder
+load(file.path(gradingflowFolder,"data4step5.Rdata"), envir = .GlobalEnv)
+
+sourceReturnFolder=params$localGDReturnFolder
+title=params$title
+
+```
+
+## 2 Obtain issue
+
+```{r issueComments}
+issueComments = {
+  params$githubRepo %>%
+    str_split("/") %>%
+    {
+      list(
+        owner=.[[1]][[1]],
+        repo=.[[1]][[2]]
+      )
+    } -> ownerRepo
+
+  obtainIssueComments(
+    owner=ownerRepo$owner, 
+    repo=ownerRepo$repo,
+    titleKeyword=params$title,
+  ) -> issueComments
+  issueComments
+}
+```
+
+## 3 Generate dispute files
+
+```{r disputeFileInfo}
+disputeFileInfo = {
+
+  sourceReturnFolder=params$localGDReturnFolder
+  
+  title=params$title 
+  
+  generate_disputeFilesFromIssueComments(
+    issueComments,
+    title,
+    sourceReturnFolder,
+    disputeFolder,
+    overwrite=c("dupReturnRmd"=F, "disputeContentRmd"=F)
+  )
+
+  
+  
+}
+```
+
+## 4 (manual) Resolve dispute
+
+Manual run this chunk, select one file. It will bring up two files for you to edit.
+
+  one: hw1_{id}.Rmd is the returned Rmd whose right sidebar menu has `(*)` marked where the dispute is. Once you finished review, please change grade for that question inside (grade) directly and change `(*)` to `(R)` which means already reviews.
+  
+  second: hw1_{id}_reply.Rmd is the content the student left in github issue comment. If you have any word to converse with the student your regarding your final decision, please put it there. 
+
+```{r}
+source(
+  file.path(.root(),params$gradingFolder,params$title,
+            "plan_step5_inspection.R")
+)
+load_plan_step5_inspection(disputeFileInfo)
+inspect_selectedDisputeFile(disputeFolder, disputeFileInfo)
+```
+
+## 4 Regrade 1 Rmd after processing 
+
+```{r }
+#' grade one student
+#'
+#' @param xpattern A character of pattern regarding target name in names(studentValues)
+#' @param targetLabel A character of ans label
+#' @param gradingMethod A name of grading method
+#' @param whichCorrectAnsvalue An integer of index regarding the correct ans to use when there are multiple correct answers
+#'
+#' @return
+#' @export
+#'
+#' @examples none.
+gradeX <-
+function(xpattern, targetLabel, gradingMethod, whichCorrectAnsvalue = 1){
+  assertthat::assert_that(exists("studentValues", envir = .GlobalEnv),
+                          exists("correctValues", envir = .GlobalEnv))
+  y <<- correctValues[[targetLabel]][[whichCorrectAnsvalue]]
+  require(stringr)
+  str_which(names(studentValues),xpattern)-> .x
+  studentValues[[.x]][[targetLabel]][[1]] -> x
+
+  grade1 <- gradingMethod(x, y)
+  grade1
+}
+source_step2 <- function(planDestfolder){
+  list.files(planDestfolder, pattern = "^plan_step2_process", full.names = T) -> planDestfile
+  source(file = planDestfile)
+}
+source_step4 <- function(planDestfolder){
+  list.files(planDestfolder, pattern = "^plan_step4_return", full.names = T) -> planDestfile
+  source(file = planDestfile)
+}
+get_listOfMethodsFromStep3 <- function(planDestfolder) {
+  list.files(planDestfolder, pattern = "^plan_step3_grade", full.names = T) -> planDestfile
+  source(file = planDestfile)
+  basename(planDestfile) %>%
+    stringr::str_remove("\\.R") %>%
+    as.name() -> planObject
+  loadfunname <- as.name(paste0("load_", as.character(planObject)))
+  methodExpr <- rlang::expr({
+    (!!planObject)$target -> targetNames
+    stringr::str_subset(targetNames, "^m[0-9]+") -> allMethods
+    allMethods
+  })
+  allMethods <- rlang::eval_bare(methodExpr)
+  allMethods
+  toExecLoad <- rlang::expr(exec(!!loadfunname))
+  eval(toExecLoad)
+  list_methods <- mget(allMethods, envir = .GlobalEnv)
+  list_methods
+}
+gradeXpatternRmd <- function(xpattern, planDestfolder){
+  list_methods <- get_listOfMethodsFromStep3(planDestfolder)
+  methodNames <- names(list_methods)
+  ansLabels <- stringr::str_replace(methodNames, "^m","ans")
+  list_grades <- vector("list", length(ansLabels))
+  for(.x in seq_along(methodNames)){
+    list_grades[[.x]] <- 
+      gradeX(
+        xpattern=xpattern,
+        ansLabels[[.x]],
+        list_methods[[methodNames[[.x]]]])  
+  }
+  names(list_grades) <- ansLabels
+  # list_grades
+  convert_listGrades_to_tbGrade1(list_grades)
+}
+convert_listGrades_to_tbGrade1 <- function(list_grades) {
+  list_grades %>%
+    as.data.frame() -> tb_grades1
+  tb_grades1 %>%
+    mutate(
+      name = basename(targetRmd)
+    ) %>%
+    rowwise() %>%
+    mutate(
+      total = sum(
+        c_across(contains("ans"))
+      )
+    ) %>%
+    mutate(
+      final = {
+        sum(str_detect(names(tb_grades1), "ans")) -> totalAns
+        total / totalAns * 7 + 3
+      }
+    )
+}
+
+```
+
+
+```{r}
+planDestfolder <- file.path(
+  .root(), params$gradingFolder, params$title
+)
+xpattern="410874230"
+gradeXpatternRmd(xpattern,planDestfolder) -> tb_grades1
+
+source_step2(planDestfolder)
+targetRmd <- str_subset(allRmds, xpattern)
+source_step4(planDestfolder)
+load_plan_step4_return(synthesizeWithCorrectAns)
+synthesize_returnRmd(
+        targetRmd, tb_grades1,
+        synthesizeWithCorrectAns,
+        disputeFolder)
+tb_gradesNew %>%
+  add_row(tb_grades1) -> tb_gradesNew2
+```
+
+## 5 Recalculate grades
+
+```{r tb_gradesNew, drake=F}
+source(
+  file.path(.root(),params$gradingFolder,params$title,
+            "plan_step5_inspection.R")
+)
+load_plan_step5_inspection(disputeFileInfo)
+debug(update_tbGrades)
+tb_gradesNew= update_tbGrades(tb_Grades, disputeFolder, disputeFileInfo, params$title)
+if(!dir.exists(params$localGDGradeFolder)) dir.create(params$localGDGradeFolder)
+jsonlite::write_json(tb_gradesNew, 
+           path =file.path(
+             params$localGDGradeFolder,
+             paste0("grade_",params$title,".json"))
+           )
+```
+
+## 6 Return Rmds In Batch
+整批返還回覆結果：直接執行此chunk
+
+```{r}
+returnAllDisputeFiles(
+  disputeFolder, 
+  localGDReturnFolder = params$localGDReturnFolder, 
+  title = params$title
+)
+
+
+```
+
+## 6 Return Rmd Individually
+手動選擇返還回覆結果：
+
+  * step1: 執行returnIndividually_1. 選擇要return的檔案（們），按滑鼠右鍵（要copy完整path）
+
+```{r returnIndividually_1, drake=F}
+system(paste0('open ',glue::glue('"{disputeFolder}"')))
+```
+
+  * step 2: Run the following chunk：
+```{r}
+returnCopiedDisputeFilesFromMacFinder()
+# system(paste0('open ',glue::glue('"{returnFolderx}"')))
+```
+
+##### 開啟學生coursework webpage
+
+  * step 3: 自動一一開啟每一位學生的google classroom coursework webpage方便直接回訊
+  
+    * 3.1: 執行以下，在跳出的finder選相關學生檔案（們）
+    ```{r}
+browseStudentCourseworkWebpageService()
+    ```
+    
+    * 3.2: 執行以下會跳出所有相關學生此次作業可私訊網頁： 
+    
+```{r}
+courseWorkService$build_courseworkBrowse()
+```
+
+執行以下可在clipboard創造範本，直接paste在每個頁面回訊：
+```{r}
+'同學好，
+
+您對此次作業的提問已回答完畢，相關回覆及修正後的Rmd檔（前者即你的作業檔加上"_reply"字樣, 後者直接改在你的作業檔）都已放置在您的個人google drive return資料匣裡，請自行前往下載回覆檔案。
+
+祝學習愉快' %>%
+  clipr::write_clip()
+```
+
+
+## 7 gitter chat
+```{r}
+  # select file to review
+  disputeRmd <- rstudioapi::selectFile(path = disputeFolder)
+  school_id <- str_extract(disputeRmd, "[:digit:]{9}")
+  whichIsTheChosenOne <-
+    which(completeRoster$學號==school_id)
+  completeRoster$gitter[[whichIsTheChosenOne]] %>%
+    paste0("https://gitter.im/",.) -> gitterUrl
+browseURL(gitterUrl)
+  completeRoster$classroom[[whichIsTheChosenOne]] %>% clipr::write_clip()
+```

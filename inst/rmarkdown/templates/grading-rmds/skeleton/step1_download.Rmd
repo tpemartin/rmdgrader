@@ -1,0 +1,195 @@
+---
+title: "Download"
+drake_cache: ".final_extrastep1"
+output: html_document
+params:
+  title: "final_extra" # google classroom上公告作業時所用的標題
+  dueBuffer: "minutes(20)"
+  courseInfoFile: "/Users/martinl/Github/course-dashboard-programming-for-data-science/course109-1-program4DS.rda"
+  rosterFile: "/Users/martinl/Github/course-dashboard-programming-for-data-science/109-1-completeRoster.Rdata" # data frame with 姓名 學號 google userId  
+  gradingFolder: "grading_flow"
+---
+
+
+```{r setup, include=FALSE, drake=F}
+knitr::opts_chunk$set(echo = TRUE, eval=F)
+library(drake)
+library(econDV)
+library(dplyr)
+```
+
+## makecondition
+
+```{r makecondition}
+library(drake)
+library(rmd2drake)
+library(dplyr)
+library(googleclassroom)
+library(readr)
+library(googlesheets4)
+library(lubridate)
+rprojroot::is_rstudio_project$make_fix_file() -> .root
+load(rootadjustPath(params$courseInfoFile), envir=.GlobalEnv)
+load(rootadjustPath(params$rosterFile), envir=.GlobalEnv)
+saveSubmissionFilepath <- 
+  file.path(.root(), params$gradingFolder, params$title)
+courseId <<- courseInfo$resources$googleClassroom$courseInfo$id
+cs <<- googleclassroom::classroomService()
+# load_plan_problem10(studentLMSwithGitter)
+```
+
+## 下載作業
+
+### 目前交作業狀況
+
+```{r df_courseworks}
+df_courseworks = {
+  # browser()
+  # list all courseworks
+  df_courseworks = {
+    courseId %>% 
+      cs$list_courseworksAsDataframe()
+  }
+  df_courseworks %>%
+    filter(
+      stringr::str_trim(title, side="both")==
+      params$title
+    )
+}
+```
+
+```{r courseWorkId_Title}
+courseWorkId_Title = {
+  # get target coursework
+  courseWorkId <- {
+    loc <- stringr::str_which(
+      df_courseworks$title, params$title
+    )
+    df_courseworks$id[[loc]]
+  }
+
+  title <- df_courseworks$title[[loc]]
+
+  list(
+    courseWorkId = courseWorkId,
+    title = title
+  )
+}
+```
+
+
+
+```{r df_studentSubmissions}
+df_studentSubmissions = {
+
+  # get student submissions for a course work
+  df_studentSubmissions = {
+  cs$get_studentSubmissionForACourseWork(courseWorkId_Title$courseWorkId, completeRoster) 
+  }
+  save(df_studentSubmissions, file=file.path( saveSubmissionFilepath, "df_studentSubmissions.Rdata"))
+  df_studentSubmissions
+}
+
+```
+
+
+```{r downloadSubmissions_info}
+downloadSubmissions_info = {
+  
+  # download student submission Rmds
+  cs$download_studentRmds(courseWorkId_Title$title, df_studentSubmissions, root=.root()) -> listOfStudentRmds
+
+  # construct homework submission info
+  list(
+    courseId = courseId,
+    courseWorkId = courseWorkId_Title$courseWorkId,
+    title = courseWorkId_Title$title,
+    Rmds = listOfStudentRmds
+  )
+}
+```
+
+
+```{r overdueRmds}
+overdueRmds = {
+  school_ids <- {
+    downloadSubmissions_info$Rmds$`hw1 `$failed_cases
+    downloadSubmissions_info$Rmds$`hw1 `$success_downloads %>%
+      stringr::str_extract(
+        "[:digit:]{9}(?=\\.Rmd)"
+      ) -> school_ids
+    school_ids
+  }
+
+
+  eval(parse(text = params$dueBuffer)) -> dueBuffer
+  df_studentSubmissions %>%
+    mutate(
+      submissionTime = ymd_hms(submissionTime)
+    ) %>%
+    filter(
+      submissionState == "TURNED_IN",
+      submissionTime < (df_courseworks$due + dueBuffer)
+    ) %>%
+    .$學號 -> valid_schoolIds
+
+  overdueRmds <- {
+    whichIsOverDue <- which(!(school_ids %in% valid_schoolIds))
+    downloadSubmissions_info$Rmds[[1]]$success_downloads[whichIsOverDue]
+  }
+  overdueRmds
+}
+
+```
+
+```{r moveOverDue}
+moveOverDue = {
+  overdueRmds %>%
+    stringr::str_subset("\\.Rmd$") -> fromFiles
+  overdueFolder <-
+    file.path(.root(), "studentsSubmission", params$title, "overdue")
+  if (!dir.exists(overdueFolder)) dir.create(overdueFolder)
+  file.path(overdueFolder, basename(fromFiles)) -> toFiles
+  file.copy(
+    from = fromFiles,
+    to = toFiles
+  )
+  toFiles
+}
+```
+
+```{r summary_download}
+summary_download = {
+  submissionFolder <- 
+    file.path(.root(), "studentsSubmission", params$title)
+  overdueFolder <-
+    file.path(submissionFolder, "overdue")
+  problemFolder <-
+    file.path(submissionFolder, "cannotMatchSchoolId")
+  
+  list(
+    id = courseWorkId_Title$courseWorkId,
+    title = courseWorkId_Title$title,
+    submissionInfo = df_studentSubmissions,
+    downloads = list(
+      success = stringr::str_subset(
+        list.files(submissionFolder, full.names = T), "\\.Rmd$"
+      ) %>% stringr::str_remove(.root()),
+      overdue = list.files(overdueFolder, full.names = T) %>% stringr::str_remove(.root()),
+      problem = list.files(problemFolder, full.names = T) %>% stringr::str_remove(.root())
+    )
+  ) -> summary_download
+  assign(paste0("summary_download_",params$title),
+         summary_download)
+  save(
+    list=c(paste0("summary_download_",params$title)),
+    file = file.path(
+      .root(), 
+      paste0("summary_download_", params$title,".Rdata") 
+    )
+  )
+  summary_download
+}
+
+```
+

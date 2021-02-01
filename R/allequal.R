@@ -6,7 +6,7 @@
 #' @export
 #'
 #' @examples none
-allequalService <- function(targetLabel = targetLabel, .transform=NULL, switchTargetCurrent=F){
+allequalService <- function(targetLabel = targetLabel, .transform=NULL, switchTargetCurrent=F, useSHA=F){
   ae <- new.env(parent=.GlobalEnv)
   class(ae) <- c(class(ae), "all.equal_env")
 
@@ -89,12 +89,27 @@ allequalService <- function(targetLabel = targetLabel, .transform=NULL, switchTa
     ae$check_messageGroups <- {
       list_.x <- vector("list", length(ae$result$messageGroups))
       for(.x in seq_along(ae$result$messageGroups)){
-        rlang::expr(generate_.x_functions(ae, !!.x)) -> expr_generate.X
+        rlang::expr(generate_.x_functions(ae, !!.x, useSHA)) -> expr_generate.X
         eval(expr_generate.X) -> list_.x[[.x]]
       }
       list_.x
     }
-    names(ae$check_messageGroups) <- paste0("G", seq_along(ae$result$messageGroups))
+    # browser()
+
+    if(useSHA){
+      names(ae$check_messageGroups) <-
+        purrr::map_chr(
+          seq_along(ae$check_messageGroups),
+          ~{
+            paste0(unlist(ae$result$messageGroups[[.x]]$messages), collapse = "") -> sourceX
+            paste0("G", digest::sha1(sourceX))
+          }
+        )
+    } else {
+      names(ae$check_messageGroups) <- paste0("G", seq_along(ae$result$messageGroups))
+    }
+
+    names(ae$xy) <- names(ae$check_messageGroups)
     # ae$xy <- execute_mgetxy(mgetxy, targetLabel, .transform=.transform)
   }
 
@@ -259,7 +274,13 @@ get_allequalSummary <- function (targetLabel, whichCorrectAnsvalue = 1, .transfo
   y<-.GlobalEnv$correctValues[[targetLabel]][[whichCorrectAnsvalue]]
   if(!is.null(.transform)) y <- .transform(y)
   for (.x in seq_along(.GlobalEnv$studentValues)) {
-    x<- .GlobalEnv$studentValues[[.x]][[targetLabel]][[1]]
+    if(length(.GlobalEnv$studentValues[[.x]][[targetLabel]])==1L){
+      x<- .GlobalEnv$studentValues[[.x]][[targetLabel]][[1]]
+    } else
+    {
+      x<- .GlobalEnv$studentValues[[.x]][[targetLabel]]
+    }
+
     if(!is.null(.transform)){
       x <- try(.transform(x), silent = T)
     }

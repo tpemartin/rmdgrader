@@ -496,8 +496,23 @@ ansValueResolveFunctional <- function(.part, tempEnv, ee, pe, basenameRmd){
         }
       }
 
+      # produce objValue
+      {
+        chr2eval <-
+          paste0(
+            "tempEnv[[.part]]$resolved[[Xlabel]]$",
+            XansObjname)
+        try(
+          eval(
+            parse(text=chr2eval)
+          ), silent=T
+        ) -> objValue
 
-      tempEnv[[.part]]$resolved[[Xlabel]][[XansObjname]] ->
+        if(is(objValue, "try-error")) objValue <- NULL
+      }
+
+      # tempEnv[[.part]]$resolved[[Xlabel]][[XansObjname]] ->
+      objValue ->
         ee$answerValues[[basenameRmd]]$values[[.part]][[Xlabel]][[1]]
     }
     if(!inBatch) detach_runningSequence()
@@ -560,22 +575,31 @@ generate_answerValueBatchResolveFunction <- function(pe, ee,Ypartname)
     detach_runningSequence()
   }
 }
+
 save_objectValues <- function(ee) {
   function(filename) {
     whichIsBatch <- stringr::str_which(names(ee$answerValues), "batch")
     purrr::map(
       ee$answerValues[-whichIsBatch],
-      ~ .x$values
+      ~ purrr::flatten(.x$values)
     ) -> objectValues
-    purrr::map(
-      objectValues,
-      ~{
-       if(is.null(.x)) .x else
-        purrr::flatten(.x)
-      }
-    ) -> objectValues
+
+    # browser()
+    ee$objectValues <- objectValues
+
+    whichIsAns <- stringr::str_which(names(objectValues),"ans")
+
+    correctValues <- objectValues[[whichIsAns]]
+    studentValues <- objectValues[-whichIsAns]
+    # purrr::map(
+    #   objectValues,
+    #   ~{
+    #    if(is.null(.x)) .x else
+    #     purrr::flatten(.x)
+    #   }
+    # ) -> objectValues
     allRmds <- ee$allRmds
-    save(objectValues, allRmds, file = filename)
+    save(correctValues,studentValues , allRmds, file = filename)
   }
 }
 get_ansLabels_setupdataLabels <- function(ee, .part){
@@ -612,7 +636,23 @@ generate_resolutionMethods4correctAnsBasename <- function(.part, correctAnsBasen
       } else {
         XansObjname <- ee$ansObjectnames[[Xlabel]]
       }
-      ee$running_sequence[[.part]]$corrAnsEnvironments[[Xlabel]][[XansObjname]] ->
+
+      # produce objValue
+      {
+        chr2eval <-
+        paste0(
+          "ee$running_sequence[[.part]]$corrAnsEnvironments[[Xlabel]]$",
+          XansObjname)
+      try(
+        eval(
+          parse(text=chr2eval)
+        ), silent=T
+      ) -> objValue
+
+      if(is(objValue, "try-error")) objValue <- NULL
+      }
+
+      objValue ->
         ee$answerValues[[correctAnsBasename]]$values[[.part]][[Xlabel]][[1]]
     }
   }

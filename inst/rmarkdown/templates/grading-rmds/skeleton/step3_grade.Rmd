@@ -1,0 +1,729 @@
+---
+title: "Grade"
+drake_cache: ".final_extrastep3"
+output: html_document
+params:
+  title: "final_extra" # google classroom上公告作業時所用的標題
+  ansfilename: "grading_flow/Final/Final-ans.Rmd"
+  submissionFolder: "studentsSubmission"
+  gradingFolder: "grading_flow"
+---
+
+
+```{r setup, include=FALSE, drake=F}
+knitr::opts_chunk$set(echo = TRUE, eval=F)
+library(drake)
+library(econDV)
+library(dplyr)
+```
+
+
+## makecondition
+
+```{r makecondition}
+library(drake)
+library(rmd2drake)
+library(dplyr)
+library(googleclassroom)
+library(readr)
+library(rmdgrader)
+library(purrr)
+library(rlang)
+library(testthat)
+library(withr)
+library(lubridate)
+library(stringr)
+rprojroot::is_rstudio_project$make_fix_file() -> .root
+.root <- function(){
+  "/Users/martinl/Github/course-dashboard-programming-for-data-science"
+}
+datafilename <- 
+    file.path(.root(),params$gradingFolder,params$title,"data4step3.Rdata")
+load(datafilename, envir = .GlobalEnv)
+gradeSavingFilename <- 
+  file.path(.root(),params$gradingFolder,params$title,"data4step4.Rdata")
+allValues <<- objectValues$studentValues
+correctValues <<- allValues[[1]]
+studentValues <<- allValues[-1]
+mgetxy <- rmdgrader::generate_mgetxy(basename(allRmds[-1]))
+studentRmds <- allRmds[-1]
+submissionPath <- 
+    file.path(
+      .root(),
+      params$submissionFolder,
+      params$title
+    )
+mfile.edit <- mfile.editFunctional(studentRmds, submissionPath)
+```
+
+## Grading
+
+### ans113
+
+```{r makecondition}
+undebug(allequalService)
+ae113 <- allequalService('ans113')
+ae113$result$messageGroups
+ae113$generate_xy4messageGroups(mgetxy)
+```
+
+```{r ae113check}
+ae113check = {
+ae113$check_messageGroups$G1()
+# ae113$xy[[1]]$Final_410672033.Rmd$x -> x
+# ae113$xy[[1]] %>%
+#   purrr::map(
+#     ~{
+#       unlist(.x$x$pickExactHistory) %>%
+#       identical(
+#         .x$y$pickExactHistory
+#       )
+#     }
+#   )
+# map(
+#   ae113$xy[[1]],
+#   ~with(
+#     .x,
+#     {
+#      identical(
+#        unlist(.x$x$pickHistory),
+#        .x$y$pickHistory)
+#     }
+#   )
+# )
+# map(
+#   ae113$xy[[1]],
+#   ~identical(unlist(.x$x$pickByFlag(F)),
+# .x$y$pickByFlag)
+# )
+ae113$check_messageGroups$G1grade$comment('minor unlist problem with pickByFlag as function.')
+ae113$check_messageGroups$G1grade$grade(0.34)
+
+ae113$check_messageGroups$G2()
+ae113$check_messageGroups$G2grade$grade(0.35)
+ae113$check_messageGroups$G3()
+ae113$check_messageGroups$G3grade$grade(0)
+ae113$check_messageGroups$G4()
+ae113$check_messageGroups$G4grade$grade(0.25)
+ae113$check_messageGroups$G4grade$comment('miss pickByFlag')
+ae113$check_messageGroups$G5()
+ae113$check_messageGroups$G5grade$comment('miss pickByFlag')
+ae113$check_messageGroups$G5grade$grade(0.25)
+ae113$check_messageGroups$G6()
+ae113$check_messageGroups$G6grade$grade(0.25)
+ae113$check_messageGroups$G6grade$comment('use str_detect wrongly in pickExactHistory')
+ae113$check_messageGroups$G7()
+ae113$check_messageGroups$G7grade$grade(0.1)
+ae113$check_messageGroups$G8()
+ae113$check_messageGroups$G8grade$comment('pickExact with wrong usage of str_detect')
+ae113$check_messageGroups$G8grade$grade(0.05)
+ae113$check_messageGroups$G9()
+ae113$check_messageGroups$G9grade$comment('sample inside program; wrong pickByFlag')
+ae113$check_messageGroups$G9grade$grade(0.2)
+ae113$check_messageGroups$G10()
+ae113$check_messageGroups$G10grade$comment('put pickByFlag as function')
+ae113$check_messageGroups$G10grade$grade(0.35)
+ae113$check_messageGroups$G11()
+ae113$check_messageGroups$G11grade$grade(0)
+ae113$check_messageGroups$G12()
+ae113$check_messageGroups$G12grade$grade(0.1)
+ae113$check_messageGroups$G13()
+ae113$check_messageGroups$G13grade$comment('complicate the question')
+ae113$check_messageGroups$G13grade$grade(0.05)
+# View(ae113$result$table_messageGroups[13,])
+# mfile.edit$Final_410973024.Rmd()
+}
+```
+
+
+```{r grade113}
+grade113 <- ae113$extract_grades()
+```
+
+
+
+### ans112
+
+```{r makecondition}
+ae112 <- allequalService('ans112')
+ae112$generate_xy4messageGroups(mgetxy)
+# get_gradesFromAe <- function(ae112){
+#   ae112$.yield_messageGroupTable()
+#   list_grade112 <- grade_by_all.equalMessages(ae112)
+#   grade112 <- list_grade112$grade
+#   grade112[
+#     is.na(grade112)
+#   ] <- 0
+#   grade112
+# }
+
+```
+
+```{r ae112check}
+ae112check={
+  
+  ae112$check_messageGroups$G1()
+  ae112$check_messageGroups$G1grade$grade(0)
+  ae112$check_messageGroups$G2()
+  ae112$check_messageGroups$G2grade$comment('categories2有可能不只一個，不能只用"=="')
+  ae112$check_messageGroups$G2grade$grade(0.35)
+  ae112$check_messageGroups$G3()
+  ae112$check_messageGroups$G3grade$comment('categories2有可能不只一個，不能只用"=="')
+  ae112$check_messageGroups$G3grade$grade(0.35)
+  ae112$check_messageGroups$G4()
+  ae112$check_messageGroups$G4grade$grade(0)
+  ae112$check_messageGroups$G5()
+  ae112$check_messageGroups$G5grade$grade(0.4)
+  ae112$check_messageGroups$G6()
+  ae112$check_messageGroups$G6grade$grade(0.1)
+  ae112$check_messageGroups$G6grade$comment('Wrong usage of try(), but courageous to do so.')
+  ae112$check_messageGroups$G7()
+  ae112$check_messageGroups$G7grade$grade(0)
+  ae112$check_messageGroups$G8()
+  ae112$check_messageGroups$G8grade$grade(0.05)
+  ae112$check_messageGroups$G9()
+  ae112$check_messageGroups$G9grade$grade(0.01)
+  
+  ae112$.yield_messageGroupTable()
+  View(ae112$result$table_messageGroups)
+  # mfile.edit$Final_410878023()
+}
+```
+
+```{r grade112}
+grade112 <- ae112$extract_grades()
+```
+
+### ans111
+
+```{r makecondition}
+jsonlite::fromJSON("https://www.dropbox.com/s/t09nrzwx8mw6azn/courses107.json?dl=1") -> courses107
+
+source('https://www.dropbox.com/s/g11m7nanbzva7hf/finalChallenge.R?dl=1')
+
+set.seed(2038)
+source <- sample(courses107$應修系級, 200)
+source
+categories <- c("外語系", "統計系")
+transform111true = transformFunctional(source=source, categories=categories, followByAlnum=TRUE)
+transform111false = transformFunctional(source=source, categories=categories, followByAlnum=FALSE)
+ae111 <- 
+  list(
+    true = 
+  allequalService('ans111', .transform = transform111true),
+    false =
+  allequalService('ans111', .transform = transform111false))
+
+ae111$true$generate_xy4messageGroups(mgetxy)
+ae111$false$generate_xy4messageGroups(mgetxy)
+
+```
+
+```{r ae111check}
+ae111check = {
+  ae111$true$check_messageGroups$G1()
+  ae111$true$check_messageGroups$G1grade$grade(0)
+  
+  ae111$false$check_messageGroups$G1()
+  ae111$false$check_messageGroups$G1grade$grade(0)
+}
+```
+
+```{r grade111}
+grade111 = {
+  compute_gradesFromMultipleAes(ae111) -> df_grades
+  setNames(df_grades$mean, df_grades$Rmd)
+}
+```
+
+
+### ans123
+
+```{r makecondition}
+ae123 <- allequalService('ans123')
+ae123$generate_xy4messageGroups(mgetxy)
+```
+
+```{r ae123check}
+ae123check = {
+  ae123$.yield_messageGroupTable()
+  View(ae123$result$table_messageGroups)
+  ae123$check_messageGroups$G1()
+  ae123$check_messageGroups$G1grade$grade(0)
+  
+  ae123$check_messageGroups$G2()
+  ae123$check_messageGroups$G2grade$comment('wrong object name for formajor. no debuction this time.')
+  ae123$check_messageGroups$G2grade$grade(0.35)
+  
+  ae123$check_messageGroups$G3()
+  ae123$check_messageGroups$G3grade$grade(0)
+  
+  ae123$check_messageGroups$G4()
+  ae123$check_messageGroups$G4grade$comment('wrong in forMajors')
+  ae123$check_messageGroups$G4grade$grade(0.2)
+  
+  ae123$check_messageGroups$G5()
+  ae123$check_messageGroups$G5grade$comment('wrong in forMajors')
+  ae123$check_messageGroups$G5grade$grade(0.2)
+  
+  ae123$check_messageGroups$G6()
+  ae123$check_messageGroups$G6grade$grade(0)
+  
+  ae123$check_messageGroups$G7()
+  ae123$check_messageGroups$G7grade$grade(0)
+  
+  ae123$check_messageGroups$G8()
+  ae123$check_messageGroups$G8grade$grade(0)
+  
+  ae123$check_messageGroups$G9()
+  ae123$check_messageGroups$G9grade$grade(0)
+  
+  ae123$check_messageGroups$G10()
+  ae123$check_messageGroups$G10grade$comment('interesting way to count appliedMajors')
+  ae123$check_messageGroups$G10grade$grade(0.1)
+  
+  ae123$check_messageGroups$G11()
+  ae123$check_messageGroups$G11grade$comment('interesting way to count appliedMajors, but the list formation of forMajors kills the effect.')
+  ae123$check_messageGroups$G11grade$grade(0.8)
+  
+}
+```
+
+
+```{r grade123}
+grade123 = ae123$extract_grades()
+```
+
+### ans122
+
+```{r makecondition}
+ae122 <- allequalService('ans122')
+ae122$generate_xy4messageGroups(mgetxy)
+```
+
+```{r ae122check}
+ae122check= {
+  # ae122$.yield_messageGroupTable()
+  # View(ae122$result$table_messageGroups)
+  ae122$check_messageGroups$G1()
+  ae122$check_messageGroups$G1grade$grade(0)
+  
+  ae122$check_messageGroups$G2()
+  ae122$check_messageGroups$G2grade$grade(0)
+  
+  ae122$check_messageGroups$G3()
+  ae122$check_messageGroups$G3grade
+  ae122$check_messageGroups$G3grade$grade(0.5)
+  
+  ae122$check_messageGroups$G4()
+  ae122$check_messageGroups$G4grade$comment('tiny error, forget to put、back')
+  ae122$check_messageGroups$G4grade$grade(0.48)
+  
+  ae122$check_messageGroups$G5()
+  ae122$check_messageGroups$G5grade$grade(0)
+  
+  # mfile.edit$Final_410973005.Rmd()
+}
+```
+
+```{r grade122}
+grade122 = ae122$extract_grades()
+```
+
+
+
+
+
+
+### ans121
+
+```{r makecondition}
+major_grade="財政系"
+transform121a = transformFunctional(major_grade=major_grade,type="必")
+transform121b = transformFunctional(major_grade=major_grade,type="選")
+ae121 <- list(
+  a = allequalService('ans121', .transform = transform121a),
+  b = allequalService('ans121', .transform=transform121b)
+)
+ae121$a$generate_xy4messageGroups(mgetxy)
+ae121$b$generate_xy4messageGroups(mgetxy)
+
+```
+
+```{r ae121check}
+ae121check = {
+  
+  ae121$a$check_messageGroups$G1()
+  ae121$a$check_messageGroups$G1grade$grade(0)
+  
+  ae121$b$check_messageGroups$G1()
+  ae121$b$check_messageGroups$G1grade$grade(0)
+  
+}
+```
+
+```{r grade121}
+grade121 = {
+  compute_gradesFromMultipleAes(ae121) -> df_grades
+  setNames(
+    df_grades$mean, df_grades$Rmd
+  )
+}
+```
+
+
+
+### ans133
+
+```{r makecondition}
+ae133 <- allequalService('ans133')
+ae133$generate_xy4messageGroups(mgetxy)
+```
+
+```{r ae133check}
+ae133check={
+  # ae133$.yield_messageGroupTable()
+  # View(ae133$result$table_messageGroups)
+  ae133$check_messageGroups$G1()
+  ae133$check_messageGroups$G1grade$grade(0)
+  
+  ae133$check_messageGroups$G2()
+  ae133$check_messageGroups$G2grade$grade(0.4)
+  
+  ae133$check_messageGroups$G3()
+  ae133$check_messageGroups$G3grade$grade(0)
+  
+  ae133$check_messageGroups$G4()
+  ae133$check_messageGroups$G4grade$grade(0.3)
+  
+  ae133$check_messageGroups$G5()
+  ae133$check_messageGroups$G5grade$grade(0.25)
+  # 
+  # ae133$xy[[4]]$Final_410773028.Rmd$x$
+  # 
+  # mfile.edit$Final_410973065.Rmd()
+}
+```
+
+```{r grade133}
+grade133 <- ae133$extract_grades()
+```
+
+### ans132
+
+```{r makecondition}
+ae132 <- allequalService('ans132')
+ae132$generate_xy4messageGroups(mgetxy)
+```
+
+```{r ae132check}
+ae132check = {
+  # ae132$.yield_messageGroupTable()
+  # View(ae132$result$table_messageGroups)
+  
+  ae132$check_messageGroups$G1()
+  ae132$check_messageGroups$G1grade$grade(0)
+  
+  ae132$check_messageGroups$G2()
+  ae132$check_messageGroups$G2grade$grade(0.6)
+  
+  ae132$check_messageGroups$G3()
+  ae132$check_messageGroups$G3grade$comment('good on wday element.')
+  ae132$check_messageGroups$G3grade$grade(0.2)
+  
+  ae132$check_messageGroups$G4()
+  ae132$check_messageGroups$G4grade$grade(0.6)
+  
+  ae132$check_messageGroups$G5()
+  ae132$check_messageGroups$G5grade$grade(0)
+  
+  # mfile.edit$Final_410774205.Rmd()
+}
+```
+
+```{r grade132}
+grade132 <- ae132$extract_grades()
+```
+
+
+### ans131
+
+```{r makecondition}
+ae131 <- allequalService('ans131')
+ae131$generate_xy4messageGroups(mgetxy)
+```
+
+```{r ae131check}
+ae131check = {
+  ae131$check_messageGroups$G1()
+  ae131$check_messageGroups$G1grade$grade(0)
+  
+  ae131$check_messageGroups$G2()
+  ae131$check_messageGroups$G2grade$grade(0)
+  
+  ae131$check_messageGroups$G3()
+  ae131$check_messageGroups$G3grade$grade(0)
+  
+  # mfile.edit$Final_410778033.Rmd()
+}
+```
+
+```{r grade131}
+grade131 = ae131$extract_grades()
+```
+
+
+### ans143
+
+```{r makecondition}
+ae143 <- allequalService('ans143')
+ae143$generate_xy4messageGroups(mgetxy)
+```
+
+
+```{r ae143check}
+ae143check = {
+  
+  # ae143$.yield_messageGroupTable()
+  # View(ae143$result$table_messageGroups)
+  ae143$check_messageGroups$G1()
+  ae143$check_messageGroups$G1grade$grade(0)
+  
+  ae143$check_messageGroups$G2()
+  ae143$check_messageGroups$G2grade$grade(0)
+
+  ae143$check_messageGroups$G3()
+  ae143$check_messageGroups$G3grade$grade(0.25)
+  
+  ae143$check_messageGroups$G4()
+  ae143$check_messageGroups$G4grade$grade(0.1)
+  
+  ae143$check_messageGroups$G5()
+  ae143$check_messageGroups$G5grade$grade(0)
+  
+  ae143$check_messageGroups$G6()
+  ae143$check_messageGroups$G6grade$comment("rmd structure sabotaged.")
+  
+  ae143$check_messageGroups$G7()
+  ae143$check_messageGroups$G7grade$grade(0.5)
+  
+  ae143$check_messageGroups$G8()
+  ae143$check_messageGroups$G8grade$comment('mistakes due to unfixed char20 problem.')
+  ae143$check_messageGroups$G8grade$grade(0.4)
+  
+  ae143$check_messageGroups$G9()
+  ae143$check_messageGroups$G9grade$comment('minor error: listA should be list')
+  ae143$check_messageGroups$G9grade$grade(0.45)
+  
+  ae143$check_messageGroups$G10()
+  ae143$check_messageGroups$G10grade$grade(0.4)
+  
+  ae143$check_messageGroups$G11()
+  ae143$check_messageGroups$G11grade$grade(0.3)
+  
+  ae143$check_messageGroups$G12()
+  ae143$check_messageGroups$G12grade$grade(0.5)
+  
+  ae143$check_messageGroups$G13()
+  ae143$check_messageGroups$G13grade$grade(0)
+  
+  # ae143$check_messageGroups$G14()
+  # ae143$check_messageGroups$G14grade$grade(0)
+  
+  # ae143$xy[[12]]$Final_410973024.Rmd$y
+  # length(na.omit(unlist(ae143$xy[[7]]$Final_410774205.Rmd$x$listA)))
+  # ae143$xy[[7]]$Final_410774205.Rmd$y$listA
+  # 
+  # mfile.edit$Final_410973065.Rmd()
+}
+```
+
+```{r grade143}
+grade143 <- ae143$extract_grades()
+```
+
+### ans142
+
+```{r makecondition}
+ae142 <- allequalService('ans142')
+ae142$generate_xy4messageGroups(mgetxy)
+```
+
+```{r ae142check}
+ae142check = {
+  ae142$check_messageGroups$G1()
+  ae142$check_messageGroups$G1grade$grade(0)
+  
+  ae142$check_messageGroups$G2()
+  # ae142$xy[[2]]$Final_410678019.Rmd$x %>% map(sum)
+  # ae142$xy[[2]]$Final_410678019.Rmd$y
+  ae142$check_messageGroups$G2grade$comment('forget to filter semester ==1 and need to sum.')
+  ae142$check_messageGroups$G2grade$grade(0.5)
+  
+  ae142$check_messageGroups$G3()
+  ae142$check_messageGroups$G3grade$comment('forget to filter out only 1st semester')
+  ae142$check_messageGroups$G3grade$grade(0.85)
+  
+  ae142$check_messageGroups$G4()
+  ae142$check_messageGroups$G4grade$grade(0)
+  
+  ae142$check_messageGroups$G5()
+  ae142$check_messageGroups$G5grade$comment('forget to filter out only 1st semester')
+  ae142$check_messageGroups$G5grade$grade(0.85)
+  
+  # mfile.edit$Final_410874230.Rmd()
+  }
+```
+
+```{r grade142}
+grade142=ae142$extract_grades()
+```
+
+### ans2
+
+```{r makecondition}
+ae2 <- allequalService('ans2')
+ae2$generate_xy4messageGroups(mgetxy)
+```
+
+```{r ae2check}
+ae2check = {
+  ae2$check_messageGroups$G1()
+  ae2$check_messageGroups$G1grade$grade(0)
+  
+  ae2$check_messageGroups$G2()
+  ae2$check_messageGroups$G2grade$grade(0)
+  
+  ae2$check_messageGroups$G3()
+  
+  ae2$.yield_messageGroupTable()
+  View(ae2$result$table_messageGroups)
+  
+  
+  map(
+    ae2$xy[[3]],
+   function(.x) {
+    R.utils::withTimeout(
+      try(
+        {
+          .x$x("民國101年8月27日")
+        },
+        silent = T
+      ),
+      timeout = 5
+      )
+    }) -> results
+  
+  list_msg_rmd_pairs <- 
+    list(
+      msg=unlist(results),
+      rmd=names(ae2$xy[[3]])
+    )
+  ae <- ae2
+  
+  subcategorise_byMsgRmdPairs(ae2, list_msg_rmd_pairs)
+  
+  ae2$subcat$cat_errors[[1]]$el_values
+  ae2$subcat$cat_errors[[1]]$el_values
+  ae2$subcat$cat_errors[[1]]$el_names
+  ae2$subcat$cat_errors[[1]]$comment <- 'only put textbook get_horoscope function there.'
+  ae2$subcat$cat_errors[[1]]$grade <- 0
+  
+  ae2$subcat$cat_errors[[2]]$el_names
+  ae2$subcat$cat_errors[[2]]$el_values 
+  ae2$subcat$cat_errors[[2]]$comment <-  ae2$subcat$cat_errors[[1]]$comment
+  
+  ae2$subcat$cat_errors[[3]]$el_names
+  ae2$subcat$cat_errors[[3]]$el_values
+  ae2$subcat$cat_errors[[3]]$comment <- "almost correct"
+  ae2$subcat$cat_errors[[3]]$grade <- 0.8
+  
+  ae2$subcat$cat_errors[[4]]$el_names
+  ae2$subcat$cat_errors[[4]]$el_values
+  ae2$subcat$cat_errors[[4]]$comment <- 'nice twist on task condition'
+  ae2$subcat$cat_errors[[4]]$grade <- 0.1
+  
+  ae2$subcat$cat_errors[[5]]$el_names
+  ae2$subcat$cat_errors[[5]]$el_values
+  
+  ae2$subcat$cat_errors[[6]]$el_names
+  ae2$subcat$cat_errors[[6]]$el_values
+  
+  ae2$subcat$cat_errors[[7]]$el_names
+  ae2$subcat$cat_errors[[7]]$el_values
+}
+```
+
+
+```{r grade2}
+grade2 = {
+  grade2_init <- ae2$extract_grades()
+  grade2 <- ae2$subcat$accommodate_grades(grade2_init)
+  grade2
+}
+```
+
+```{r}
+
+```
+
+
+### All Grades
+
+```{r}
+# save(ae113, ae112, ae123, ae122, ae111, ae121, ae131, ae132, ae133, ae142, ae143, ae2, file="final_ae.Rdata")
+load("final_ae.Rdata")
+```
+
+```{r tb_grades}
+tb_grades = {
+  grade11 <- getMaxGrade(grade111, grade112, grade113)
+  grade12 <- getMaxGrade(grade121, grade122, grade123)
+  grade13 <- getMaxGrade(grade131, grade132, grade133)
+  grade14 <- getMaxGrade(grade142, grade143)
+  grade2
+  
+  tb_gradesFinal <- tb_grades <- merge_gradeVectors(grade11, grade12, grade13, grade14, grade2)
+  tb_gradesFinal$total <- rowSums(tb_grades[, -1])
+  tb_gradesFinal
+}
+
+```
+
+
+
+
+算了一下，總共10題（5+2+2+1），所以我覺得可以考慮每填都是一分。這樣剛好就是Google Classroom表定的10分。
+
+You don't need this if you have updated rmdgrader package.
+```{r tb_grades, drake=F}
+
+tb_grades = convert_gradeList2dataframe(
+    ans111=grade111,
+    ans112=grade112,
+    ans113=grade113,
+
+    ans121=grade121,
+    ans122=grade122,
+    ans123=grade123,
+    ans131=grade131,
+    ans132=grade132,
+    ans133=grade133,
+    ans142=grade142,
+    ans143=grade143,
+    ans2=grade2)
+```
+
+
+```{r}
+records_gradeComment <- 
+  generate_recordGradeCommentsFromTb_gradesWithoutComments(tb_grades)
+```
+
+```{r saveGrades}
+saveGrades = {
+  save(tb_grades, records_gradeComment, file=gradeSavingFilename)
+  gradeSavingFilename
+}
+```
+

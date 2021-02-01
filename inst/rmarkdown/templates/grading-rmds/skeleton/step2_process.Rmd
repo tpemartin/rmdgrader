@@ -1,0 +1,128 @@
+---
+title: "Process"
+drake_cache: ".final_extrastep2"
+output: html_document
+params:
+  title: "final_extra" # google classroom上公告作業時所用的標題
+  ansfilename: "grading_flow/Final/Final-ans.Rmd"
+  submissionFolder: "studentsSubmission"
+  gradingFolder: "grading_flow"
+---
+
+```{r setup, include=FALSE, drake=F}
+knitr::opts_chunk$set(echo = TRUE, eval=F)
+library(drake)
+library(econDV)
+library(dplyr)
+
+```
+
+## makecondition
+
+```{r makecondition}
+library(drake)
+library(rmd2drake)
+library(dplyr)
+library(googleclassroom)
+library(readr)
+# library(rmdgrader)
+library(purrr)
+library(rlang)
+library(testthat)
+library(withr)
+rprojroot::is_rstudio_project$make_fix_file() -> .root
+.root <- function(){
+  "/Users/martinl/Github/course-dashboard-programming-for-data-science"
+}
+savepath <- 
+  file.path(.root(), params$gradingFolder, 
+                    params$title)
+if(!dir.exists(savepath)) dir.create(savepath)
+problemFolder <-
+  file.path(.root(), params$submissionFolder, params$title,
+            "problem")
+```
+
+
+## Process
+
+```{r processing}
+# initiate process instance
+
+process <- Process()
+
+# get list of code chunks
+process$correctAnsFilename$tryGet_list_codeChunks()
+process$inBatch_studentsRmds$tryGet_list_codeChunks()
+
+# If one Rmd content changed, you can update simply that student's respective elements in process instance like:
+# process$studentsRmds$HW8_410672033.Rmd$tryGet_list_codeChunks()
+```
+
+
+## Evaluate
+
+After users get list_codeChunks from all Rmd files, it's time to evaluate these codes. 
+
+```{r evaluation}
+# Initiate an Evaluation Instance
+debug(Evaluate)
+ei <- Evaluate(process)
+
+# resolve codes in batch
+ei$answerValues$batch$resolve$part1()
+ei$answerValues$batch$resolve$part2()
+
+# once resolved, answer values will show up for all Rmds such as:
+# ei$answerValues$Final_410773111_2.Rmd$values
+```
+
+### when screwed
+
+Sometimes students threw in, say totally wrong Rmd; it can break down batch evaluation. In this case, run the following example code (which uses partX) as an example.
+
+```{r}
+for(.it in seq_along(ei$allRmds)){
+  cat(glue::glue('{ei$allRmds[[.it]]}\n\n'))
+  ei$answerValues[[ei$allRmds[[.it]]]]$resolve$part1()
+}
+```
+
+The loop stops at where the problem from, say Final_410973013.Rmd Then you can use the move2problem method to remove it. Just remember to do .nullify after each removal.
+
+```{r}
+process$file.edit$Final_410973013.Rmd()
+```
+
+```{r}
+process$studentsRmds$Final_410973013.Rmd$move2problem()
+process$.nullify()
+```
+
+Once done, you can restart a new Evaluation instance (no need to start from Process stage).
+
+Extra bonus: process is actually equipped with file.edit method. Use it like:
+```{r}
+process$file.edit$HW7_410672056.Rmd()
+```
+
+
+### individually
+
+```{r}
+# You can also evaluate each Rmd codes one-by-one via their own resolve method. Once resolved, you can see the values after resolution
+ei$answerValues$`homework7-ans.Rmd`$resolve$part4()
+ei$answerValues$`homework7-ans.Rmd`$resolve$part5()
+ei$answerValues$`homework7-ans.Rmd`$resolve$part6()
+View(ei$answerValues$`homework7-ans.Rmd`$values)
+```
+
+
+
+## Save
+You only save necessary answer values for grading step via save method.
+
+```{r}
+ei$save(filename = 
+          file.path(savepath, "data4step3.Rdata"))
+```

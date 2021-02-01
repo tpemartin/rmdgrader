@@ -57,7 +57,7 @@ Review <- function(tb_grades, title, googleDrivePath){
       }
     }
   )
-  ge$upload_update <- generate_grade4JSONuploadUpdateFun(ge, dribble)
+  ge$upload_update <- generate_grade4JSONuploadUpdateFun(ge, dribble, title)
 
   ge$notifyStudentRevisions <- generate_emailBodyContent(ge, title)
 
@@ -137,7 +137,7 @@ compute_GradePRFuns <- function(ge, names_studentRmds){
     }
   }
 }
-googleDrive_uploadAsJson <- function(grade4JSON, dribble, filename=NULL){
+googleDrive_uploadAsJson <- function(grade4JSON, dribble, title, filename=NULL){
   if(is.null(filename)){
    filename <- file.path(tempdir(), paste0("grade_",title,".json"))
   }
@@ -151,7 +151,7 @@ googleDrive_uploadAsJson <- function(grade4JSON, dribble, filename=NULL){
     verbose = F, overwrite = T
   )
 }
-googleDrive_updateGradeAllJson <- function(grade4JSON, dribble){
+googleDrive_updateGradeAllJson <- function(grade4JSON, dribble, title){
 
   googleDrive_downJsonfileAsListFromDribble(dribble, filename="grade_all.json") -> grade_all
 
@@ -178,7 +178,8 @@ googleDrive_updateGradeAllJson <- function(grade4JSON, dribble){
   # upload update revision
 
 }
-generate_grade4JSONuploadUpdateFun <- function(rv, dribble){
+generate_grade4JSONuploadUpdateFun <- function(rv, dribble, .title){
+  title <- .title
   function(){
     names_studentRmds <- names(rv$source_JSON)
     setNames(
@@ -199,8 +200,8 @@ generate_grade4JSONuploadUpdateFun <- function(rv, dribble){
       names_studentRmds
     ) -> grade4JSON
 
-    googleDrive_uploadAsJson(grade4JSON, dribble)
-    googleDrive_updateGradeAllJson(grade4JSON, dribble)
+    googleDrive_uploadAsJson(grade4JSON, dribble, title)
+    googleDrive_updateGradeAllJson(grade4JSON, dribble, title)
   }
 }
 generate_revisionHistory_uploadUpdateFun <- function(rv, title, dribble){
@@ -255,7 +256,7 @@ generate_emailBodyContent <- function(rv, title){
 依據你在Github對{title}成績的dispute，最後有產生以下成績更動：\n
 ')
       .allLabels <- names(rv$revisionHistory[[Xstudent]][[title]])
-      .ansLables <- stringr::str_subset(.allLabels, "ans")
+      .ansLabels <- stringr::str_subset(.allLabels, "ans")
       purrr::reduce(
         append(list(bodyContent), as.list(c(.ansLabels, "grade","PR"))),
         function(oldContent, XansLabel){

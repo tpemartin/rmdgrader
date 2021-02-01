@@ -1,0 +1,210 @@
+---
+title: "Return homework and exam"
+drake_cache: ".final_extrastep4"
+output: html_document
+params:
+  title: "final_extra" # google classroom上公告作業時所用的標題
+  ansfilename: "grading_flow/Final/Final-ans.Rmd"
+  submissionFolder: "studentsSubmission"
+  gradingFolder: "grading_flow"
+  localGDReturnFolderPath: "/Users/martinl/Google Drive/Classroom/109-1 資料科學程式設計（一）/Return"
+  localGDReturnFolderPath_ByTA: "/Users/chenpoming/Google Drive/Classroom/109-1 資料科學程式設計（一）/Return"
+  classDriveFolderPath: "https://drive.google.com/drive/folders/0B7BgScbXrgfNfjRGVnp0V0NKbGVjVEN0UVRMdHB0czhnNVBXYVB4R2liTlZxclJFQWRXb1E"
+  disputeGithub: "https://github.com/tpemartin/109-1-inclass-practice"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## makecondition
+
+```{r makecondition}
+library(dplyr)
+library(rmdgrader)
+library(econDS)
+library(tidyverse)
+library(googledrive)
+rprojroot::is_rstudio_project$make_fix_file() -> .root
+datafilename <- 
+    file.path(.root(),params$gradingFolder,params$title,"data4step3.Rdata")
+  load(datafilename, envir = .GlobalEnv)
+correctAnsFilename = 
+    file.path(
+      .root(), params$ansfilename
+    ) 
+gradeSavingFilename <- 
+  file.path(.root(),params$gradingFolder,params$title,"data4step4.Rdata")
+load(gradeSavingFilename, envir=.GlobalEnv)
+returnFolder <-
+  file.path(.root(), params$submissionFolder, params$title, "return")
+problemFolder <- 
+  file.path(returnFolder, "cannotSynthesized")
+copy2returnGDfolderFilename = 
+  file.path(.root(), params$gradingFolder, params$title,
+            "data4step5.Rdata")
+classDriveFolderPath = params$classDriveFolderPath 
+if(!dir.exists(problemFolder)) dir.create(problemFolder)
+ansLabels <- colnames(tb_grades %>% select(contains("ans")))
+load(
+  file.path(
+    .root(),"109-1-completeRoster.Rdata"),
+  envir = .GlobalEnv
+)
+if(!dir.exists(returnFolder)) dir.create(returnFolder)
+```
+
+# Obtain synthersizer
+
+```{r synthesizeWithCorrectAns}
+synthesizeWithCorrectAns ={
+  synthersizeWithCorrectAnsFunctional(
+    correctAnsFilename
+  )
+}
+```
+
+# Synthesize return Rmds
+
+```{r generateReturnRmds}
+generateReturnRmds = {
+  allRmds <- 
+    file.path(.root(), params$submissionFolder, params$title, tb_grades$name)
+
+  for(.x in seq_along(allRmds)){
+  cat(.x, " ", basename(allRmds[[.x]]),"\n")
+  tryCatch(
+    {
+      synthesize_returnRmd(
+        allRmds[[.x]], tb_grades[.x,],
+        synthesizeWithCorrectAns,
+        returnFolder)
+    }, 
+    error=function(e){
+      cat(basename(allRmds[[.x]]), " can not be synthesized.\n")
+      file.copy(
+        from = allRmds[[.x]],
+        to = file.path(
+          problemFolder, basename(allRmds[[.x]])
+        )
+      )
+    }
+  )
+  
+  }
+  
+}
+```
+
+
+```{r}
+list.files(file.path(root(), "studentsSubmission/hw1/return/"), full.names = T) -> returnRmds
+file.edit(returnRmds[[2]])
+```
+
+## Copy to google drive
+
+```{r result_copy2returnGDfolder}
+result_copy2returnGDfolder = {
+  title=params$title
+  correctAnsTemplateFilename =
+    file.path(.root(),"homeworks",basename(correctAnsFilename))
+  localGDReturnFolderPath=params$localGDReturnFolderPath
+  # 如果是TA在做的話，就需要改用這行（前提是frontmatter的parameter有設定對）
+  # localGDReturnFolderPath=params$localGDReturnFolderPath_ByTA 
+  
+  generateReturnRmds_then_copy2googleDriveReturnFolder(
+    title,
+    completeRoster,
+    correctAnsFilename,
+    localGDReturnFolderPath
+  ) -> result_copy2returnGDfolder
+  save(
+    result_copy2returnGDfolder,
+    file = copy2returnGDfolderFilename
+  )
+  result_copy2returnGDfolder
+}
+```
+
+## Fire dispute issue
+
+```{r}
+deadline <- lubridate::today()+lubridate::days(7)
+content <-
+{
+  glue::glue("問題反應截止日期： {deadline}
+
+請用以下格式來寫：（一人請只留一則訊息，裡頭包含你所有的問題，否則會影響後續的程式處理）
+
+---
+
+學號：411073007
+
+ans11
+我的答案是 .... 但.....(陳述內容自定）
+
+ans31
+我的答案是.... 但 ....(陳述內容自定）")
+}
+title = glue::glue("{params$title} 批改方式問題")
+post_disputeIssue2Github(
+  repoUrl = params$disputeGithub,
+  title=title,
+  content=content
+) -> response
+```
+
+
+
+## Setup individual return GD folder
+
+```{r result_setupIndividualReturnFolder, drake=F}
+result_setupIndividualReturnFolder = {
+  gd_returnFolderIndividuals <-
+    create_individualGoogleDriveReturnFolder(classDriveFolderPath, roster)
+  
+  gd_returnFolderIndividuals_shared <- 
+    share_gdReturnFolders(gd_returnFolderIndividuals)
+  
+  destfile = 
+    file.path(
+      .root(), params$gradingFolder, params$title, "gd_returnFolderIndividuals_shared.Rdata"
+    )
+  save(gd_returnFolderIndividuals_shared,
+       file=destfile)
+  gd_returnFolderIndividuals_shared
+}
+```
+
+```{r}
+load(destfile)
+```
+
+```{r generate_emailContent, drake=F}
+replacement <- list(
+  studentname="謝琪",
+  examTitle="Midterm1",
+  grade="10")
+contentTemplate <- "{studentname}同學好, \n你的{examTitle}成績是{grade}。\n祝學習愉快\n茂廷老師"
+#' Generate content with keywords replaced with values defined in replacement object
+#'
+#' @param contentTemplate A character vector of content template, keywords to be replaced must formed as `{keyword}` as it is taken care by glue::glue()
+#' @param replacement A list of keyword=value pairs
+#'
+#' @return
+#' @export
+#'
+#' @examples none.
+generate_emailContent <- function(contentTemplate, replacement){
+  contentTemplate <- paste0(contentTemplate, collapse="\n")
+  with(
+    replacement,
+    glue::glue(contentTemplate)
+  )
+}
+
+generate_emailContent(contentTemplate, replacement)
+```
+
+

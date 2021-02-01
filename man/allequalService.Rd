@@ -7,7 +7,8 @@
 allequalService(
   targetLabel = targetLabel,
   .transform = NULL,
-  switchTargetCurrent = F
+  switchTargetCurrent = F,
+  useSHA = F
 )
 }
 \value{

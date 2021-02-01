@@ -266,7 +266,7 @@ grademFunctional <- function(.mgetxy){
 # helpers -----------------------------------------------------------------
 
 
-generate_.x_functions <- function(ae, .x) {
+generate_.x_functions <- function(ae, .x, useSHA) {
   function(){
     rlang::expr({
       # Group 1's all.equal messages
@@ -284,7 +284,18 @@ generate_.x_functions <- function(ae, .x) {
       print(x) # 原始程式碼
       message("transform後，沒transform則與上面相同\n")
       print(head(ae$xy[[!!.x]][[Rmd1]]$x)) # transform後，沒transform則與上面相同
-      ae$check_messageGroups[[paste0("G",!!.x,"grade")]] <-
+      # browser()
+      if(useSHA){
+        XgroupName <-
+          stringr::str_sub(names(ae$check_messageGroups)[[!!.x]], 1, 7)
+        XgroupcommentName <-
+          paste0(XgroupName,"_GradeComment")
+      } else {
+        XgroupcommentName <- paste0("G",!!.x,"grade")
+      }
+
+      # ae$check_messageGroups[[]] <-
+      ae$check_messageGroups[[XgroupcommentName]] <-
         list(
           comment=function(comment){
             comment -> ae$result$messageGroups[[!!.x]]$comment
@@ -321,7 +332,7 @@ generate_recordGradeCommentsFromTb_gradesWithoutComments <- function(tb_grades) 
         seq_along(ansLabels),
         ~ {list(
           list(
-            time = timestamp(),
+            time = timestamp(quiet = T),
             grade = Ygrades[[ansLabels[[.x]]]],
             comment = ""
           )
