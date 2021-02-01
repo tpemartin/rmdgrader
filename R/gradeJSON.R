@@ -238,9 +238,8 @@ updateUpload2GoogleDrive <- function(dribble, driveFilename, listObject, whichEl
     setNames(append(listObject,
                     list(whatValue)), c(currentNames, whichElement)) ->  listObject
   }
-
   googleDrive_uploadAsJson(
-    listObject, dribble, driveFilename
+    listObject, dribble, title=whichElement, filename=driveFilename
   )
 }
 generate_emailBodyContent <- function(rv, title){
