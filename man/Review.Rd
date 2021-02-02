@@ -4,12 +4,14 @@
 \alias{Review}
 \title{Review instance initiator}
 \usage{
-Review(tb_grades, title)
+Review(tb_grades, title, googleDrivePath)
 }
 \arguments{
 \item{tb_grades}{A dataframe of grades from each ansXXX. If need to be recale, recale them before input here.}
 
 \item{title}{A character of title, normally from params$title}
+
+\item{googleDrivePath}{A character of path to the drive folder, i.e. path after My Drive/}
 }
 \value{
 A review instance

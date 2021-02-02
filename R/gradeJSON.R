@@ -285,3 +285,22 @@ generate_emailBodyContent <- function(rv, title){
     notifyStudentRevision(rv)
   }
 }
+#' Read a json file from Google Drive url
+#'
+#' @param fileUrl A weblink to a google drive jsonfile
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' read_googleDrivJson("https://drive.google.com/file/d/17D0TYnwJKps1ZxrbHvENs9LcSOY1JtXA/view?usp=sharing")
+read_googleDriveJson <- function(fileUrl){
+  dribble <- as_dribble(fileUrl)
+  jsontempfile <- tempfile(fileext = ".json")
+  googledrive::drive_download(
+    file=dribble,
+    path=jsontempfile
+  )
+  jsonlite::fromJSON(jsontempfile) -> jsonRecords
+  return(jsonRecords)
+}
