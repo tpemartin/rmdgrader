@@ -267,12 +267,18 @@ generate_emailBodyContent <- function(rv, title){
             paste0(
               rv$revisionHistory[[Xstudent]][[title]][[XansLabel]]$comment
             ),
-            "         ***         \n\n")
+            "\n         ***         \n\n")
 
         }
-      ) -> list_emailBody[[Xstudent]]$body
-      list_emailBody[[Xstudent]]$email <- Xdata$email
+      ) -> Xbody
+      list_emailBody[[Xstudent]]$body <- c(
+        Xbody,
+        '\n每小題成績已依整份考卷/作業的滿分進行比例標準化，例如有5小題每題答對原始計分為1，但該份作業滿分為10分，故在最後呈現時會乘上2；原始得分1分會以2分呈現，原始得分0.3分會以0.6分呈現。而作業滿分10分，去掉繳交3分bonus，會有7分平均分佈在各小題，7除以總題數即為呈現時原始得分要乘上的比例。'
+      )
+      list_emailBody[[Xstudent]]$email <-Xdata$email
+
     }
+
     rv$revisionEmails <- list_emailBody
     setNames(rv$revisionEmails, names(rv$revisionHistory))
 
