@@ -16,5 +16,6 @@ read_googleDriveJson(fileUrl)
 Read a json file from Google Drive url
 }
 \examples{
+none
 read_googleDrivJson("https://drive.google.com/file/d/17D0TYnwJKps1ZxrbHvENs9LcSOY1JtXA/view?usp=sharing")
 }

@@ -292,7 +292,7 @@ generate_emailBodyContent <- function(rv, title){
 #' @return
 #' @export
 #'
-#' @examples
+#' @examples none
 #' read_googleDrivJson("https://drive.google.com/file/d/17D0TYnwJKps1ZxrbHvENs9LcSOY1JtXA/view?usp=sharing")
 read_googleDriveJson <- function(fileUrl){
   dribble <- googledrive::as_dribble(fileUrl)
