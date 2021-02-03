@@ -137,7 +137,7 @@ compute_GradePRFuns <- function(ge, names_studentRmds){
     }
   }
 }
-googleDrive_uploadAsJson <- function(grade4JSON, dribble, title, filename=NULL){
+googleDrive_uploadAsJson <- function(grade4JSON, dribble, title="", filename=NULL){
   if(is.null(filename)){
    filename <- file.path(tempdir(), paste0("grade_",title,".json"))
   }

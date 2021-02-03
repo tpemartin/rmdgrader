@@ -31,33 +31,3 @@ gm_oauth <- function() {
   )
 }
 
-generate_body <- function(regardJsonUrl = NULL, .personalInfo) {
-  body <- "老師好，
-
-{your question}
-
-學生{name},
-學號: {id},
-Email: {email}
-
-### 以下請勿書寫
-"
-  name <- .personalInfo$name
-  id <- .personalInfo$id
-  email <- .personalInfo$gmail
-
-  bodyRegards <- get_bodyRegards(regardJsonUrl)
-
-  stringr::str_replace_all(
-    body,
-    c(
-      "\\{topics\\}" = bodyRegards$topics,
-      "\\{your_question\\}" = bodyRegards$question,
-      "\\{name\\}" = name,
-      "\\{id\\}" = id,
-      "\\{email\\}" = email
-    )
-  ) -> body
-  body
-}
-
