@@ -295,7 +295,7 @@ generate_emailBodyContent <- function(rv, title){
 #' @examples
 #' read_googleDrivJson("https://drive.google.com/file/d/17D0TYnwJKps1ZxrbHvENs9LcSOY1JtXA/view?usp=sharing")
 read_googleDriveJson <- function(fileUrl){
-  dribble <- as_dribble(fileUrl)
+  dribble <- googledrive::as_dribble(fileUrl)
   jsontempfile <- tempfile(fileext = ".json")
   googledrive::drive_download(
     file=dribble,
