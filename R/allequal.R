@@ -286,9 +286,11 @@ get_allequalSummary <- function (targetLabel, whichCorrectAnsvalue = 1, .transfo
     }
     msg_allEqual[[.x]] <-
       if(switchTargetCurrent){
-        all.equal(x, y)
+        tryCatch_allEqual(x, y)
+        # all.equal(x, y)
       } else {
-        all.equal(y,x) # default
+        tryCatch_allEqual(y, x)
+        # all.equal(y,x) # default
       }
 
   }
@@ -423,4 +425,13 @@ subcategorise_byMsgRmdPairs <- function(ae, list_msg_rmd_pairs){
     cat_errors= categorise_elementNames_ByElementValues(resultsTxt),
     accommodate_grades = useSubcat2ReviseGrade(ae)
   )
+}
+
+tryCatch_allEqual <- function(y, x){
+  tryCatch(
+    all.equal(y,x),
+    error=function(e){
+      e
+    }) -> result
+  return(as.character(result))
 }
