@@ -1,3 +1,38 @@
+#' Recover seat mapping from a seating chart google sheet
+#'
+#' @param seatingChartUrl A url address to google sheet
+#' @param sheet_seatChart A sheet name of the seating chart
+#' @param range_seatChart A range expression of seating chart
+#'
+#' @return
+#' @export
+#'
+#' @examples none
+get_seatmapFromSeatChart <- function(seatingChartUrl, sheet_seatChart, range_seatChart)
+{
+  googlesheets4::as_sheets_id(seatingChartUrl) -> ss
+  googlesheets4::range_read(
+    ss,
+    sheet=sheet_seatChart,
+    range = range_seatChart,
+    col_names = F,
+  ) -> seatingChart
+  chart_dim <- dim(seatingChart)
+  expand.grid(
+    row=1:chart_dim[[1]],
+    col=LETTERS[1:chart_dim[[2]]],
+    stringsAsFactors = F
+  ) -> seatCheck
+  seatingChart |> unlist() -> seatCheck$name
+  require(dplyr)
+  seatCheck |>
+    filter(
+      name !="X"
+      & !is.na(name)
+      & !stringr::str_detect(name,"[0-9]")) ->
+    seatCheck
+  return(seatCheck)
+}
 #' Generate seating chart
 #'
 #' @param seatChartUrl A link to the seating chart google sheets
@@ -82,4 +117,26 @@ generate_seatingChart <- function(
       ss=ss
     )
   }
+}
+
+generate_datalist <- function(
+  seatingChartUrl,
+  sheet_seatChart,
+  range_seatChart
+){
+  seatMapping <- get_seatmapFromSeatChart(
+    seatingChartUrl = seatingChartUrl,
+    sheet_seatChart = sheet_seatChart,
+    range_seatChart = range_seatChart
+  )
+  require(dplyr)
+  seatMapping %>%
+    mutate(
+      seat=paste(row, col, sep=".")
+    ) %>%
+    pull(seat) %>%
+    as.list() %>%
+    setNames(seatMapping$name) -> datalist
+
+  return(datalist)
 }
