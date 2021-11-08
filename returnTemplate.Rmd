@@ -1,0 +1,13 @@
+output: html_document
+params:
+  rawGrade: "%rawGrade%" # 滿分 %fullRawGrade% 分
+  finalGrade: "%finalGrade%" # 滿分10分
+---
+
+# 注意事項
+
+  * 各小題得分： 接開右側邊欄可以看到各小題得分, 小題滿分為1分，以(分數)呈現。
+  
+  * 各小題得分加總形成frontmatter裡的rawGrade （滿分%fullRawGrade%分）。
+  
+  * finalGrade = 3 (期限內繳交基本分) + (7/%fullRawGrade%) * rawGrade

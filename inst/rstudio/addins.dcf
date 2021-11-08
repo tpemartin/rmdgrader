@@ -1,0 +1,5 @@
+Name: extract exercise Rmd from ans Rmd
+Description: New Addin Description
+Binding: extract_exerciseRmd_from_ansRmd
+Interactive: false
+

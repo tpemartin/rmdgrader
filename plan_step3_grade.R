@@ -1,0 +1,591 @@
+params=readRDS("/Users/martinl/Github/rmdgrader/params_step3_grade.rds")
+library(drake)
+library(rmd2drake)
+library(dplyr)
+library(googleclassroom)
+library(readr)
+# library(rmdgrader)
+library(purrr)
+library(rlang)
+library(testthat)
+library(withr)
+.root <- function(){
+  "/Users/martinl/Github/course-dashboard-programming-for-data-science/"
+}
+datafilename <- 
+    file.path(.root(),params$gradingFolder,params$title,"data4step3.Rdata")
+load(datafilename, envir = .GlobalEnv)
+gradeSavingFilename <- 
+  file.path(.root(),params$gradingFolder,params$title,"data4step4.Rdata")
+correctValues <<- objectValues[[1]]
+studentValues <<- objectValues[-1]
+mgetxy <- rmdgrader::generate_mgetxy(allRmds[-1])
+process <- Process()
+process$inBatch_studentsRmds$tryGet_list_codeChunks()
+aeCollection<-new.env()
+get_1pwd = function(...) paste0(sample(c(0:9, LETTERS, letters),6), collapse = "")
+pwd <- new.env()
+pwd$count <- 0
+maxCount <- 4
+set.seed(2859)
+list_pwd0 <- 
+  purrr::map(1:maxCount, get_1pwd)
+# list_pwd0
+
+hijack_readline <- function(...){
+  chosenPwd <- pwd$list_pwd[[1]] # choose 1 pwd to use
+  pwd$list_pwd[[1]] <- NULL # delete that one from the list
+  pwd$count <- pwd$count + 1 # count how many used
+  # flag_maxCount <- pwd$count == maxCount
+  # if(flag_maxCount){
+  #   pwd$list_pwd <- list_pwd0 # replenish pwds
+  #   pwd$count <- 0 # reset count
+  # } 
+  return(chosenPwd)
+}
+test <- function(){} # the holder to turn codes to function
+transform_readlineHijack <- function(ansValue){
+  stringr::str_replace(
+    ansValue,
+    "readline","hijack_readline"
+  ) -> revisedCode
+  body(test) <- 
+    parse(text=c("{",
+                 "pwd$list_pwd <- list_pwd0",
+                 "pwd$count <- 0",
+                 revisedCode,"}"))
+  transformTest <- rmdgrader::transformFunctional_messageKeep()
+
+  try(R.utils::withTimeout(
+    {
+      transformTest(test)
+    },
+    timeout = 5, 
+    onTimeout = "error"
+  ), silent=T) -> result
+  
+  return(result)
+}
+ae13.1s = allequalService('ans13.1s', .transform = transform_readlineHijack)
+ae13.1s$generate_xy4messageGroups(mgetxy)
+# ae13.1s$.yield_messageGroupTable()
+#View(ae13.1s$result$table_messageGroups)
+pwd = new.env()
+list_pwd0 <- list(
+  "48abc", "78AAA89", "whatTheXX", "2839547","THISISIT", "reachMaxIt")
+
+pwd$list_pwd <- list_pwd0
+hijack_readline2 <- function(...){
+  chosenPwd <- pwd$list_pwd[[1]] # choose 1 pwd to use
+  pwd$list_pwd[[1]] <- NULL # delete that one from the list
+  # pwd$count <- pwd$count + 1 # count how many used
+  # flag_maxCount <- pwd$count == maxCount
+  # if(flag_maxCount){
+  #   pwd$list_pwd <- list_pwd0 # replenish pwds
+  #   pwd$count <- 0 # reset count
+  # } 
+  return(chosenPwd)
+}
+
+test <- function(){} # the holder to turn codes to function
+transform_readlineHijack2 <- function(ansValue){
+  stringr::str_replace(
+    ansValue,
+    "readline","hijack_readline2"
+  ) -> revisedCode
+  body(test) <- 
+    parse(text=c("{",
+                 "pwd$list_pwd <- list_pwd0",
+                 # "pwd$count <- 0",
+                 revisedCode,"}"))
+  transformTest <- rmdgrader::transformFunctional_messageKeep()
+
+  try(R.utils::withTimeout(
+    {
+      transformTest(test)
+    },
+    timeout = 5, 
+    onTimeout = "error"
+  ), silent=T) -> result
+  
+  return(result)
+}
+
+ae13.2s <- allequalService('ans13.2s', .transform = transform_readlineHijack2)
+ae13.2s$generate_xy4messageGroups(mgetxy)
+# ae13.2s$.yield_messageGroupTable()
+#View(ae13.2s$result$table_messageGroups)
+options(rstudio_drake_cache = storr::storr_rds("/Users/martinl/Github/rmdgrader/.HW8step3", hash_algorithm = "xxhash64"))
+# plan_step3_grade------------
+plan_step3_grade=drake::drake_plan(
+# > plan begins -----------
+# >> ae12--------------
+ae12.1 = {
+    ae12.1 = allequalService('ans12.1')
+    ae12.1$generate_xy4messageGroups(mgetxy)
+    
+    ae12.1$check_messageGroups$G1()
+    ae12.1$check_messageGroups$G1grade$grade(0)
+    
+    ae12.1$check_messageGroups$G2()
+    ae12.1$check_messageGroups$G2grade$grade(1)
+    
+    ae12.1$check_messageGroups$G3()
+    ae12.1$check_messageGroups$G3grade$grade(0)
+    
+    aeCollection$ae12.1 <- ae12.1
+    
+    ae12.1
+},
+
+# >> grade12--------------
+grade12.1 = {
+  
+  grade12.1 = ae12.1$extract_grades()
+  grade12.1
+},
+
+# >> ae12--------------
+ae12.2 = {
+  ae12.2 <- allequalService('ans12.2')
+ae12.2$generate_xy4messageGroups(mgetxy)
+ae12.2$.yield_messageGroupTable()
+ae12.2$check_messageGroups$G1()
+ae12.2$check_messageGroups$G1grade$grade(0)
+
+ae12.2$check_messageGroups$G2()
+ae12.2$check_messageGroups$G2grade$grade(1)
+
+ae12.2$check_messageGroups$G3()
+ae12.2$check_messageGroups$G3grade$comment('在lowerTriX賦值時出了小錯。')
+ae12.2$check_messageGroups$G3grade$grade(0.9)
+
+ae12.2$check_messageGroups$G4()
+ae12.2$check_messageGroups$G4grade$grade(0)
+
+ae12.2$check_messageGroups$G5()
+ae12.2$check_messageGroups$G5grade$grade(0)
+
+ae12.2$check_messageGroups$G6()
+ae12.2$check_messageGroups$G6grade$comment('在lowerTriX賦值時出了小錯。')
+ae12.2$check_messageGroups$G6grade$grade(0.9)
+
+ae12.2$check_messageGroups$G7()
+ae12.2$check_messageGroups$G7grade$comment('貼了不相干的程式碼。')
+ae12.2$check_messageGroups$G7grade$grade(0)
+
+ae12.2$check_messageGroups$G8()
+ae12.2$check_messageGroups$G8grade$grade(0)
+
+ae12.2$check_messageGroups$G9()
+ae12.2$check_messageGroups$G9grade$grade(0)
+
+ae12.2$check_messageGroups$G10()
+ae12.2$check_messageGroups$G10grade$comment('有自己的想法很棒。下次可以考量用兩層for-loop看看')
+ae12.2$check_messageGroups$G10grade$grade(1)
+
+ae12.2$check_messageGroups$G11()
+ae12.2$check_messageGroups$G11grade$comment('只取了對角線')
+ae12.2$check_messageGroups$G11grade$grade(0.3)
+
+ae12.2$check_messageGroups$G12()
+ae12.2$check_messageGroups$G12grade$comment('for loop最外的lowerTriX[[i]] <- 
+會造成錯誤')
+ae12.2$check_messageGroups$G12grade$grade(0.3)
+
+ae12.2$check_messageGroups$G13()
+ae12.2$check_messageGroups$G13grade$grade(0)
+
+aeCollection$ae12.2 <- ae12.2
+  ae12.2
+},
+
+# >> grade12--------------
+grade12.2={
+  
+
+ae12.2$extract_grades()
+},
+
+# >> ae12--------------
+ae12.3 = {
+  ae12.3 <- allequalService('ans12.3')
+  ae12.3$generate_xy4messageGroups(mgetxy)
+  
+  ae12.3$.yield_messageGroupTable()
+  # View(ae12.3$result$table_messageGroups)
+  
+  ae12.3$check_messageGroups$G1()
+  ae12.3$check_messageGroups$G1grade$grade(0)
+  
+  ae12.3$check_messageGroups$G2()
+  ae12.3$check_messageGroups$G2grade$grade(1)
+  
+  ae12.3$check_messageGroups$G3()
+  ae12.3$check_messageGroups$G3grade$comment('雖然有計算小錯誤，但程式架構清楚，瑕不掩瑜。')
+  ae12.3$check_messageGroups$G3grade$grade(0.9)
+  
+  ae12.3$check_messageGroups$G4()
+  ae12.3$check_messageGroups$G4grade$grade(0)
+  
+  ae12.3$check_messageGroups$G5()
+  ae12.3$check_messageGroups$G5grade$comment("sum(simData[\"income\"]...) 裡用一個中括號會取不出乾淨的income元素值而形成錯誤. ")
+  ae12.3$check_messageGroups$G5grade$grade(0.6)
+  
+  aeCollection$ae12.3 <- ae12.3
+  
+  ae12.3
+},
+
+# >> grade12--------------
+grade12.3 = {
+  ae12.3$extract_grades()
+},
+
+# >> ae13--------------
+ae13.1s= {
+ae13.1s$check_messageGroups$G1()
+ae13.1s$check_messageGroups$G1grade$grade(0)
+
+ae13.1s$check_messageGroups$G2()
+ae13.1s$check_messageGroups$G2grade$grade(1)
+
+ae13.1s$check_messageGroups$G3()
+ae13.1s$check_messageGroups$G3grade$comment('多了一次input機會，但屬小錯誤')
+ae13.1s$check_messageGroups$G3grade$grade(1)
+
+ae13.1s$check_messageGroups$G4()
+ae13.1s$check_messageGroups$G4grade$grade(1)
+
+ae13.1s$check_messageGroups$G5()
+ae13.1s$check_messageGroups$G5grade$comment('多了一次input機會，但屬小錯誤')
+ae13.1s$check_messageGroups$G5grade$grade(1)
+
+ae13.1s$check_messageGroups$G6()
+ae13.1s$check_messageGroups$G6grade$comment('多了一次input機會，但屬小錯誤')
+ae13.1s$check_messageGroups$G6grade$grade(1)
+
+ae13.1s$check_messageGroups$G7()
+ae13.1s$check_messageGroups$G7grade$comment('message()並不會回傳值，會造成continuation flag失效而出現無窮迴圈。')
+ae13.1s$check_messageGroups$G7grade$grade(0.7)
+  
+ aeCollection$ae13.1s <- ae13.1s
+  ae13.1s
+},
+
+# >> grade13--------------
+grade13.1s = {
+
+ae13.1s$extract_grades()},
+
+# >> ae13--------------
+ae13.2s = {
+    # browser()
+
+  ae13.2s$check_messageGroups$G1()
+  ae13.2s$check_messageGroups$G1grade$grade(0)
+
+  ae13.2s$check_messageGroups$G2()
+  ae13.2s$check_messageGroups$G2grade$comment('max次數多了一次，但小失誤，整體coding清楚')
+  ae13.2s$check_messageGroups$G2grade$grade(1)
+  
+  ae13.2s$check_messageGroups$G3()
+  ae13.2s$check_messageGroups$G3grade$grade(0)
+  
+  ae13.2s$check_messageGroups$G4()
+   ae13.2s$check_messageGroups$G4grade$comment('some error in condition setup. Other than that, the coding logics is clear.')
+  ae13.2s$check_messageGroups$G4grade$grade(0.7)
+ 
+  ae13.2s$check_messageGroups$G5()
+  ae13.2s$check_messageGroups$G5grade$grade(0)
+  # ae13.2s$xy[[11]][[1]]$x
+  # 
+  aeCollection$ae13.2s <- ae13.2s
+  
+  ae13.2s
+},
+
+# >> grade13--------------
+grade13.2s=ae13.2s$extract_grades(),
+
+# >> tb_grades--------------
+tb_grades = convert_gradeList2dataframe(
+    ans12.1=grade12.1,
+    ans12.2=grade12.2,
+    ans12.3=grade12.3,
+    ans13.1s=grade13.1s,
+    ans13.2s=grade13.2s
+),
+
+# >> records_gradeComment--------------
+records_gradeComment = {
+  tb_grades
+  allObjectsInCurrentEnvironment <- ls(envir=aeCollection)
+  all_aeObjects <- stringr::str_subset(allObjectsInCurrentEnvironment, "^ae[[:alnum:]\\.]+")
+  # .x <- 1
+  record_gradesCommentsWithTimestamp(all_aeObjects = all_aeObjects, envir = aeCollection)
+},
+
+# >> saveGrades--------------
+saveGrades = {
+  save(tb_grades, records_gradeComment, file=gradeSavingFilename)
+  gradeSavingFilename
+}
+
+# > plan ends ------------
+)
+
+mk_plan_step3_grade= function(...)
+{
+params=readRDS("/Users/martinl/Github/rmdgrader/params_step3_grade.rds")
+library(drake)
+library(rmd2drake)
+library(dplyr)
+library(googleclassroom)
+library(readr)
+# library(rmdgrader)
+library(purrr)
+library(rlang)
+library(testthat)
+library(withr)
+.root <- function(){
+  "/Users/martinl/Github/course-dashboard-programming-for-data-science/"
+}
+datafilename <- 
+    file.path(.root(),params$gradingFolder,params$title,"data4step3.Rdata")
+load(datafilename, envir = .GlobalEnv)
+gradeSavingFilename <- 
+  file.path(.root(),params$gradingFolder,params$title,"data4step4.Rdata")
+correctValues <<- objectValues[[1]]
+studentValues <<- objectValues[-1]
+mgetxy <- rmdgrader::generate_mgetxy(allRmds[-1])
+process <- Process()
+process$inBatch_studentsRmds$tryGet_list_codeChunks()
+aeCollection<-new.env()
+get_1pwd = function(...) paste0(sample(c(0:9, LETTERS, letters),6), collapse = "")
+pwd <- new.env()
+pwd$count <- 0
+maxCount <- 4
+set.seed(2859)
+list_pwd0 <- 
+  purrr::map(1:maxCount, get_1pwd)
+# list_pwd0
+
+hijack_readline <- function(...){
+  chosenPwd <- pwd$list_pwd[[1]] # choose 1 pwd to use
+  pwd$list_pwd[[1]] <- NULL # delete that one from the list
+  pwd$count <- pwd$count + 1 # count how many used
+  # flag_maxCount <- pwd$count == maxCount
+  # if(flag_maxCount){
+  #   pwd$list_pwd <- list_pwd0 # replenish pwds
+  #   pwd$count <- 0 # reset count
+  # } 
+  return(chosenPwd)
+}
+test <- function(){} # the holder to turn codes to function
+transform_readlineHijack <- function(ansValue){
+  stringr::str_replace(
+    ansValue,
+    "readline","hijack_readline"
+  ) -> revisedCode
+  body(test) <- 
+    parse(text=c("{",
+                 "pwd$list_pwd <- list_pwd0",
+                 "pwd$count <- 0",
+                 revisedCode,"}"))
+  transformTest <- rmdgrader::transformFunctional_messageKeep()
+
+  try(R.utils::withTimeout(
+    {
+      transformTest(test)
+    },
+    timeout = 5, 
+    onTimeout = "error"
+  ), silent=T) -> result
+  
+  return(result)
+}
+ae13.1s = allequalService('ans13.1s', .transform = transform_readlineHijack)
+ae13.1s$generate_xy4messageGroups(mgetxy)
+# ae13.1s$.yield_messageGroupTable()
+#View(ae13.1s$result$table_messageGroups)
+pwd = new.env()
+list_pwd0 <- list(
+  "48abc", "78AAA89", "whatTheXX", "2839547","THISISIT", "reachMaxIt")
+
+pwd$list_pwd <- list_pwd0
+hijack_readline2 <- function(...){
+  chosenPwd <- pwd$list_pwd[[1]] # choose 1 pwd to use
+  pwd$list_pwd[[1]] <- NULL # delete that one from the list
+  # pwd$count <- pwd$count + 1 # count how many used
+  # flag_maxCount <- pwd$count == maxCount
+  # if(flag_maxCount){
+  #   pwd$list_pwd <- list_pwd0 # replenish pwds
+  #   pwd$count <- 0 # reset count
+  # } 
+  return(chosenPwd)
+}
+
+test <- function(){} # the holder to turn codes to function
+transform_readlineHijack2 <- function(ansValue){
+  stringr::str_replace(
+    ansValue,
+    "readline","hijack_readline2"
+  ) -> revisedCode
+  body(test) <- 
+    parse(text=c("{",
+                 "pwd$list_pwd <- list_pwd0",
+                 # "pwd$count <- 0",
+                 revisedCode,"}"))
+  transformTest <- rmdgrader::transformFunctional_messageKeep()
+
+  try(R.utils::withTimeout(
+    {
+      transformTest(test)
+    },
+    timeout = 5, 
+    onTimeout = "error"
+  ), silent=T) -> result
+  
+  return(result)
+}
+
+ae13.2s <- allequalService('ans13.2s', .transform = transform_readlineHijack2)
+ae13.2s$generate_xy4messageGroups(mgetxy)
+# ae13.2s$.yield_messageGroupTable()
+#View(ae13.2s$result$table_messageGroups)
+options(rstudio_drake_cache = storr::storr_rds("/Users/martinl/Github/rmdgrader/.HW8step3", hash_algorithm = "xxhash64"))
+drake::make(plan_step3_grade,
+cache=drake::drake_cache(
+  path="/Users/martinl/Github/rmdgrader/.HW8step3"),...)
+}
+vis_plan_step3_grade= function(...)
+{
+params=readRDS("/Users/martinl/Github/rmdgrader/params_step3_grade.rds")
+library(drake)
+library(rmd2drake)
+library(dplyr)
+library(googleclassroom)
+library(readr)
+# library(rmdgrader)
+library(purrr)
+library(rlang)
+library(testthat)
+library(withr)
+.root <- function(){
+  "/Users/martinl/Github/course-dashboard-programming-for-data-science/"
+}
+datafilename <- 
+    file.path(.root(),params$gradingFolder,params$title,"data4step3.Rdata")
+load(datafilename, envir = .GlobalEnv)
+gradeSavingFilename <- 
+  file.path(.root(),params$gradingFolder,params$title,"data4step4.Rdata")
+correctValues <<- objectValues[[1]]
+studentValues <<- objectValues[-1]
+mgetxy <- rmdgrader::generate_mgetxy(allRmds[-1])
+process <- Process()
+process$inBatch_studentsRmds$tryGet_list_codeChunks()
+aeCollection<-new.env()
+get_1pwd = function(...) paste0(sample(c(0:9, LETTERS, letters),6), collapse = "")
+pwd <- new.env()
+pwd$count <- 0
+maxCount <- 4
+set.seed(2859)
+list_pwd0 <- 
+  purrr::map(1:maxCount, get_1pwd)
+# list_pwd0
+
+hijack_readline <- function(...){
+  chosenPwd <- pwd$list_pwd[[1]] # choose 1 pwd to use
+  pwd$list_pwd[[1]] <- NULL # delete that one from the list
+  pwd$count <- pwd$count + 1 # count how many used
+  # flag_maxCount <- pwd$count == maxCount
+  # if(flag_maxCount){
+  #   pwd$list_pwd <- list_pwd0 # replenish pwds
+  #   pwd$count <- 0 # reset count
+  # } 
+  return(chosenPwd)
+}
+test <- function(){} # the holder to turn codes to function
+transform_readlineHijack <- function(ansValue){
+  stringr::str_replace(
+    ansValue,
+    "readline","hijack_readline"
+  ) -> revisedCode
+  body(test) <- 
+    parse(text=c("{",
+                 "pwd$list_pwd <- list_pwd0",
+                 "pwd$count <- 0",
+                 revisedCode,"}"))
+  transformTest <- rmdgrader::transformFunctional_messageKeep()
+
+  try(R.utils::withTimeout(
+    {
+      transformTest(test)
+    },
+    timeout = 5, 
+    onTimeout = "error"
+  ), silent=T) -> result
+  
+  return(result)
+}
+ae13.1s = allequalService('ans13.1s', .transform = transform_readlineHijack)
+ae13.1s$generate_xy4messageGroups(mgetxy)
+# ae13.1s$.yield_messageGroupTable()
+#View(ae13.1s$result$table_messageGroups)
+pwd = new.env()
+list_pwd0 <- list(
+  "48abc", "78AAA89", "whatTheXX", "2839547","THISISIT", "reachMaxIt")
+
+pwd$list_pwd <- list_pwd0
+hijack_readline2 <- function(...){
+  chosenPwd <- pwd$list_pwd[[1]] # choose 1 pwd to use
+  pwd$list_pwd[[1]] <- NULL # delete that one from the list
+  # pwd$count <- pwd$count + 1 # count how many used
+  # flag_maxCount <- pwd$count == maxCount
+  # if(flag_maxCount){
+  #   pwd$list_pwd <- list_pwd0 # replenish pwds
+  #   pwd$count <- 0 # reset count
+  # } 
+  return(chosenPwd)
+}
+
+test <- function(){} # the holder to turn codes to function
+transform_readlineHijack2 <- function(ansValue){
+  stringr::str_replace(
+    ansValue,
+    "readline","hijack_readline2"
+  ) -> revisedCode
+  body(test) <- 
+    parse(text=c("{",
+                 "pwd$list_pwd <- list_pwd0",
+                 # "pwd$count <- 0",
+                 revisedCode,"}"))
+  transformTest <- rmdgrader::transformFunctional_messageKeep()
+
+  try(R.utils::withTimeout(
+    {
+      transformTest(test)
+    },
+    timeout = 5, 
+    onTimeout = "error"
+  ), silent=T) -> result
+  
+  return(result)
+}
+
+ae13.2s <- allequalService('ans13.2s', .transform = transform_readlineHijack2)
+ae13.2s$generate_xy4messageGroups(mgetxy)
+# ae13.2s$.yield_messageGroupTable()
+#View(ae13.2s$result$table_messageGroups)
+options(rstudio_drake_cache = storr::storr_rds("/Users/martinl/Github/rmdgrader/.HW8step3", hash_algorithm = "xxhash64"))
+drake::vis_drake_graph(plan_step3_grade,
+cache=drake::drake_cache(
+  path="/Users/martinl/Github/rmdgrader/.HW8step3"),...)
+}
+load_plan_step3_grade= function(...)
+{
+drake::loadd(...,
+cache=drake::drake_cache(
+  path="/Users/martinl/Github/rmdgrader/.HW8step3"), envir = .GlobalEnv)
+}

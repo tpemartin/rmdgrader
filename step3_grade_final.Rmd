@@ -1,0 +1,657 @@
+---
+title: "Grade"
+drake_cache: ".Finalstep3"
+output: html_document
+params:
+  title: "Final" # google classroom上公告作業時所用的標題
+  ansfilename: "grading_flow/Final-ans.Rmd"
+  submissionFolder: "studentsSubmission"
+  gradingFolder: "grading_flow"
+---
+
+## makecondition
+
+```{r makecondition}
+library(drake)
+library(rmd2drake)
+library(dplyr)
+library(googleclassroom)
+library(readr)
+# library(rmdgrader)
+library(purrr)
+library(rlang)
+library(testthat)
+library(withr)
+library(lubridate)
+library(stringr)
+rprojroot::is_rstudio_project$make_fix_file() -> .root
+.root <- function(){
+  "/Users/martinl/Github/course-dashboard-programming-for-data-science"
+}
+datafilename <- 
+    file.path(.root(),params$gradingFolder,params$title,"data4step3.Rdata")
+load(datafilename, envir = .GlobalEnv)
+gradeSavingFilename <- 
+  file.path(.root(),params$gradingFolder,params$title,"data4step4.Rdata")
+# correctValues <<- objectValues[[1]]
+# studentValues <<- objectValues[-1]
+mgetxy <- generate_mgetxy(basename(allRmds[-1]))
+# mgetxy <- rmdgrader::generate_mgetxy(basename(allRmds[-1]))
+studentRmds <- allRmds[-1]
+submissionPath <- 
+    file.path(
+      .root(),
+      params$submissionFolder,
+      params$title
+    )
+mfile.edit <- mfile.editFunctional(studentRmds, submissionPath)
+```
+
+```{r}
+load("~/Github/course-dashboard-programming-for-data-science/grading_flow/Final/data4step4.Rdata")
+```
+
+## Grading
+
+### ans113
+
+```{r makecondition}
+# debug(allequalService)
+ae113 <- allequalService('ans113', useSHA = T)
+ae113$generate_xy4messageGroups(mgetxy)
+```
+
+
+```{r ae113check}
+ae113check ={
+ae113$check_messageGroups$G8917bfd07782cc8ebdf5247ab3e0739fac63f338()
+ae113$check_messageGroups$G8917bf_GradeComment$grade(0.34)
+ae113$check_messageGroups$G14fc73d01dd2bfca0d848e831f1ccd13876b4bb3()
+ae113$check_messageGroups$G14fc73_GradeComment$grade(0.35)
+ae113$check_messageGroups$G4c3548d0eb4b4f0ba1a0025733e784e023002492()
+ae113$check_messageGroups$G4c3548_GradeComment$grade(0)
+ae113$check_messageGroups$Ga98a51731d7baf3011db63effcff1936b7b12030()
+ae113$check_messageGroups$Ga98a51_GradeComment$grade(0.25)
+ae113$check_messageGroups$Gf205ef8267ffc78b6cbc139f2b51ba7df20a2fb7()
+ae113$check_messageGroups$Gf205ef_GradeComment$grade(0.25)
+ae113$check_messageGroups$G347b00fd740a328878e4fd6ec9bab6ade101c750()
+ae113$check_messageGroups$G347b00_GradeComment$grade(0.25)
+ae113$check_messageGroups$Gda6551f65bf34ad42d06151dade4bad7a785e6b5()
+ae113$check_messageGroups$Gda6551_GradeComment$grade(0.25)
+ae113$check_messageGroups$G88663507a9180410942ae1a59d8e8aa0ca1fb980()
+ae113$check_messageGroups$G886635_GradeComment$grade(0.1)
+ae113$check_messageGroups$Gc596574c242b39932cd7acd592eebbea2c66f700()
+ae113$check_messageGroups$Gc59657_GradeComment$grade(0.05)
+ae113$check_messageGroups$G22e025927ed9c9635931ba33218b16399cfab682()
+ae113$check_messageGroups$G22e025_GradeComment$grade(0.05)
+ae113$check_messageGroups$G22e025_GradeComment$comment('pickHistory was replaced later, causing errors')
+ae113$check_messageGroups$G30bd3f43594a57519766cc5869745102ab741005()
+ae113$check_messageGroups$G30bd3f_GradeComment$grade(0.2)
+ae113$check_messageGroups$Gf7dd37b169078c382fba8d6e0ed86c12f5635dc4()
+ae113$check_messageGroups$Gf7dd37_GradeComment$grade(0.35)
+ae113$check_messageGroups$G0b2e96a7aeba07a9a1478465483f2758d805e2cf()
+ae113$check_messageGroups$G0b2e96_GradeComment$grade(0.1)
+ae113$check_messageGroups$G10051f05d6cd9277967dc66725c1823facbd2e03()
+ae113$check_messageGroups$G10051f_GradeComment$grade(0)
+ae113$check_messageGroups$G2f5103591ad900e8a3c828d6ea90952631d20323()
+ae113$check_messageGroups$G2f5103_GradeComment$grade(0)
+}
+```
+
+
+```{r}
+ae113$.yield_messageGroupTable()
+View(ae113$result$table_messageGroups)
+```
+
+
+```{r grade113}
+grade113 <- ae113$extract_grades()
+```
+
+
+
+### ans112
+
+```{r makecondition}
+ae112 <- allequalService('ans112', useSHA = T)
+ae112$generate_xy4messageGroups(mgetxy)
+# get_gradesFromAe <- function(ae112){
+#   ae112$.yield_messageGroupTable()
+#   list_grade112 <- grade_by_all.equalMessages(ae112)
+#   grade112 <- list_grade112$grade
+#   grade112[
+#     is.na(grade112)
+#   ] <- 0
+#   grade112
+# }
+
+```
+
+```{r ae112check}
+ae112check = {
+  ae112$check_messageGroups$G4c3548d0eb4b4f0ba1a0025733e784e023002492()
+  ae112$check_messageGroups$G4c3548_GradeComment$grade(0)
+  ae112$check_messageGroups$G7640104086a97568d54728ac91dd975fc9940077()
+  ae112$check_messageGroups$G764010_GradeComment$grade(0.35)
+  ae112$check_messageGroups$Gc299274c99f153ef2dfea370285d4705be114e14()
+  ae112$check_messageGroups$Gc29927_GradeComment$grade(0.35)
+  ae112$check_messageGroups$G5fac87c42408b6599ee2d4057895229a96766783()
+  ae112$check_messageGroups$G5fac87_GradeComment$grade(0)
+  ae112$check_messageGroups$G14fc73d01dd2bfca0d848e831f1ccd13876b4bb3()
+  ae112$check_messageGroups$G14fc73_GradeComment$grade(0.4)
+  ae112$check_messageGroups$G31f0d46195861509f54a1877664161e40baa3252()
+  ae112$check_messageGroups$G31f0d4_GradeComment$grade(0.1)
+  ae112$check_messageGroups$G42432b727c58caeada802c936571a796bc373808()
+  ae112$check_messageGroups$G42432b_GradeComment$grade(0)
+  ae112$check_messageGroups$Ge5e93ed909c739ef5958f0446bd271e920a5d02c()
+  ae112$check_messageGroups$Ge5e93e_GradeComment$grade(0.05)
+  ae112$check_messageGroups$G1260fc6e9bd2b95643d1c1e8d4a6f2fb8bbbef90()
+  ae112$check_messageGroups$G1260fc_GradeComment$grade(0.01)
+}
+```
+
+
+```{r grade112}
+grade112 <- ae112$extract_grades()
+```
+
+### ans111
+
+```{r makecondition}
+# jsonlite::fromJSON("https://www.dropbox.com/s/t09nrzwx8mw6azn/courses107.json?dl=1") -> courses107
+# 
+# source('https://www.dropbox.com/s/g11m7nanbzva7hf/finalChallenge.R?dl=1')
+
+jsonlite::fromJSON("/Users/martinl/Dropbox/github-data/109-1-P4D/courses107.json") -> courses107
+source("/Users/martinl/Dropbox/github-data/109-1-P4D/finalChallenge.R")
+
+set.seed(2038)
+source <- sample(courses107$應修系級, 200)
+source
+categories <- c("外語系", "統計系")
+transform111true = transformFunctional(source=source, categories=categories, followByAlnum=TRUE)
+transform111false = transformFunctional(source=source, categories=categories, followByAlnum=FALSE)
+ae111 <- 
+  list(
+    true = 
+  allequalService('ans111', .transform = transform111true, useSHA = T),
+    false =
+  allequalService('ans111', .transform = transform111false, useSHA = T))
+
+ae111$true$generate_xy4messageGroups(mgetxy)
+ae111$false$generate_xy4messageGroups(mgetxy)
+
+```
+
+
+
+```{r ae111check}
+ae111check = {
+  ae111$true$check_messageGroups$Gec41c2415b4533142f5884816e9a053908f1d7d4()
+  ae111$true$check_messageGroups$Gec41c2_GradeComment$grade(0)
+  ae111$true$check_messageGroups$Gf747b4f90213b37254f56b436dc41f90fdf6b3a7()
+  ae111$true$check_messageGroups$Gf747b4_GradeComment$grade(0.5)
+  ae111$true$check_messageGroups$Gf747b4_GradeComment$comment('nice try')
+  ae111$true$check_messageGroups$Gd80e78b06452cdc8370bda07d50d8dfe980d3c51()
+  ae111$true$check_messageGroups$Gd80e78_GradeComment$grade(0)
+  
+  ae111$false$check_messageGroups$Gec41c2415b4533142f5884816e9a053908f1d7d4()
+  ae111$false$check_messageGroups$Gec41c2_GradeComment$grade(0)
+  ae111$false$check_messageGroups$Gf747b4f90213b37254f56b436dc41f90fdf6b3a7()
+  ae111$false$check_messageGroups$Gf747b4_GradeComment$grade(0.5)
+  ae111$false$check_messageGroups$Gd80e78b06452cdc8370bda07d50d8dfe980d3c51()
+  ae111$false$check_messageGroups$Gd80e78_GradeComment$grade(0)
+  
+}
+```
+
+```{r grade111}
+grade111 = {
+  compute_gradesFromMultipleAes(ae111) -> df_grades
+  setNames(df_grades$mean, df_grades$Rmd)
+}
+```
+
+
+### ans123
+
+```{r makecondition}
+ae123 <- allequalService('ans123', useSHA = T)
+ae123$generate_xy4messageGroups(mgetxy)
+```
+
+```{r ae123check}
+ae123check = {
+  ae123$check_messageGroups$Gee8122b7bb1951dc970f326b868400c4f929fad2()
+  ae123$check_messageGroups$Gee8122_GradeComment$grade(0)
+  
+  ae123$check_messageGroups$G5eb1fc2cc1e91490e55c8b67c0014a6b75d13664()
+  ae123$check_messageGroups$G5eb1fc_GradeComment$grade(0.35)
+  
+  ae123$check_messageGroups$G3dc7342300c2e4bf91806876317a5a911b37970f()
+  ae123$check_messageGroups$G3dc734_GradeComment$grade(0)
+  ae123$check_messageGroups$G4c3548d0eb4b4f0ba1a0025733e784e023002492()
+  ae123$check_messageGroups$G4c3548_GradeComment$grade(0)
+  
+  ae123$check_messageGroups$G5648e45aa27398bca0b287d20f88ae69ce6a542e()
+  ae123$check_messageGroups$G5648e4_GradeComment$grade(0.2)
+  
+  ae123$check_messageGroups$G34d83c0bf942087ebbb952de52136bb963b50098()
+  ae123$check_messageGroups$G34d83c_GradeComment$grade(0.05)
+  ae123$check_messageGroups$G34d83c_GradeComment$comment('interesting way of using str_count')
+  
+  ae123$check_messageGroups$G8442e46cad535b9e76f1996f83e6c0d686397f9e()
+  ae123$check_messageGroups$G8442e4_GradeComment$grade(0)
+  
+  ae123$check_messageGroups$G9734d7dedeca752b1bbceff6dfa08fae0cc48bde()
+  ae123$check_messageGroups$G9734d7_GradeComment$grade(0)
+  
+  ae123$check_messageGroups$G8f73f29686e9dc1f3f60a91c731e1e9e127edc21()
+  ae123$check_messageGroups$G8f73f2_GradeComment$grade(0.2)
+  
+  ae123$check_messageGroups$G3cd5b37ab902f31e1abf7cdb8f3d0212984564fe()
+  ae123$check_messageGroups$G3cd5b3_GradeComment$grade(0)
+  
+  ae123$check_messageGroups$G25d0024169ac1fac020ae57a11ae2d3aa03991d3()
+  ae123$check_messageGroups$G25d002_GradeComment$grade(0)
+
+ae123$check_messageGroups$G7979004b3325b68dbc6662c06ae7a9b9ba8c7d0e()
+ae123$check_messageGroups$G797900_GradeComment$grade(0)
+ae123$check_messageGroups$G6010bd5baa08c2a92adab323f2600afe7e9d2300()
+ae123$check_messageGroups$G6010bd_GradeComment$grade(0.35)
+
+}
+
+```
+
+
+```{r grade123}
+grade123 = ae123$extract_grades()
+```
+
+### ans122
+
+```{r makecondition}
+ae122 <- allequalService('ans122', useSHA = T)
+ae122$generate_xy4messageGroups(mgetxy)
+```
+
+```{r ae122check}
+ae122check= {
+  # ae122$.yield_messageGroupTable()
+  # View(ae122$result$table_messageGroups)
+  ae122$result$messageGroups
+  
+  ae122$check_messageGroups$G4c3548d0eb4b4f0ba1a0025733e784e023002492()
+  ae122$check_messageGroups$G4c3548_GradeComment$grade(0)
+  ae122$check_messageGroups$Ga22ff5edcf54d9a86ce58eaffb9bd700958c999a()
+  ae122$check_messageGroups$Ga22ff5_GradeComment$grade(0)
+  
+  ae122$check_messageGroups$G95ae09a2730bf66d4440144563d5d46b1ff2e5a4()
+  ae122$check_messageGroups$G95ae09_GradeComment$grade(0.48)
+  ae122$check_messageGroups$G14fc73d01dd2bfca0d848e831f1ccd13876b4bb3()
+  ae122$check_messageGroups$G14fc73_GradeComment$grade(0.5)
+  ae122$check_messageGroups$G42432b727c58caeada802c936571a796bc373808()
+  ae122$check_messageGroups$G42432b_GradeComment$grade(0)
+}
+```
+
+
+```{r grade122}
+grade122 = ae122$extract_grades()
+```
+
+
+
+
+
+
+### ans121
+
+```{r makecondition}
+jsonlite::fromJSON("/Users/martinl/Dropbox/github-data/109-1-P4D/courses107.json") -> courses107
+source("/Users/martinl/Dropbox/github-data/109-1-P4D/finalChallenge.R")
+major_grade="財政系3"
+transform121a = transformFunctional(major_grade=major_grade,type="必")
+transform121b = transformFunctional(major_grade=major_grade,type="選")
+ae121 <- list(
+  a = allequalService('ans121', .transform = transform121a, useSHA = T),
+  b = allequalService('ans121', .transform=transform121b, useSHA = T)
+)
+ae121$a$generate_xy4messageGroups(mgetxy)
+ae121$b$generate_xy4messageGroups(mgetxy)
+ae121$a$xy[[1]]$Final_410672033.Rmd$y
+```
+
+```{r ae121check}
+ae121check = {
+  
+  ae121$a$check_messageGroups$Gda4b88cc187a96efbfe289d7f6bc8a721f24256b()
+  ae121$a$check_messageGroups$Gda4b88_GradeComment$grade(0)
+  
+  ae121$a$check_messageGroups$G3d67a74ee431cfe0505c367bc4c9a1b95ca4ae0c()
+  ae121$a$check_messageGroups$G3d67a7_GradeComment$grade(0)
+  
+  ae121$a$check_messageGroups$G991174a7092feb06502912d496419e8d56167e1d()
+  ae121$a$check_messageGroups$G991174_GradeComment$grade(0.9)
+  
+  ae121$b$check_messageGroups$Gda4b88cc187a96efbfe289d7f6bc8a721f24256b()
+  ae121$b$check_messageGroups$Gda4b88_GradeComment$grade(0)
+  
+  ae121$b$check_messageGroups$Gc7cdfef0ae8b4a6ce28aace95e17cde2e8c35b28()
+  ae121$b$check_messageGroups$Gc7cdfe_GradeComment$grade(0)
+  
+  ae121$b$check_messageGroups$G3c854ee8fda53e837640b43c7ab519fb72ed661b()
+  ae121$b$check_messageGroups$G3c854e_GradeComment$grade(0.9)
+  
+}
+```
+
+```{r grade121}
+grade121 = {
+  compute_gradesFromMultipleAes(ae121) -> df_grades
+  setNames(
+    df_grades$mean, df_grades$Rmd
+  )
+}
+```
+
+
+
+### ans133
+
+```{r makecondition}
+ae133 <- allequalService('ans133', useSHA = T)
+ae133$generate_xy4messageGroups(mgetxy)
+```
+
+```{r}
+ae133$check_messageGroups$G4c3548d0eb4b4f0ba1a0025733e784e023002492()
+ae133$check_messageGroups$G4c3548_GradeComment$grade(0)
+ae133$check_messageGroups$G14fc73d01dd2bfca0d848e831f1ccd13876b4bb3()
+ae133$check_messageGroups$G14fc73_GradeComment$grade(0.3)
+ae133$check_messageGroups$G2f5103591ad900e8a3c828d6ea90952631d20323()
+ae133$check_messageGroups$G2f5103_GradeComment$grade(0)
+ae133$check_messageGroups$Gadf168c6b22ad2649ce9798d119c4a5f000b9939()
+ae133$check_messageGroups$Gadf168_GradeComment$grade(0.3)
+ae133$check_messageGroups$G5390c76ab2a81721a6139277ecf37b6938bf3559()
+ae133$check_messageGroups$G5390c7_GradeComment$grade(0.25)
+ae133$check_messageGroups$G92a91533de5d40423613fbefad43f27ad274fdc9()
+ae133$check_messageGroups$G92a915_GradeComment$grade(0)
+```
+
+
+
+```{r grade133}
+grade133 <- ae133$extract_grades()
+```
+
+### ans132
+
+```{r makecondition}
+ae132 <- allequalService('ans132', useSHA = T)
+ae132$generate_xy4messageGroups(mgetxy)
+```
+
+```{r}
+ae132$check_messageGroups$G9bec77bf741284bd3a75d9ec9b315e95c580b20e()
+ae132$check_messageGroups$G9bec77_GradeComment$grade(0)
+ae132$check_messageGroups$G308e5ea624ff852a225a0f41f5a2590accce3acd()
+ae132$check_messageGroups$G308e5e_GradeComment$grade(0.5)
+ae132$check_messageGroups$Gb917803eeb8a8694e9ae05c6fbabe5930af2226e()
+ae132$check_messageGroups$G9bec77_GradeComment$grade(0.2)
+ae132$check_messageGroups$G14fc73d01dd2bfca0d848e831f1ccd13876b4bb3()
+ae132$check_messageGroups$G14fc73_GradeComment$grade(1)
+ae132$check_messageGroups$G6e170138c8a4ca8a4cc25b13db78d2cfae48462d()
+ae132$check_messageGroups$G6e1701_GradeComment$grade(0.3)
+```
+
+
+
+```{r grade132}
+grade132 <- ae132$extract_grades()
+```
+
+
+### ans131
+
+```{r makecondition}
+ae131 <- allequalService('ans131', useSHA = T)
+ae131$generate_xy4messageGroups(mgetxy)
+```
+
+```{r}
+ae131$check_messageGroups$G4c3548d0eb4b4f0ba1a0025733e784e023002492()
+ae131$check_messageGroups$G4c3548_GradeComment$grade(0)
+
+ae131$check_messageGroups$Gadcd8db89bc87ec58a2ebc61100036489d7a2caf()
+
+ae131$check_messageGroups$Gef7d88d2a26a3de6aee4a09291dff9c8132ed634()
+
+ae131$check_messageGroups$G42432b727c58caeada802c936571a796bc373808()
+ae131$check_messageGroups$G42432b_GradeComment$grade(0)
+```
+
+
+
+```{r grade131}
+grade131 = ae131$extract_grades()
+```
+
+
+### ans143
+
+```{r makecondition}
+ae143 <- allequalService('ans143', useSHA=T)
+ae143$generate_xy4messageGroups(mgetxy)
+```
+
+```{r}
+ae143$check_messageGroups$Gea57d4e6412116d87f2f1264b0db8c6b407fb26c()
+ae143$check_messageGroups$Gea57d4_GradeComment$grade(0)
+ae143$check_messageGroups$G4c3548d0eb4b4f0ba1a0025733e784e023002492()
+ae143$check_messageGroups$G4c3548_GradeComment$grade(0)
+ae143$check_messageGroups$G3285f18ca0d6e0feafb087949eab4dede9e7033b()
+ae143$check_messageGroups$G3285f1_GradeComment$grade(0.25)
+ae143$check_messageGroups$Gc2d36dd2e3b7163225dc26e4acbaae0f73909cbc()
+ae143$check_messageGroups$Gc2d36d_GradeComment$grade(0.1)
+ae143$check_messageGroups$G3cd5b37ab902f31e1abf7cdb8f3d0212984564fe()
+ae143$check_messageGroups$G3cd5b3_GradeComment$grade(0)
+ae143$check_messageGroups$G214a9573e33e913d804f108392449e1a7b0ab327()
+ae143$check_messageGroups$G214a95_GradeComment$grade(0.4)
+ae143$check_messageGroups$Gf7c0341a275dbdf7032bc3f9e79464999eed4333()
+ae143$check_messageGroups$Gf7c034_GradeComment$grade(0.5)
+ae143$check_messageGroups$G8779034ba4262a8ec5649a00aea3a9614db8ca68()
+ae143$check_messageGroups$G877903_GradeComment$grade(0.4)
+ae143$check_messageGroups$G98e91085b6de685d19586e0ceeb20a74503a9b48()
+ae143$check_messageGroups$G98e910_GradeComment$grade(0.45)
+ae143$check_messageGroups$G0c0dad6939b8aa4f2348c159e1d87ce11eb7e0b7()
+ae143$check_messageGroups$G0c0dad_GradeComment$grade(0.4)
+ae143$check_messageGroups$G446f43fed7dffea8f426110fdb4a102e29ab500d()
+ae143$check_messageGroups$G446f43_GradeComment$grade(0.35)
+ae143$check_messageGroups$G022ce2f484ecf519888ebb835eda9f0f6a3c4a23()
+ae143$check_messageGroups$G022ce2_GradeComment$grade(0.3)
+ae143$check_messageGroups$G9244566e5450773ba91f36675fd5f7f1ea66f00e()
+ae143$check_messageGroups$G924456_GradeComment$grade(0.45)
+ae143$check_messageGroups$Gf536981697dd78615b3ee469b69f9947056bf663()
+ae143$check_messageGroups$Gf53698_GradeComment$grade(0)
+```
+
+```{r}
+ae143$xy$G022ce2f484ecf519888ebb835eda9f0f6a3c4a23$Final_410973007.Rmd
+unlist(x$listA)
+unlist(y$listA)
+unlist(x$nCategories)
+unlist(y$nCategories)
+```
+
+
+```{r grade143}
+grade143 <- ae143$extract_grades()
+```
+
+### ans142
+
+```{r makecondition}
+ae142 <- allequalService('ans142', useSHA = T)
+ae142$generate_xy4messageGroups(mgetxy)
+```
+
+```{r}
+ae142$check_messageGroups$G2429e6d1b9dadafb8151acee393ba6970bbe0791()
+ae142$check_messageGroups$G2429e6_GradeComment$grade(0)
+ae142$check_messageGroups$G9868b4be86694cdcec3f2533446572dd75bc36b3()
+ae142$check_messageGroups$G9868b4_GradeComment$grade(0.5)
+ae142$check_messageGroups$G4d49ae99325742de0879bd69b6ccc2bcf55ee135()
+ae142$check_messageGroups$G4d49ae_GradeComment$grade(0.85)
+ae142$check_messageGroups$G4c3548d0eb4b4f0ba1a0025733e784e023002492()
+ae142$check_messageGroups$G4c3548_GradeComment$grade(0)
+ae142$check_messageGroups$Ga048edb6162e89dddf8a80c10e4b711939e89463()
+ae142$check_messageGroups$Ga048ed_GradeComment$grade(0.85)
+ae142$check_messageGroups$G3cd5b37ab902f31e1abf7cdb8f3d0212984564fe()
+ae142$check_messageGroups$G3cd5b3_GradeComment$grade(0)
+```
+
+
+```{r grade142}
+grade142=ae142$extract_grades()
+```
+
+### ans2
+
+```{r makecondition}
+ae2 <- allequalService('ans2', useSHA = T)
+ae2$generate_xy4messageGroups(mgetxy)
+```
+
+```{r}
+ae2$check_messageGroups$Ga77088a55a9cc8028155c5bed374006c06cb4248()
+ae2$check_messageGroups$Ga77088_GradeComment$grade(0)
+ae2$check_messageGroups$Ge3b195db66964735094fc4a96b8b3508b032088f()
+
+  
+  map(
+    ae2$xy$Ge3b195db66964735094fc4a96b8b3508b032088f,
+   function(.x) {
+    R.utils::withTimeout(
+      try(
+        {
+          .x$x("民國101年8月27日")
+        },
+        silent = T
+      ),
+      timeout = 5
+      )
+    }) -> results
+  
+  list_msg_rmd_pairs <- 
+    list(
+      msg=unlist(results),
+      rmd=names(ae2$xy$Ge3b195db66964735094fc4a96b8b3508b032088f)
+    )
+  ae <- ae2
+  
+  subcategorise_byMsgRmdPairs(ae2, list_msg_rmd_pairs)
+  
+  ae2$subcat$cat_errors[[1]]$el_values
+  ae2$subcat$cat_errors[[1]]$el_values
+  ae2$subcat$cat_errors[[1]]$el_names
+  ae2$subcat$cat_errors[[1]]$comment <- 'only put textbook get_horoscope function there.'
+  ae2$subcat$cat_errors[[1]]$grade <- 0
+  
+  ae2$subcat$cat_errors[[2]]$el_names
+  ae2$subcat$cat_errors[[2]]$el_values 
+  ae2$subcat$cat_errors[[2]]$comment <-  ae2$subcat$cat_errors[[1]]$comment
+  
+  ae2$subcat$cat_errors[[3]]$el_names
+  ae2$subcat$cat_errors[[3]]$el_names
+  ae2$subcat$cat_errors[[3]]$el_values
+  ae2$subcat$cat_errors[[3]]$comment <- "almost correct"
+  ae2$subcat$cat_errors[[3]]$grade <- 0.8
+  
+  ae2$subcat$cat_errors[[4]]$el_names
+  ae2$subcat$cat_errors[[4]]$el_values
+  ae2$subcat$cat_errors[[4]]$comment <- 'nice twist on task condition'
+  ae2$subcat$cat_errors[[4]]$grade <- 0.1
+  
+  ae2$subcat$cat_errors[[5]]$el_names
+  ae2$subcat$cat_errors[[5]]$el_values
+  
+  ae2$subcat$cat_errors[[6]]$el_names
+  ae2$subcat$cat_errors[[6]]$el_values
+  
+  ae2$subcat$cat_errors[[7]]$el_names
+  ae2$subcat$cat_errors[[7]]$el_values
+```
+
+
+```{r grade2}
+grade2 = {
+  grade2_init <- ae2$extract_grades()
+  grade2 <- ae2$subcat$accommodate_grades(grade2_init)
+  grade2
+}
+```
+
+
+
+### All Grades
+
+```{r}
+# save(ae113, ae112, ae123, ae122, ae111, ae121, ae131, ae132, ae133, ae142, ae143, ae2, file="final_ae.Rdata")
+load("final_ae.Rdata")
+```
+
+```{r tb_grades}
+tb_grades = {
+  grade11 <- getMaxGrade(grade111, grade112, grade113)
+  grade12 <- getMaxGrade(grade121, grade122, grade123)
+  grade13 <- getMaxGrade(grade131, grade132, grade133)
+  grade14 <- getMaxGrade(grade142, grade143)
+  grade2
+  
+  tb_gradesFinal <- tb_grades <- merge_gradeVectors(grade11, grade12, grade13, grade14, grade2)
+  tb_gradesFinal$total <- rowSums(tb_grades[, -1])
+  tb_gradesFinal
+}
+
+```
+
+
+
+
+算了一下，總共10題（5+2+2+1），所以我覺得可以考慮每填都是一分。這樣剛好就是Google Classroom表定的10分。
+
+You don't need this if you have updated rmdgrader package.
+```{r tb_grades, drake=F}
+
+tb_grades = convert_gradeList2dataframe(
+    ans111=grade111,
+    ans112=grade112,
+    ans113=grade113,
+
+    ans121=grade121,
+    ans122=grade122,
+    ans123=grade123,
+    ans131=grade131,
+    ans132=grade132,
+    ans133=grade133,
+    ans142=grade142,
+    ans143=grade143,
+    ans2=grade2)
+```
+
+
+```{r}
+records_gradeComment <- 
+  generate_recordGradeCommentsFromTb_gradesWithoutComments(tb_grades)
+```
+
+```{r saveGrades}
+saveGrades = {
+  save(tb_grades, records_gradeComment, file=gradeSavingFilename)
+  gradeSavingFilename
+}
+```
+

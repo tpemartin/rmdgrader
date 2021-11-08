@@ -1,0 +1,335 @@
+---
+title: "homework 8"
+output: html_document
+params:
+  studentName: "你的名字"
+  studentID: "你的學號"
+---
+
+> 每次作業滿分10分：有寫作業於期限內上傳得3分，剩餘7分依作業準確率決定最後得分多寡，除非該題另有規定。
+
+> 前述存檔與frontmatter要求缺任何一個則扣1分。
+
+## 成績
+
+```{r grade}
+
+df_grade <- 
+jsonlite::fromJSON('[{"grade":1,"comment":"","_row":"ans12.1"},{"grade":0.9,"comment":"在lowerTriX賦值時出了小錯。","_row":"ans12.2"},{"grade":0.9,"comment":"雖然有計算小錯誤，但程式架構清楚，瑕不掩瑜。","_row":"ans12.3"},{"grade":1,"comment":"","_row":"ans13.1s"},{"grade":0,"comment":"","_row":"ans13.2s"}]')
+totalGrade <- list()
+within(
+  totalGrade,
+  {
+    rawGrade = sum(df_grade$grade)
+    finalGrade = rawGrade/nrow(df_grade)*7+3
+  }
+) -> totalGrade
+print(df_grade)
+print(totalGrade)
+        ans <- new.env(parent=.GlobalEnv) #對答案用
+
+```
+
+
+請先執以下code chunk, 引入所需packages，答案禁止引用其他套件（Package）。
+
+```{r setup}
+knitr::opts_chunk$set(echo = F, eval=F)
+library(jsonlite); library(lubridate); library(readr); library(stringr); library(purrr); library(glue)
+```
+
+# 題目
+
+完成第5章綜合練習以下幾題：
+
+### 12. Subscripts {.unnumbered}
+
+#### 12.1 Dimension aspect {.unnumbered}
+
+```{r data12.1}
+set.seed(5928)
+n <- sample(3:7, 1) 
+sampleMatrix <- matrix(sample(1:100, n^2), n, n)
+sampleMatrix
+```
+
+```{r ans12.1}
+# obtain the diagonal elements
+
+# 任務前提
+n <- dim(sampleMatrix)[[1]]
+diagX <- vector("numeric", n)
+# 任務目標: 縮小任務，只一個i值, 
+for (i in 1:n) {
+  diagX[[i]] <- sampleMatrix[i,i]
+}
+
+diagX
+
+# diagX
+
+
+#' 參考解答 ------------------
+
+{
+# 任務前提
+n <- dim(sampleMatrix)[[1]]
+diagX <- vector("numeric", n)
+# 任務目標: 縮小任務，只一個i值, 
+for(i in 1:n)
+{
+  diagX[[i]] <- sampleMatrix[i,i]
+}
+  
+# diagX
+} %at% ans
+```
+
+#### 12.2 Lower triangular dimension {.unnumbered}
+
+```{r ans12.2}
+# extract the lower triangular elements
+# j <= i
+
+# 任務前提
+n <- dim(sampleMatrix)[[1]]
+lowerTriX <- vector("list", n)
+# 任務目標(縮小版): i <- 3，找出所有x_{3j}, where j <= 3
+
+for (i in 1:n) {
+  # 找出所有比i小的j所對應的sampleMatrix[1,j]值，再把需要重複的1代換成i
+  for (j in 1:n) {
+    if(j<=i){
+      lowerTriX[[i]][[j]] <- sampleMatrix[i,j]
+    }
+  }
+}
+
+# lowerTriX
+
+
+#' 參考解答 ------------------
+
+{
+# 任務前提
+n <- dim(sampleMatrix)[[1]]
+# 任務目標(縮小版): i <- 3，找出所有x_{3j}, where j <= 3
+lowerTriX <- vector("list", n)
+for(i in 1:n){
+  lowerTriX[[i]] <- vector("numeric", i)
+  for(j in 1:i)
+  {
+     lowerTriX[[i]][[j]] <- sampleMatrix[i,j]
+  }
+}
+
+# lowerTriX
+} %at% ans
+```
+
+#### 12.3 Covariate columns {.unnumbered}
+
+```{r data12.3}
+simData <- data.frame(
+  district=rep(LETTERS[1:3], each=3),
+  year=rep(seq(1990, 2000, by=5), 3)
+)
+simData$income <- {
+  sample(2000:10000, 3) -> .i
+  unlist(purrr::map(.i, 
+      ~{
+        .x+sample(-500:500,3)
+      }))
+}
+simData
+```
+
+Compute mean income (average across three years) of every district using for-loop and save them in **meanIncomes**. You may adopt the following template:
+
+```{r ans12.3}
+# Compute mean income (average across three years) of every district 
+# 任務前題
+districtSet <- unique(simData$district)
+meanIncomes <- numeric()
+yearSet <- unique(simData$year)
+totalincome <- vector("numeric", length(districtSet))
+
+# 各地區三年平均收入
+for (d in districtSet) {
+  # 單一地區三年平均收入
+  meanIncomes[[d]] <- {
+    #三年總收入
+    for (y in yearSet) {
+      totalincome[[1]] <- totalincome[[1]] + simData$income[which(simData$district==d & simData$year==y)]
+    }
+    # 三年平均收入
+    totalincome[[1]]/length(yearSet)
+  }
+}
+
+# meanIncomes
+
+
+#' 參考解答 ------------------
+
+{
+# 任務前題
+districtSet <- unique(simData$district)
+meanIncomes <- vector("numeric", length(districtSet))
+# 任務目標（縮小版）：找出districtSet[[1]]的（三年）平均所得
+for(.x in 1:3)
+{
+  meanIncomes[[.x]] <- mean(simData$income[
+    which(simData$district==districtSet[[.x]])
+  ])
+}
+  
+# meanIncomes
+} %at% ans
+```
+
+### 13. Loop practices {.unnumbered}
+
+#### 13.1 Three errors {.unnumbered}
+
+```{r ans13.1s}
+## 任務前提
+realPassword <- "2ofe83"
+
+## 一次性任務目標: 接受(flag_continuation為F) 或不接受userInput(flag_continuation為T)
+.x <- 0
+flag_continuation <- T
+
+while(flag_continuation)
+{
+  # iterate generation
+  .x <- .x+1 
+  # for each iterate, you iteration block
+    userInput <- 
+      readline("Please input your password ")
+    result <-
+    # match "Password correct"
+    if(userInput==realPassword){
+      "Password correct"
+    } else
+    # not match "The password is wrong" and go back to ask to input
+    if(userInput!=realPassword && .x<=3){
+      "The password is wrong"
+    } else
+    # 3 times errors "You have input wrongly 3 times!" and exit
+    {
+      stop("You have input wrongly 3 times!")
+    }
+  message(result)
+  # continuation flag generation (update)
+  flag_continuation <- !str_detect(result, "correct")
+}
+
+
+#' 參考解答 ------------------
+
+{
+## 任務前提
+realPassword <- "2ofe83"
+
+.x <- 0
+flag_continuation <- T
+maxIt <- 3
+while(flag_continuation && .x <= maxIt){
+  ## 多次性任務目標: 接受(flag_continuation為F) 或不接受userInput(flag_continuation為T)
+  .x <- .x + 1
+  
+  userInput <- readline("Please input your password ")
+  
+  flag_wrongInput <- userInput!=realPassword
+  flag_reachMaxIt <- .x >= maxIt
+  flag_continuation <- flag_wrongInput
+  
+  if(flag_wrongInput) {
+    message("The password is wrong.\n")
+    if(flag_reachMaxIt){
+      cat("You have input wrongly 3 times!\n")
+      flag_continuation <- F
+    } 
+  } else {
+    message("Password correct.")
+    flag_continuation <- F
+  }
+}
+} %at% ans
+```
+
+#### 13.2 Password setup {.unnumbered}
+
+```{r ans13.2s}
+.x <- 0
+flag_continuation <- T
+maxIt <- 5
+while(flag_continuation && .x <= maxIt)
+{
+  # iterate generation
+  .x <- .x+1
+  # iteration block
+    userInput <- readline("Input your password ")
+    result <- paste0(
+      if(!(is.character(userInput) && str_count(userInput)>=6 && str_count(userInput)<=10))
+      {"password should contain 6-10 characters\n"},
+      if(!str_detect(userInput, "[:digit:]+"))
+      {"Need at least one number\n"},
+      if(!str_detect(userInput, "[:lower:]+"))
+      {"Need at least one small case letter\n"},
+      if(!str_detect(userInput, "[:upper:]+"))
+      {"Need at least one capital letter\n"}
+    )
+    message(result)
+    
+  
+  # continuation flag update (generation)
+  flag_continuation <- !is_empty(result)
+}
+
+
+#' 參考解答 ------------------
+
+{
+.x <- 0
+flag_continuation <- T
+maxIt <- 5
+while(flag_continuation && .x < maxIt)
+{
+  # iterate generation
+  .x <- .x+1
+  
+  # iteration block
+  {
+    # undebug(hijack_readline2)
+    userInput <- readline("Input your password ")
+    flag_rule1 <- stringr::str_length(userInput)<6 || stringr::str_length(userInput)>10
+    flag_rule2 <- !stringr::str_detect(userInput, "[0-9]+")
+    flag_rule3 <- !stringr::str_detect(userInput, "[a-z]+")
+    flag_rule4 <- !stringr::str_detect(userInput, "[A-Z]+")
+    if(flag_rule1)
+    {
+      message("password should contain 6-10 characters")
+    }
+    if(flag_rule2)
+    {
+      message("Need at least one number")
+    }
+    if(flag_rule3)
+    {
+      message("Need at least one small case letter")
+    }
+    if(flag_rule4)
+    {
+      message("Need at least one capital letter")
+    }
+    
+  }
+  
+  # continuation flag update (generation)
+  flag_continuation <- (flag_rule1 || flag_rule2 || flag_rule3 || flag_rule4)
+  
+}
+} %at% ans
+```

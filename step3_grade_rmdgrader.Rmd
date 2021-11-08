@@ -1,0 +1,867 @@
+---
+title: "Grade"
+drake_cache: ".hw1rmdgrader"
+output: html_document
+params:
+  title: "hw1" # google classroom上公告作業時所用的標題
+  ansfilename: "homeworks/homework1-ans.Rmd"
+  submissionFolder: "studentsSubmission"
+  gradingFolder: "grading_flow"
+---
+
+
+```{r setup, include=FALSE, drake=F}
+knitr::opts_chunk$set(echo = TRUE, eval=F)
+library(drake)
+library(econDV)
+library(dplyr)
+```
+## makecondition
+
+```{r makecondition}
+library(drake)
+library(rmd2drake)
+library(dplyr)
+library(googleclassroom)
+library(readr)
+library(lubridate)
+# library(rmdgrader)
+library(purrr)
+library(rlang)
+library(testthat)
+library(withr)
+# rprojroot::is_rstudio_project$make_fix_file() -> .root
+.root <- function(){
+  "/Users/martinl/Github/course-dashboard-programming-for-data-science/"
+}
+datafilename <- 
+    file.path(.root(),params$gradingFolder,params$title,"data4step3.Rdata")
+load(datafilename, envir = .GlobalEnv)
+gradeSavingFilename <- 
+  file.path(.root(),params$gradingFolder,params$title,"data4step4rmdgrader.Rdata")
+allValues <<- objectValues$studentValues
+correctValues <<- allValues[[1]]
+studentValues <<- allValues[-1]
+mgetxy <- generate_mgetxy(basename(allRmds[-1]))
+studentRmds <- allRmds[-1]
+submissionPath <- 
+    file.path(
+      .root(),
+      params$submissionFolder,
+      params$title
+    )
+mfile.edit <- mfile.editFunctional(studentRmds, submissionPath)
+```
+
+## Grading
+
+### ans11
+
+#### all.equal service
+
+no need for the transformFunctional if the grading object is not a function
+```{r makecondition}
+ae11 <- allequalService('ans11')
+ae11$generate_xy4messageGroups(mgetxy)
+```
+
+```{r}
+ae11$check_messageGroups$G1()
+ae11$check_messageGroups$G2()
+```
+
+#### check xy and msg
+
+ans11，是一個List of 3 且各包含了 5 個元素，總共 15 個。每一個Named Element，給分1/3，形同每一個元素是 1/15 分。同時改 rmdgrader 版本多著重後續分群，因此盡量給分與當時版本盡量一致。
+```{r ae11check}
+ae11check = {
+  ae11$check_messageGroups$G1()
+  ae11$check_messageGroups$G1grade$grade(0.8)
+  ae11$check_messageGroups$G1grade$comment("關於 Date 這個子元素，都少了空格 Oct.9 v.s Oct. 9。字串是沒有模糊空間的，所以是得到 12/15 分數。")
+  
+  ae11$check_messageGroups$G2()
+  ae11$check_messageGroups$G2grade$grade(1)
+  
+  ae11$check_messageGroups$G3()
+  ae11$check_messageGroups$G3grade$grade(0.93)
+  ae11$check_messageGroups$G3grade$comment("Game7的子元素 Home，L.A. Laker 少了一個s，得到 14/15 分數。")
+  
+  ae11$check_messageGroups$G4()
+  ae11$check_messageGroups$G4grade$grade(0.25)
+  ae11$check_messageGroups$G4grade$comment("所有的 Names & list component names 都有大小寫的出入，縱使元素內容是對的，本質上落差很大，只能給0.25，即是*0.5*0.5*1。0.5 for Names, 0.5 for Component Names")
+  
+  ae11$check_messageGroups$G5()
+  ae11$check_messageGroups$G5grade$grade(0.2)
+  ae11$check_messageGroups$G5grade$comment("所有的 list elements names 都有大小寫的出入，list 內元素只有 StartTime & TimeZone完全正確。參考第四組分成三個維度去評分。得到*1*0.5*6/15")
+  
+  ae11$check_messageGroups$G6()
+  ae11$check_messageGroups$G6grade$grade(0.4)
+  ae11$check_messageGroups$G6grade$comment("所有的 Component Names 都沒有 names。list 內元素，Date 這個子元素，都少了空格 Oct.9 v.s Oct. 9。得到*0.5*1*12/15")
+  
+  ae11$check_messageGroups$G7()
+  ae11$check_messageGroups$G7grade$grade(0.433)
+  ae11$check_messageGroups$G7grade$comment("所有的 所有的 Component Names 都沒有 names。list 內元素，第一場賽事資訊的第二個與第五個元素有誤 。得到*0.5*1*13/15")
+  
+  ae11$check_messageGroups$G8()
+  ae11$check_messageGroups$G8grade$grade(0.23)
+  ae11$check_messageGroups$G8grade$comment("所有的 Component Names 都有大小寫出入。內部元素得分依照個數。是為 1*0.5*7/15")
+  
+  ae11$check_messageGroups$G9()
+  ae11$check_messageGroups$G9grade$grade(0.5)
+  ae11$check_messageGroups$G9grade$comment("所有的 list Component 都沒有 names。縱使 list elements names 以及元素內容是對的。是為 0.5*1*1")
+  
+  ae11$check_messageGroups$G10()
+  ae11$check_messageGroups$G10grade$grade(0)
+  
+  ae11$check_messageGroups$G11()
+  ae11$check_messageGroups$G11grade$grade(0.4)
+  ae11$check_messageGroups$G11grade$comment("所有的 list Components 都沒有 names。list 內元素，依照答對幾個來算。是得到*0.5*1*12/15")
+  
+  ae11$check_messageGroups$G12()
+  ae11$check_messageGroups$G12grade$grade(0.3)
+  ae11$check_messageGroups$G12grade$comment("所有的 list Components 都沒有 names。list 內元素，依照答對幾個來算。是得到*0.5*1*9/15")
+  
+  ae11$check_messageGroups$G13()
+  ae11$check_messageGroups$G13grade$grade(0.5)
+  ae11$check_messageGroups$G13grade$comment("list elements 都沒問題，但是 list components的 names 有問題。得到 0.5*1*1")
+  
+  ae11$check_messageGroups$G14()
+  ae11$check_messageGroups$G14grade$grade(0.4)
+  ae11$check_messageGroups$G14grade$comment("所有的 list Components 都沒有 names。且內部元素有不當空格 得到 0.5*1*12/15")
+  
+  ae11$check_messageGroups$G15()
+  ae11$check_messageGroups$G15grade$grade(0)
+  
+  ae11$check_messageGroups$G16()
+  ae11$check_messageGroups$G16grade$grade(0)
+  
+  ae11$check_messageGroups$G17()
+  ae11$check_messageGroups$G17grade$grade(0.8)
+  ae11$check_messageGroups$G17grade$comment("Timezone v.s. TimeZone & Extra space in the Game6$Home")
+  
+  ae11$check_messageGroups$G18()
+  ae11$check_messageGroups$G18grade$grade(0.8)
+  ae11$check_messageGroups$G18grade$comment("List Elements Names are wrong. Game7$TimeZone is in wrong info.")
+  
+  ae11$check_messageGroups$G19()
+  ae11$check_messageGroups$G19grade$grade(0.73)
+  ae11$check_messageGroups$G19grade$comment("Some list elements are wrong.")
+  
+  ae11$check_messageGroups$G20()
+  ae11$check_messageGroups$G20grade$grade(0.4)
+  ae11$check_messageGroups$G20grade$comment("所有的 list Components 都沒有 names。少數 list elements 有不當空格。得到 0.5*1*12/15")
+  
+  ae11$check_messageGroups$G21()
+  ae11$check_messageGroups$G21grade$grade(0.33)
+  ae11$check_messageGroups$G21grade$comment("所有的 list Components 都沒有 names。少數 list elements names 有點出入。得到 0.5*1*10/15")
+  
+  ae11$check_messageGroups$G22()
+  ae11$check_messageGroups$G22grade$grade(0.233)
+  ae11$check_messageGroups$G22grade$comment("所有的 list Components 都有大小寫出入。 list elements names 也都有出入。得到 0.5*0.5*14/15")
+  
+  ae11$check_messageGroups$G23()
+  ae11$check_messageGroups$G23grade$grade(0.47)
+  ae11$check_messageGroups$G23grade$comment("所有的 list Components 都沒有 names。Game5$Date 少一個空格。0.5*1*14/15")
+  
+  ae11$check_messageGroups$G24()
+  ae11$check_messageGroups$G24grade$grade(0.2)
+  ae11$check_messageGroups$G24grade$comment("所有的 list Components 都沒有 names。list elements 有不當空格或者相關錯誤，依照答對個數給分。0.5*1*6/15")
+  
+  ae11$check_messageGroups$G25()
+  ae11$check_messageGroups$G25grade$grade(0.3)
+  ae11$check_messageGroups$G25grade$comment("所有的 list Components 都沒有 names。list elements 有不當空格或者相關錯誤，依照答對個數給分。0.5*1*9/15。Date elements 寫了阿拉伯數字。2020-10-09。")
+  
+  ae11$check_messageGroups$G26()
+  ae11$check_messageGroups$G26grade$grade(0.23)
+  ae11$check_messageGroups$G26grade$comment("所有的 list Components 都沒有 names。Components 底下的元素名稱皆有誤。元素依照個數評分。0.5*0.5*14/15")
+  
+  ae11$check_messageGroups$G27()
+  ae11$check_messageGroups$G27grade$grade(0.47)
+  ae11$check_messageGroups$G27grade$comment("$Game5$imeZone v.s. $Game5$TimeZone。Away/Home 順序皆有誤。1*1*7/15")
+  
+  ae11$check_messageGroups$G28()
+  ae11$check_messageGroups$G28grade$grade(0.23)
+  ae11$check_messageGroups$G28grade$comment("所有的 list Components 都沒有 names。list elements 部分有不當空格。0.5*1*7/15")
+  
+  ae11$check_messageGroups$G29()
+  ae11$check_messageGroups$G29grade$grade(0.93)
+  ae11$check_messageGroups$G29grade$comment("$Game5$Date有不當空格。14/15")
+  
+  ae11$check_messageGroups$G30() #配合 G25 因為 Date elements 寫法一樣。
+  ae11$check_messageGroups$G30grade$grade(0.2)
+  ae11$check_messageGroups$G30grade$comment("所有的 list Components 都沒有 names。list Elements names/content 部分有問題。0.5*1*6/15")
+  
+  ae11$check_messageGroups$G31()
+  ae11$check_messageGroups$G31grade$grade(0.6)
+  ae11$check_messageGroups$G31grade$comment("List element names Startime v.s. StartTime；Timezone v.s. TimeZone。依照元素答對個數給分 1*1*9/15")
+  
+  ae11$check_messageGroups$G32()
+  ae11$check_messageGroups$G32grade$grade(0.43)
+  ae11$check_messageGroups$G32grade$comment("List Components 都沒有 names；部分元素內容有誤。依照元素答對個數給分 0.5*1*13/15")
+  
+  ae11$check_messageGroups$G33()
+  ae11$check_messageGroups$G33grade$grade(0.43)
+  ae11$check_messageGroups$G33grade$comment("List Components names 都有誤；部分元素 Home/Away 內容有誤。依照元素答對個數給分 0.5*1*9/15")
+  
+  ae11$check_messageGroups$G34()
+  ae11$check_messageGroups$G34grade$grade(0.13)
+  ae11$check_messageGroups$G34grade$comment("List Components 都沒有 names；部分元素內容有誤。依照元素答對個數給分 0.5*1*4/15")
+  
+  ae11$check_messageGroups$G35()
+  ae11$check_messageGroups$G35grade$grade(0.13)
+  ae11$check_messageGroups$G35grade$comment("List Elements Names 有諸多錯誤。依照元素答對個數給分 1*1*2/15")
+  
+  ae11$check_messageGroups$G36()
+  ae11$check_messageGroups$G36grade$grade(0.67)
+  ae11$check_messageGroups$G36grade$comment("List Elments 部分元素內容有誤。依照元素答對個數給分。1*1*10/15")
+  
+  ae11$check_messageGroups$G37()
+  ae11$check_messageGroups$G37grade$grade(0.27)
+  ae11$check_messageGroups$G37grade$comment("List Components 都沒有 Names。依照元素答對個數給分(僅有 Game7 元素們全對，不知道會不會看錯題意)。0.5*1*8/15")
+  
+  ae11$check_messageGroups$G38()
+  ae11$check_messageGroups$G38grade$grade(0.6)
+  ae11$check_messageGroups$G38grade$comment("List elements Home/Away 都有誤。1*1*9/15")
+  
+
+  ae11$.yield_messageGroupTable() # 也可以所有messageGroups處理完再執行
+  ae11$result$table_messageGroups %>% View()
+}
+```
+
+#### grading 11
+
+```{r grade11}
+grade11 = {
+  ae11$.yield_messageGroupTable()
+  list_grades11 <- rmdgrader::grade_by_all.equalMessages(ae11)
+  grade11 <- list_grades11$grade
+  grade11
+}
+```
+
+### ans12
+
+#### all.equal service
+
+no need for the transformFunctional if the grading object is not a function
+```{r makecondition}
+ae12 <- allequalService('ans12')
+ae12$generate_xy4messageGroups(mgetxy)
+```
+
+#### check xy and msg
+
+ans12，是一個很簡單的 character vector
+```{r ae12check}
+ae12check = {
+  
+  ae12$check_messageGroups$G1()
+  ae12$check_messageGroups$G1grade$grade(0.33)
+  ae12$check_messageGroups$G1grade$comment("Data Type 0.5; Each character elements counts 1/3 * 0.5")
+  
+  ae12$check_messageGroups$G2()
+  ae12$check_messageGroups$G2grade$grade(0)
+  ae12$check_messageGroups$G2grade$comment("Too far away from the answer")
+  
+  ae12$check_messageGroups$G3()
+  ae12$check_messageGroups$G3grade$grade(1)
+  
+  ae12$check_messageGroups$G4()
+  ae12$check_messageGroups$G4grade$grade(0.83)
+  ae12$check_messageGroups$G4grade$comment("Data Type 0.5; Each character elements counts 1/3 * 0.5. Oct.9 v.s. Oct. 9")
+  
+  ae12$check_messageGroups$G5()
+  ae12$check_messageGroups$G5grade$grade(0)
+  
+  ae12$check_messageGroups$G6()
+  ae12$check_messageGroups$G6grade$grade(0.3)
+  ae12$check_messageGroups$G6grade$comment("Data Type 0.5; Each character elements counts 1/3 * 0.5。0+0.5*3/5=0.3")
+  
+  ae12$check_messageGroups$G7()
+  ae12$check_messageGroups$G7grade$grade(0.95)
+  ae12$check_messageGroups$G7grade$comment("Data Type 0.5; Each character elements counts 1/3 * 0.5。多操作變成了 named character vector。0.5*0.9+0.5=0.95")
+  
+  ae12$check_messageGroups$G8()
+  ae12$check_messageGroups$G8grade$grade(0)
+  
+  ae12$check_messageGroups$G9()
+  ae12$check_messageGroups$G9grade$grade(0.67)
+  ae12$check_messageGroups$G9grade$comment("Data Type 0.5; Each character elements counts 1/3 * 0.5。0.5+1/3*0.5=0.67")
+  
+  ae12$check_messageGroups$G10()
+  ae12$check_messageGroups$G10grade$grade(0.5)
+  ae12$check_messageGroups$G10grade$comment("Data Type 0.5; Each character elements counts 1/3 * 0.5。0.5+0=0.5")
+  
+  ae12$check_messageGroups$G11()
+  ae12$check_messageGroups$G11grade$grade(0.5)
+  ae12$check_messageGroups$G11grade$comment("Data Type 0.5; Each character elements counts 1/3 * 0.5。0.5+0=0.5")
+  
+  ae12$check_messageGroups$G12()
+  ae12$check_messageGroups$G12grade$grade(0.78)
+  ae12$check_messageGroups$G12grade$comment("Data Type 0.5; Each character elements counts 1/3 * 0.5。多操作變成了 named character vector。0.5*0.9+0.5*2/3=0.78")
+  
+  ae12$check_messageGroups$G13()
+  ae12$check_messageGroups$G13grade$grade(0.67)
+  ae12$check_messageGroups$G13grade$comment("Data Type 0.5; Each character elements counts 1/3 * 0.5。0.5+0.5*1/3=0.67")
+  
+  ae12$.yield_messageGroupTable() # 也可以所有messageGroups處理完再執行
+  ae12$result$table_messageGroups %>% View()
+
+}
+```
+
+#### grading 12
+
+```{r grade12}
+grade12 = {
+  ae12$.yield_messageGroupTable() # 也可以所有messageGroups處理完再執行
+  ae12$result$table_messageGroups %>% View()
+  list_grades12 <- rmdgrader::grade_by_all.equalMessages(ae12)
+  grade12 <- list_grades12$grade
+  grade12
+}
+```
+
+### ans13
+
+#### all.equal service
+
+no need for the transformFunctional if the grading object is not a function
+
+there seems to be a problem in parsing POSIXlt object?
+
+```{r}
+debug(allequalService)
+undebug(allequalService)
+```
+
+```{r makecondition}
+# library(rmdgrader)
+# debug(populate_aeWith_basicInfo)
+ae13 <- allequalService('ans13')
+ae13$generate_xy4messageGroups(mgetxy)
+```
+
+#### check xy and msg
+
+ans13，是一個很簡單的 Data/Time class object
+```{r ae13check}
+ae13check = {
+  
+  ae13$.yield_messageGroupTable() # 也可以所有messageGroups處理完再執行
+  ae13$result$table_messageGroups %>% View()
+  
+}
+```
+
+#### grading 13
+
+```{r grade13}
+grade13 = {
+  ae13$.yield_messageGroupTable() # 也可以所有messageGroups處理完再執行
+  ae13$result$table_messageGroups %>% View()
+  list_grades13 <- rmdgrader::grade_by_all.equalMessages(ae13)
+  grade13 <- list_grades13$grade
+  grade13
+}
+```
+
+### ans14
+
+#### all.equal service
+
+no need for the transformFunctional if the grading object is not a function
+```{r makecondition}
+ae14 <- allequalService('ans14')
+ae14$generate_xy4messageGroups(mgetxy)
+```
+
+#### check xy and msg
+
+```{r ae14check}
+ae14check = {
+  
+  ae14$.yield_messageGroupTable() # 也可以所有messageGroups處理完再執行
+  ae14$result$table_messageGroups %>% View()
+  
+}
+```
+
+#### grading 14
+
+```{r grade14}
+grade14 = {
+  ae14$.yield_messageGroupTable() # 也可以所有messageGroups處理完再執行
+  ae14$result$table_messageGroups %>% View()
+  list_grades14 <- rmdgrader::grade_by_all.equalMessages(ae14)
+  grade14 <- list_grades14$grade
+  grade14
+}
+```
+
+### ans15
+
+#### all.equal service
+
+no need for the transformFunctional if the grading object is not a function
+```{r makecondition}
+ae15 <- allequalService('ans15')
+ae15$generate_xy4messageGroups(mgetxy)
+```
+
+#### check xy and msg
+
+```{r ae15check}
+ae15check = {
+  
+  ae15$.yield_messageGroupTable() # 也可以所有messageGroups處理完再執行
+  ae15$result$table_messageGroups %>% View()
+  
+}
+```
+
+#### grading 15
+
+```{r grade15}
+grade15 = {
+  ae15$.yield_messageGroupTable() # 也可以所有messageGroups處理完再執行
+  ae15$result$table_messageGroups %>% View()
+  list_grades15 <- rmdgrader::grade_by_all.equalMessages(ae15)
+  grade15<- list_grades15$grade
+  grade15
+}
+```
+
+### ans21
+
+#### all.equal service
+
+no need for the transformFunctional if the grading object is not a function
+```{r makecondition}
+ae21 <- allequalService('ans21')
+ae21$generate_xy4messageGroups(mgetxy)
+```
+
+#### check xy and msg
+
+本題批改物件是一個數字。如果與標準答案誤差是特定相同值。那麼基本上已經可以假設有一起討論甚至程式碼皆相同，或者冥冥之中操作了錯誤的邏輯。所以專注在是否隸屬於相同組別比較重要。
+```{r ae21check}
+ae21check = {
+  
+  ae21$check_messageGroups$G1()
+  ae21$check_messageGroups$G1grade$grade(0.2)
+  ae21$check_messageGroups$G1grade$comment("資料型態 0.2 分，答案正確性是 0.8。不討論與正確答案誤差值多少，因為意義不大且有失公允。")
+  
+  ae21$check_messageGroups$G2()
+  ae21$check_messageGroups$G2grade$grade(1)
+  
+  ae21$check_messageGroups$G3()
+  ae21$check_messageGroups$G3grade$grade(0)
+  ae21$check_messageGroups$G3grade$comment("資料型態 0.2 分，答案正確性是 0.8。這組應該是無法回傳內容而空白。因為寫著資料型態是 list。")
+  
+  ae21$check_messageGroups$G4()
+  ae21$check_messageGroups$G4grade$grade(0.2)
+  ae21$check_messageGroups$G4grade$comment("資料型態 0.2 分，答案正確性是 0.8。不討論與正確答案誤差值多少，因為意義不大且有失公允。")
+  
+  ae21$check_messageGroups$G5()
+  ae21$check_messageGroups$G5grade$grade(0)
+  ae21$check_messageGroups$G5grade$comment("資料型態 0.2 分，答案正確性是 0.8。這組應該是真的空白，因為回傳 NULL。")
+  
+  ae21$check_messageGroups$G6()
+  ae21$check_messageGroups$G6grade$grade(0.2)
+  ae21$check_messageGroups$G6grade$comment("資料型態 0.2 分，答案正確性是 0.8。不討論與正確答案誤差值多少，因為意義不大且有失公允。但是這組的410779091 & 410973035 程式碼是為相同，與 410973116 同學應該沒有實際互動。但是冥冥中犯下相同邏輯錯誤。很有趣。")
+  
+  ae21$check_messageGroups$G7()
+  ae21$check_messageGroups$G7grade$grade(0.2)
+  ae21$check_messageGroups$G7grade$comment("資料型態 0.2 分，答案正確性是 0.8。不討論與正確答案誤差值多少，因為意義不大且有失公允。")
+  
+  ae21$check_messageGroups$G8()
+  ae21$check_messageGroups$G8grade$grade(0)
+  ae21$check_messageGroups$G8grade$comment("資料型態 0.2 分，答案正確性是 0.8。這題 allequalService 給出了 ordered factor vector。這組的兩位同學 410874201 & 410973131 看起來沒什麼交集竟然 HW1 互有輸通，有點有趣。")
+  
+  ae21$check_messageGroups$G9()
+  ae21$check_messageGroups$G9grade$grade(0.2)
+  ae21$check_messageGroups$G9grade$comment("資料型態 0.2 分，答案正確性是 0.8。不討論與正確答案誤差值多少，因為意義不大且有失公允。")
+  
+  ae21$check_messageGroups$G10()
+  ae21$check_messageGroups$G10grade$grade(0.2)
+  ae21$check_messageGroups$G10grade$comment("資料型態 0.2 分，答案正確性是 0.8。不討論與正確答案誤差值多少，因為意義不大且有失公允。")
+  
+  ae21$check_messageGroups$G11()
+  ae21$check_messageGroups$G11grade$grade(0.2)
+  ae21$check_messageGroups$G11grade$comment("資料型態 0.2 分，答案正確性是 0.8。不討論與正確答案誤差值多少，因為意義不大且有失公允。")
+  
+  ae21$check_messageGroups$G12()
+  ae21$check_messageGroups$G12grade$grade(0.2)
+  ae21$check_messageGroups$G12grade$comment("資料型態 0.2 分，答案正確性是 0.8。不討論與正確答案誤差值多少，因為意義不大且有失公允。")
+  
+  ae21$.yield_messageGroupTable() # 也可以所有messageGroups處理完再執行
+  ae21$result$table_messageGroups %>% View()
+
+}
+```
+
+
+#### grading 21
+
+```{r grade21}
+grade21 = {
+  ae21$.yield_messageGroupTable() # 也可以所有messageGroups處理完再執行
+  ae21$result$table_messageGroups %>% View()
+  list_grades21 <- rmdgrader::grade_by_all.equalMessages(ae21)
+  grade21 <- list_grades21$grade
+  grade21
+}
+```
+
+### ans22
+
+#### all.equal service
+
+no need for the transformFunctional if the grading object is not a function
+```{r makecondition}
+ae22 <- allequalService('ans22')
+ae22$generate_xy4messageGroups(mgetxy)
+```
+
+#### check xy and msg
+
+本題批改物件是一個數字（ans21 ans22 皆如此）。如果與標準答案誤差是特定相同值，那麼基本上已經可以假設有一起討論甚至程式碼皆相同，或者冥冥之中操作了錯誤的邏輯。所以專注在是否隸屬於相同組別比較重要。
+```{r ae22check}
+ae22check = {
+  
+  ae22$check_messageGroups$G1()
+  ae22$check_messageGroups$G1grade$grade(0.2)
+  ae22$check_messageGroups$G1grade$comment("資料型態 0.2 分，答案正確性是 0.8。不討論與正確答案誤差值多少，因為意義不大且有失公允。這組有四個人 410773130 & 410873132 的程式碼相同。其餘兩位相似性低，但是冥冥中操作了相同錯誤想法。現實生活中滿有把握 410773130 & 410873132 與其餘兩位沒有交集。因為 410773130 & 410873132 是轉學生。")
+  
+  ae22$check_messageGroups$G2()
+  ae22$check_messageGroups$G2grade$grade(1)
+
+  ae22$check_messageGroups$G3()
+  ae22$check_messageGroups$G3grade$grade(0.2)
+  ae22$check_messageGroups$G3grade$comment("資料型態 0.2 分，答案正確性是 0.8。不討論與正確答案誤差值多少，因為意義不大且有失公允。")
+  
+  ae22$check_messageGroups$G4()
+  ae22$check_messageGroups$G4grade$grade(0.2)
+  ae22$check_messageGroups$G4grade$comment("資料型態 0.2 分，答案正確性是 0.8。不討論與正確答案誤差值多少，因為意義不大且有失公允。這組的 410674270, 410778033 寫法幾乎一樣，只有一處用了as.integer/as.numeric差異。需要繼續觀察兩人是否真的有規律互動。")
+  
+  ae22$check_messageGroups$G5()
+  ae22$check_messageGroups$G5grade$grade(0.2)
+  ae22$check_messageGroups$G5grade$comment("資料型態 0.2 分，答案正確性是 0.8。不討論與正確答案誤差值多少，因為意義不大且有失公允。")
+  
+  ae22$check_messageGroups$G6()
+  ae22$check_messageGroups$G6grade$grade(0)
+  ae22$check_messageGroups$G6grade$comment("資料型態 0.2 分，答案正確性是 0.8。這組是回傳 list within NULL。應該是沒有恰當擺好批改物件。")
+  
+  ae22$check_messageGroups$G7()
+  ae22$check_messageGroups$G7grade$grade(0)
+  ae22$check_messageGroups$G7grade$comment("資料型態 0.2 分，答案正確性是 0.8。這組是回傳 NULL。應該是沒有寫或者 code chunk 不能 run 進而沒有回傳東西。")
+  
+  ae22$check_messageGroups$G8()
+  ae22$check_messageGroups$G8grade$grade(0)
+  ae22$check_messageGroups$G8grade$comment("資料型態 0.2 分，答案正確性是 0.8。這組的 410773111, 410973113 後半部寫法幾乎一樣，但是還不到互抄的地步。印象中兩人不認識，需要繼續觀察兩人是否真的有規律互動。")
+  
+  ae22$check_messageGroups$G9()
+  ae22$check_messageGroups$G9grade$grade(0.2)
+  ae22$check_messageGroups$G9grade$comment("資料型態 0.2 分，答案正確性是 0.8。不討論與正確答案誤差值多少，因為意義不大且有失公允。")
+  
+  ae22$check_messageGroups$G10()
+  ae22$check_messageGroups$G10grade$grade(0.2)
+  ae22$check_messageGroups$G10grade$comment("資料型態 0.2 分，答案正確性是 0.8。不討論與正確答案誤差值多少，因為意義不大且有失公允。")
+
+  ae22$check_messageGroups$G11()
+  ae22$check_messageGroups$G11grade$grade(0.2)
+  ae22$check_messageGroups$G11grade$comment("資料型態 0.2 分，答案正確性是 0.8。不討論與正確答案誤差值多少，因為意義不大且有失公允。")
+
+  ae22$check_messageGroups$G12()
+  ae22$check_messageGroups$G12grade$grade(0.2)
+  ae22$check_messageGroups$G12grade$comment("資料型態 0.2 分，答案正確性是 0.8。不討論與正確答案誤差值多少，因為意義不大且有失公允。")
+
+  ae22$check_messageGroups$G13()
+  ae22$check_messageGroups$G13grade$grade(0.2)
+  ae22$check_messageGroups$G13grade$comment("資料型態 0.2 分，答案正確性是 0.8。不討論與正確答案誤差值多少，因為意義不大且有失公允。")
+
+  ae22$check_messageGroups$G14()
+  ae22$check_messageGroups$G14grade$grade(0.2)
+  ae22$check_messageGroups$G14grade$comment("資料型態 0.2 分，答案正確性是 0.8。不討論與正確答案誤差值多少，因為意義不大且有失公允。")
+  
+  ae22$check_messageGroups$G15()
+  ae22$check_messageGroups$G15grade$grade(0.2)
+  ae22$check_messageGroups$G15grade$comment("資料型態 0.2 分，答案正確性是 0.8。不討論與正確答案誤差值多少，因為意義不大且有失公允。")
+  
+  ae22$check_messageGroups$G16()
+  ae22$check_messageGroups$G16grade$grade(0.2)
+  ae22$check_messageGroups$G16grade$comment("資料型態 0.2 分，答案正確性是 0.8。不討論與正確答案誤差值多少，因為意義不大且有失公允。")
+  
+  ae22$.yield_messageGroupTable() # 也可以所有messageGroups處理完再執行
+  ae22$result$table_messageGroups %>% View()
+
+}
+```
+
+#### grading 22
+
+```{r grade22}
+grade22 = {
+  ae22$.yield_messageGroupTable() # 也可以所有messageGroups處理完再執行
+  ae22$result$table_messageGroups %>% View()
+  list_grades22 <- rmdgrader::grade_by_all.equalMessages(ae22)
+  grade22 <- list_grades22$grade
+  grade22
+}
+```
+
+### ans31
+
+```{r convertCat2String}
+convertCat2String <- function(x){
+  tempx =tempfile()
+  sink(file=tempx)
+  cat(x)
+  sink()
+  xfun::read_utf8(tempx)
+}
+```
+
+#### all.equal service
+
+no need for the transformFunctional if the grading object is not a function
+```{r makecondition}
+ae31 <- allequalService('ans31')
+ae31$generate_xy4messageGroups(mgetxy)
+```
+
+#### check xy and msg
+
+```{r ae31check}
+ae31check = {
+  
+  ae31$check_messageGroups$G1()
+  ae31$check_messageGroups$G1grade$grade(0.5)
+  ae31$check_messageGroups$G1grade$comment("看起來是 Escape\nkey 跟標準答案差了一個\n。標準答案內容僅是一個半形空白。可以與 G3 做比較。")
+  
+  ae31$check_messageGroups$G2()
+  ae31$check_messageGroups$G2grade$grade(0)
+  ae31$check_messageGroups$G2grade$comment("這組回傳內容是 list within NULL。基本上是沒寫")
+  
+  ae31$check_messageGroups$G3()
+  ae31$check_messageGroups$G3grade$grade(1)
+  
+  ae31$check_messageGroups$G4()
+  ae31$check_messageGroups$G4grade$grade(0)
+  ae31$check_messageGroups$G4grade$comment("這組回傳內容是 NULL。基本上是沒有一個有效待批改的回傳物件。")
+  
+  ae31$check_messageGroups$G5()
+  ae31$check_messageGroups$G5grade$grade(0)
+  ae31$check_messageGroups$G5grade$comment("處理手法很特別，先生成三個字串，但是Escape key被斷開了。根本上忽略了題幹敘述：有一個物件aboutEscape它只有一個字串文素值。這組的 410773130 & 410973038 兩位同學操作思維幾乎一樣，但是是不是互抄，需要觀察後續是否有規律互動。")  
+  
+  ae31$check_messageGroups$G6()
+  ae31$check_messageGroups$G6grade$grade(0)
+  ae31$check_messageGroups$G6grade$comment("處理手法很特別，先生成五個字串，跟 G5 很像，但是Escape key也是被斷開了。根本上忽略了題幹敘述：有一個物件aboutEscape它只有一個字串文素值。")  
+  
+  ae31$.yield_messageGroupTable() # 也可以所有messageGroups處理完再執行
+  ae31$result$table_messageGroups %>% View()
+  
+}
+```
+
+#### grading 31
+
+```{r grade31}
+grade31 = {
+  ae31$.yield_messageGroupTable() # 也可以所有messageGroups處理完再執行
+  ae31$result$table_messageGroups %>% View()
+  list_grades31 <- rmdgrader::grade_by_all.equalMessages(ae31)
+  grade31 <- list_grades31$grade
+  grade31
+}
+```
+
+### ans32
+
+#### all.equal service
+
+no need for the transformFunctional if the grading object is not a function
+```{r makecondition}
+ae32 <- allequalService('ans32')
+ae32$generate_xy4messageGroups(mgetxy)
+```
+
+#### check xy and msg
+
+```{r ae32check}
+ae32check = {
+  
+  ae32$check_messageGroups$G1()
+  ae32$check_messageGroups$G1grade$grade(0.5)
+  
+  ae32$check_messageGroups$G2()
+  ae32$check_messageGroups$G2grade$grade(0)
+  ae32$check_messageGroups$G2grade$comment("回傳是 NULL。看起來好像是因為 cat，僅會顯示在螢幕上。")
+  
+  ae32$check_messageGroups$G3()
+  ae32$check_messageGroups$G3grade$grade(0)
+  ae32$check_messageGroups$G3grade$comment("回傳是一個 character vector，但是長度不對。忽略了題幹敘述：建立一個dearStudent物件，它只有一個字串元素值。")  
+  
+  ae32$check_messageGroups$G4()
+  ae32$check_messageGroups$G4grade$grade(0)
+  ae32$check_messageGroups$G4grade$comment("回傳值是 List within NULL。這群同學基本上是繳白卷。")  
+  
+  ae32$check_messageGroups$G5()
+  ae32$check_messageGroups$G5grade$grade(0)
+  ae32$check_messageGroups$G5grade$comment("回傳是一個 character vector，但是長度不對。忽略了題幹敘述：建立一個dearStudent物件，它只有一個字串元素值。")
+  
+  ae32$check_messageGroups$G6()
+  ae32$check_messageGroups$G6grade$grade(0)
+  ae32$check_messageGroups$G6grade$comment("回傳是一個 character vector，但是長度不對。忽略了題幹敘述：建立一個dearStudent物件，它只有一個字串元素值。") 
+  
+  ae32$check_messageGroups$G7()
+  ae32$check_messageGroups$G7grade$grade(0)
+  ae32$check_messageGroups$G7grade$comment("回傳是一個 character vector，但是長度不對。忽略了題幹敘述：建立一個dearStudent物件，它只有一個字串元素值。") 
+  
+  ae32$.yield_messageGroupTable() # 也可以所有messageGroups處理完再執行
+  ae32$result$table_messageGroups %>% View()
+
+}
+```
+
+
+
+
+#### grading 32
+
+```{r grade32}
+grade32 = {
+  ae32$.yield_messageGroupTable() # 也可以所有messageGroups處理完再執行
+  ae32$result$table_messageGroups %>% View()
+  list_grades32 <- rmdgrader::grade_by_all.equalMessages(ae32)
+  grade32 <- list_grades32$grade
+  grade32
+}
+```
+
+### ans4s
+
+#### all.equal service
+
+no need for the transformFunctional if the grading object is not a function
+
+we are going to leverage `.transform = m4s` to compare the order of the answer code chunk.
+
+- wheres$whereIsLibraryMagic > where's$whereIsInstallMagic 
+- wheres$whereIsLibraryExiftoolr > wheres$whereIsInstallExif 
+- wheres$whereIsExifRead > wheres$whereIsInstallExifTool
+```{r makecondition}
+ae4s <- allequalService('ans4s', .transform = m4s)
+ae4s$generate_xy4messageGroups(mgetxy)
+```
+
+Some trial on the students with correct/wrong answers.
+```{r}
+#Group with correct answer
+mgetxy$hw1_410777098.Rmd("ans4s")
+#Group with wrong answer
+mgetxy$hw1_410672074.Rmd("ans4s")
+#Group with partially correct answer 0.33
+mgetxy$hw1_410672033.Rmd("ans4s")
+x
+y
+```
+
+#### check xy and msg
+
+```{r ae4scheck}
+ae4scheck = {
+  
+  ae4s$check_messageGroups$G1()
+  ae4s$check_messageGroups$G1grade$grade(0.33)
+  ae4s$check_messageGroups$G1grade$comment("給分條件有三個環節：install_xxx 要在 library(xxx) 前面，共兩個。install_exiftool 則要在 meta <- exif_read(hw1.jpg) 前面。有做對一個。")
+  
+  ae4s$check_messageGroups$G2()
+  ae4s$check_messageGroups$G2grade$grade(0)
+  ae4s$check_messageGroups$G2grade$comment("給分條件有三個環節：install_xxx 要在 library(xxx) 前面，共兩個。install_exiftool 則要在 meta <- exif_read(hw1.jpg) 前面。")
+  
+   
+  ae4s$check_messageGroups$G3()
+  ae4s$check_messageGroups$G3grade$grade(1)
+  
+  ae4s$check_messageGroups$G4()
+  ae4s$check_messageGroups$G4grade$grade(0.67)
+  ae4s$check_messageGroups$G4grade$comment("給分條件有三個環節：install_xxx 要在 library(xxx) 前面，共兩個。install_exiftool 則要在 meta <- exif_read(hw1.jpg) 前面。有做對兩個。")
+  
+  ae4s$.yield_messageGroupTable() # 也可以所有messageGroups處理完再執行
+  ae4s$result$table_messageGroups %>% View()
+  
+}
+```
+
+#### grading 4s
+
+```{r grade4s}
+grade4s = {
+  ae4s$.yield_messageGroupTable() # 也可以所有messageGroups處理完再執行
+  ae4s$result$table_messageGroups %>% View()
+  list_grades4s <- rmdgrader::grade_by_all.equalMessages(ae4s)
+  grade4s <- list_grades4s$grade
+  grade4s
+}
+```
+
+### All Grades
+
+算了一下，總共10題（5+2+2+1），所以我覺得可以考慮每填都是一分。這樣剛好就是Google Classroom表定的10分。
+
+You don't need this if you have updated rmdgrader package.
+
+```{r tb_grades}
+tb_grades = convert_gradeList2dataframe(
+    ans11=grade11,
+    ans12=grade12,
+    ans13=grade13,
+    ans14=grade14,
+    ans15=grade15,
+    ans21=grade21,
+    ans22=grade22,
+    ans31=grade31,
+    ans32=grade32,
+    ans4s=grade4s,
+    turnInBonus = 3,
+    fullMark=10 # 新增原始滿分
+)
+```
+
+```{r saveGrades}
+saveGrades = {
+  save(tb_grades, file=gradeSavingFilename)
+  gradeSavingFilename
+}
+```
+
+```{r}
+tb_grades
+```
+
+```{r}
+tb_grades %>% select(total) %>% summary
+```
+
+```{r histgram, drake=F}
+hist(
+  tb_grades$total
+) 
+```
+
+嚴重偏離的同學：
+
+基準：分數低於（平均）-（一個標準差）
+```{r}
+tb_grades %>% filter(total < mean(.$total) - sd(.$total)) #13
+```
+
+小檢查一位同學
+```{r}
+file.edit(allRmds[[67]]) #陳禹慈
+getxyFunctional(allRmds[[67]]) -> getxy
+getxy("ans15") #禹慈很多都寫了`print(ParisLouis)`，抽不出物件。
+```

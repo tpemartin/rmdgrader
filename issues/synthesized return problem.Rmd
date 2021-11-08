@@ -1,0 +1,6 @@
+---
+title: "synthesize student return problem"
+labels: ["grading"]
+---
+
+As in HW5, when there is multiversion answers, student answers will be duplicated as many times as the number of version.

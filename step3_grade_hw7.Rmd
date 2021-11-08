@@ -1,0 +1,992 @@
+---
+title: "Grade"
+drake_cache: ".Finalstep3"
+output: html_document
+params:
+  title: "Final" # google classroom上公告作業時所用的標題
+  ansfilename: "grading_flow/Final-ans.Rmd"
+  submissionFolder: "studentsSubmission"
+  gradingFolder: "grading_flow"
+---
+
+
+```{r setup, include=FALSE, drake=F}
+knitr::opts_chunk$set(echo = TRUE, eval=F)
+library(drake)
+library(econDV)
+library(dplyr)
+```
+
+## makecondition
+
+```{r makecondition}
+library(drake)
+library(rmd2drake)
+library(dplyr)
+library(googleclassroom)
+library(readr)
+library(rmdgrader)
+library(purrr)
+library(rlang)
+library(testthat)
+library(withr)
+library(stringr)
+rprojroot::is_rstudio_project$make_fix_file() -> .root
+.root <- function(){
+  "/Users/martinl/Github/course-dashboard-programming-for-data-science"
+}
+datafilename <-
+    file.path(.root(),params$gradingFolder,params$title,"data4step3.Rdata")
+load(datafilename, envir = .GlobalEnv)
+gradeSavingFilename <-
+  file.path(.root(),params$gradingFolder,params$title,"data4step4.Rdata")
+correctValues <<- objectValues[[1]]
+studentValues <<- objectValues[-1]
+mgetxy <- generate_mgetxy(basename(allRmds[-1]))
+studentRmds <- allRmds[-1]
+submissionPath <-
+    file.path(
+      .root(),
+      params$submissionFolder,
+      params$title
+    )
+mfile.edit <- mfile.editFunctional(studentRmds, submissionPath)
+```
+
+## Grading
+
+```{r}
+# file.path(.root(), params$submissionFolder, params$title) %>% list.files() %>% length() #57
+# file.path(.root(), params$submissionFolder, params$title) %>% list.files(full.names = T) -> studentsSubmissionHW7
+# file.edit(studentsSubmissionHW7[51:57])
+```
+
+
+### ans113
+
+```{r makecondition}
+ae113 <- allequalService('ans113')
+ae113$generate_xy4messageGroups(mgetxy)
+```
+
+```{r ae113check}
+ae113check = {
+  ae113$.yield_messageGroupTable()
+  View(ae113$result$table_messageGroups)
+  ae113$check_messageGroups$G1()
+  
+
+```
+
+
+```{r ae113check}
+# ae113$xy[[1]]$Final_410672033.Rmd$x -> x
+# ae113$xy[[1]] %>%
+#   purrr::map(
+#     ~{
+#       unlist(.x$x$pickExactHistory) %>%
+#       identical(
+#         .x$y$pickExactHistory
+#       )
+#     }
+#   )
+# map(
+#   ae113$xy[[1]],
+#   ~with(
+#     .x,
+#     {
+#      identical(
+#        unlist(.x$x$pickHistory),
+#        .x$y$pickHistory)
+#     }
+#   )
+# )
+# map(
+#   ae113$xy[[1]],
+#   ~identical(unlist(.x$x$pickByFlag(F)),
+# .x$y$pickByFlag)
+# )
+ae113$check_messageGroups$G1grade$comment('minor unlist problem with pickByFlag as function.')
+ae113$check_messageGroups$G1grade$grade(0.34)
+
+ae113$check_messageGroups$G2()
+ae113$check_messageGroups$G2grade$grade(0.35)
+ae113$check_messageGroups$G3()
+ae113$check_messageGroups$G3grade$grade(0)
+ae113$check_messageGroups$G4()
+ae113$check_messageGroups$G4grade$grade(0.25)
+ae113$check_messageGroups$G4grade$comment('miss pickByFlag')
+ae113$check_messageGroups$G5()
+ae113$check_messageGroups$G5grade$comment('miss pickByFlag')
+ae113$check_messageGroups$G5grade$grade(0.25)
+ae113$check_messageGroups$G6()
+ae113$check_messageGroups$G6grade$grade(0.25)
+ae113$check_messageGroups$G6grade$comment('use str_detect wrongly in pickExactHistory')
+ae113$check_messageGroups$G7()
+ae113$check_messageGroups$G7grade$grade(0.1)
+ae113$check_messageGroups$G8()
+ae113$check_messageGroups$G8grade$comment('pickExact with wrong usage of str_detect')
+ae113$check_messageGroups$G8grade$grade(0.05)
+ae113$check_messageGroups$G9()
+ae113$check_messageGroups$G9grade$comment('sample inside program; wrong pickByFlag')
+ae113$check_messageGroups$G9grade$grade(0.2)
+ae113$check_messageGroups$G10()
+ae113$check_messageGroups$G10grade$comment('put pickByFlag as function')
+ae113$check_messageGroups$G10grade$grade(0.35)
+ae113$check_messageGroups$G11()
+ae113$check_messageGroups$G11grade$grade(0)
+ae113$check_messageGroups$G12()
+ae113$check_messageGroups$G12grade$grade(0.1)
+ae113$check_messageGroups$G13()
+ae113$check_messageGroups$G13grade$comment('complicate the question')
+ae113$check_messageGroups$G13grade$grade(0.05)
+# View(ae113$result$table_messageGroups[13,])
+# mfile.edit$Final_410973024.Rmd()
+}
+```
+
+
+```{r grade113}
+grade113 <- ae113$extract_grades()
+```
+
+
+
+### ans112
+
+```{r makecondition}
+ae112 <- allequalService('ans112')
+ae112$generate_xy4messageGroups(mgetxy)
+# get_gradesFromAe <- function(ae112){
+#   ae112$.yield_messageGroupTable()
+#   list_grade112 <- grade_by_all.equalMessages(ae112)
+#   grade112 <- list_grade112$grade
+#   grade112[
+#     is.na(grade112)
+#   ] <- 0
+#   grade112
+# }
+
+```
+
+```{r ae112check}
+ae112check={
+  
+  ae112$check_messageGroups$G1()
+  ae112$check_messageGroups$G1grade$grade(0)
+  ae112$check_messageGroups$G2()
+  ae112$check_messageGroups$G2grade$comment('categories2有可能不只一個，不能只用"=="')
+  ae112$check_messageGroups$G2grade$grade(0.35)
+  ae112$check_messageGroups$G3()
+  ae112$check_messageGroups$G3grade$comment('categories2有可能不只一個，不能只用"=="')
+  ae112$check_messageGroups$G3grade$grade(0.35)
+  ae112$check_messageGroups$G4()
+  ae112$check_messageGroups$G4grade$grade(0)
+  ae112$check_messageGroups$G5()
+  ae112$check_messageGroups$G5grade$grade(0.4)
+  ae112$check_messageGroups$G6()
+  ae112$check_messageGroups$G6grade$grade(0.1)
+  ae112$check_messageGroups$G6grade$comment('Wrong usage of try(), but courageous to do so.')
+  ae112$check_messageGroups$G7()
+  ae112$check_messageGroups$G7grade$grade(0)
+  ae112$check_messageGroups$G8()
+  ae112$check_messageGroups$G8grade$grade(0.05)
+  ae112$check_messageGroups$G9()
+  ae112$check_messageGroups$G9grade$grade(0.01)
+  
+  ae112$.yield_messageGroupTable()
+  View(ae112$result$table_messageGroups)
+  # mfile.edit$Final_410878023()
+}
+```
+
+```{r grade112}
+grade112 <- ae112$extract_grades()
+```
+
+### ans111
+
+```{r makecondition}
+jsonlite::fromJSON("https://www.dropbox.com/s/t09nrzwx8mw6azn/courses107.json?dl=1") -> courses107
+
+source('https://www.dropbox.com/s/g11m7nanbzva7hf/finalChallenge.R?dl=1')
+
+set.seed(2038)
+source <- sample(courses107$應修系級, 200)
+source
+categories <- c("外語系", "統計系")
+transform111true = transformFunctional(source=source, categories=categories, followByAlnum=TRUE)
+transform111false = transformFunctional(source=source, categories=categories, followByAlnum=FALSE)
+ae111 <- 
+  list(
+    true = 
+  allequalService('ans111', .transform = transform111true),
+    false =
+  allequalService('ans111', .transform = transform111false))
+
+ae111$true$generate_xy4messageGroups(mgetxy)
+ae111$false$generate_xy4messageGroups(mgetxy)
+
+```
+
+```{r ae111check}
+ae111check = {
+  ae111$true$check_messageGroups$G1()
+  ae111$true$check_messageGroups$G1grade$grade(0)
+  
+  ae111$false$check_messageGroups$G1()
+  ae111$false$check_messageGroups$G1grade$grade(0)
+}
+```
+
+```{r grade111}
+grade111 = {
+  compute_gradesFromMultipleAes(ae111) -> df_grades
+  setNames(df_grades$mean, df_grades$Rmd)
+}
+```
+
+
+### ans45
+
+```{r makecondition, echo=T}
+jsonlite::fromJSON("https://www.dropbox.com/s/ttw2j7nitc35vfx/palaceMuseumPainting.json?dl=1", simplifyDataFrame = F) -> painting
+
+# painting[[1]]$DACatalog$MetaDesc$Title
+map_chr(seq_along(painting),
+        .f = ~{painting[[.x]]$DACatalog$MetaDesc$Title}) -> AllPaintingName
+```
+
+#### all.equal service
+
+```{r makecondition}
+set.seed(3)
+# set.seed(5)
+sample(AllPaintingName, size = 1) -> SelectedPaintingName
+SelectedPaintingName
+transform45 <- transformFunctional(PaintingName = SelectedPaintingName)
+# undebug(mgetxy$HW7_410672074.Rmd)
+mgetxy$HW7_410672074.Rmd("ans45")
+transform45(x) #Get the ouput of from the students answer object.
+transform45(y) #Get the ouput of from the answer object.
+```
+
+```{r makecondition}
+ae45 <- allequalService('ans45', .transform = transform45)
+ae45$generate_xy4messageGroups(mgetxy)
+```
+
+#### check xy and msg
+
+跑一次跟兩次都是 8 組。應該 ok。
+
+some trial
+```{r}
+mgetxy$HW7_410672074.Rmd("ans45")
+mgetxy$HW7_410773096.Rmd("ans45")
+mgetxy$HW7_410886026.Rmd("ans45") #with Error in the line title = {onePiece[["DACatalog"]][["MetaDesc"]][["Title"]]}
+mgetxy$HW7_410778033.Rmd("ans45")
+mgetxy$HW7_410874230.Rmd("ans45") #Input argument is wrong. PaintingName rather than paintingname
+mgetxy$HW7_410873132.Rmd("ans45")
+x(PaintingName = SelectedPaintingName)
+```
+
+```{r aecheck45}
+aecheck45 = {
+
+  # ae45$.yield_messageGroupTable()# check how many groups at first glance.
+  # ae45$result$table_messageGroups %>% View()
+
+  #G1
+  ae45$check_messageGroups$G1()
+  ae45$check_messageGroups$G1grade$grade(1)
+
+  #G2
+  ae45$check_messageGroups$G2()
+  ae45$check_messageGroups$G2grade$grade(0)
+
+  #G3
+  ae45$check_messageGroups$G3()
+  ae45$check_messageGroups$G3grade$grade(0)
+
+  #G4
+  ae45$check_messageGroups$G4()
+  ae45$check_messageGroups$G4grade$grade(0)
+
+  #G5
+  ae45$check_messageGroups$G5()
+  ae45$check_messageGroups$G5grade$grade(0)
+
+  #G6
+  ae45$check_messageGroups$G6()
+  ae45$check_messageGroups$G6grade$grade(0)
+
+  #G7
+  ae45$check_messageGroups$G7()
+  ae45$check_messageGroups$G7grade$grade(0.2)
+  ae45$check_messageGroups$G7grade$comment("有確認輸入該幅畫作是否存在，但是沒有直接針對進行該幅畫進行朝代相關的 RegEx 萃取。")
+
+  #G8
+  ae45$check_messageGroups$G8()
+  ae45$check_messageGroups$G8grade$grade(0)
+  ae45$check_messageGroups$G8grade$comment("Function Body 跟 Input Argument 完全無交集。")
+ae45
+}
+```
+
+#### grading 45
+
+```{r grade45}
+grade45 = {
+  ae45$.yield_messageGroupTable() # 也可以所有messageGroups處理完再執行
+  # ae45$result$table_messageGroups %>% View()
+  list_grades45 <- rmdgrader::grade_by_all.equalMessages(ae45)
+  grade45 <- list_grades45$grade
+  grade45
+}
+```
+
+### ans46
+
+因為 ans45 ~ ans48 的 Input Argument 都是 `PaintingName`，所以計劃每一次都會抽不同的畫作出來，可以知道同學的演算邏輯是否皆有考慮到一般唐宋元明清，以及比較特別的（五代後蜀｜五代南唐）。不應有不平衡的問題。
+
+這樣的做法目的也是為了在解決 ans45 (410873132) 同學的問題。他的 ans45 能夠輸出（五代南唐），但是一般的宋元明清，卻會回傳（清董晧四）。很明顯地，他的 RegEx 無法涵蓋所有類型。
+
+所以透過隨機抽樣的方式，可以讓他得到他「應得」的分數。
+
+```{r makecondition, echo=T, drake=F}
+jsonlite::fromJSON("https://www.dropbox.com/s/ttw2j7nitc35vfx/palaceMuseumPainting.json?dl=1", simplifyDataFrame = F) -> painting
+
+# painting[[1]]$DACatalog$MetaDesc$Title
+map_chr(seq_along(painting),
+        .f = ~{painting[[.x]]$DACatalog$MetaDesc$Title}) -> AllPaintingName
+
+# set.seed(3)
+
+```
+
+#### all.equal service
+
+```{r makecondition}
+set.seed(5)
+sample(AllPaintingName, size = 1) -> SelectedPaintingName46
+SelectedPaintingName46
+transform46 <- transformFunctional(PaintingName = SelectedPaintingName46)
+mgetxy$HW7_410672074.Rmd("ans46")
+transform46(x) #Get the ouput of from the students answer object.
+transform46(y) #Get the ouput of from the answer object.
+```
+
+```{r makecondition}
+ae46 <- allequalService('ans46', .transform = transform46)
+ae46$generate_xy4messageGroups(mgetxy)
+```
+
+#### check xy and msg
+
+跑一次跟跑兩次都是 10 組，應該ok。
+
+some trial
+```{r}
+mgetxy$HW7_410672074.Rmd("ans46")
+mgetxy$HW7_410773096.Rmd("ans46")
+mgetxy$HW7_410886026.Rmd("ans46") #argument is not an atomic vector; coercing錯誤: $ operator is invalid for atomic vectors
+mgetxy$HW7_410778033.Rmd("ans46") #argument is not an atomic vector; coercing[1] "蜀葵" "萱花"
+mgetxy$HW7_410874230.Rmd("ans46")
+mgetxy$HW7_410874201.Rmd("ans46")
+mgetxy$HW7_410873132.Rmd("ans46") #argument is not an atomic vector; coercing[1] "蜀葵" "萱花"
+x(PaintingName = SelectedPaintingName46)
+```
+
+```{r aecheck46}
+aecheck46 = {
+
+  # ae46$.yield_messageGroupTable()# check how many groups at first glance.
+  # ae46$result$table_messageGroups %>% View()
+
+  #G1
+  ae46$check_messageGroups$G1()
+  ae46$check_messageGroups$G1grade$grade(0)
+
+  #G2
+  ae46$check_messageGroups$G2()
+  ae46$check_messageGroups$G2grade$grade(1)
+
+  #G3
+  ae46$check_messageGroups$G3()
+  ae46$check_messageGroups$G3grade$grade(0)
+
+  #G4
+  ae46$check_messageGroups$G4()
+  ae46$check_messageGroups$G4grade$grade(0)
+
+  #G5
+  ae46$check_messageGroups$G5()
+  ae46$check_messageGroups$G5grade$grade(0)
+
+  #G6
+  ae46$check_messageGroups$G6()
+  ae46$check_messageGroups$G6grade$grade(0.1)
+  ae46$check_messageGroups$G6grade$comment("有完成踏實有效的第一步，但是沒有進一步操作 Input Argument。")
+
+  #G7
+  ae46$check_messageGroups$G7()
+  ae46$check_messageGroups$G7grade$grade(0)
+  ae46$check_messageGroups$G7grade$comment("PaintingName v.s. paintingName")
+
+  #G8
+  ae46$check_messageGroups$G8()
+  ae46$check_messageGroups$G8grade$grade(0)
+
+  #G9
+  ae46$check_messageGroups$G9()
+  ae46$check_messageGroups$G9grade$grade(0)
+
+  #G10
+  ae46$check_messageGroups$G10()
+  ae46$check_messageGroups$G10grade$grade(0)
+  ae46$check_messageGroups$G10grade$comment("Function Body 跟 Input Argument 完全無交集。")
+ae46
+}
+```
+
+#### grading 46
+
+```{r grade46}
+grade46 = {
+  ae46$.yield_messageGroupTable() # 也可以所有messageGroups處理完再執行
+  ae46$result$table_messageGroups %>% View()
+  list_grades46 <- rmdgrader::grade_by_all.equalMessages(ae46)
+  grade46 <- list_grades46$grade
+  grade46
+}
+```
+
+### ans47
+
+```{r makecondition, echo=T, drake=F}
+jsonlite::fromJSON("https://www.dropbox.com/s/ttw2j7nitc35vfx/palaceMuseumPainting.json?dl=1", simplifyDataFrame = F) -> painting
+
+# painting[[1]]$DACatalog$MetaDesc$Title
+map_chr(seq_along(painting),
+        .f = ~{painting[[.x]]$DACatalog$MetaDesc$Title}) -> AllPaintingName
+
+# set.seed(3)
+# set.seed(5)
+
+```
+
+#### all.equal service
+
+```{r makecondition}
+set.seed(7)
+sample(AllPaintingName, size = 1) -> SelectedPaintingName47
+SelectedPaintingName47
+transform47 <- transformFunctional(PaintingName = SelectedPaintingName47)
+mgetxy$HW7_410672074.Rmd("ans47")
+transform47(x) #Get the ouput of from the students answer object.
+transform47(y) #Get the ouput of from the answer object.
+```
+
+
+這個 code chunk 會花很久的時間。因為我自己寫的參考答案不夠漂亮。導致要做 mgetxy 會花滿多時間@@
+```{r makecondition}
+ae47 <- allequalService('ans47', .transform = transform47)
+ae47$generate_xy4messageGroups(mgetxy)
+```
+
+#### check xy and msg
+
+跑一次跟跑兩次都是 12 組，應該ok。
+
+some trial
+```{r}
+mgetxy$HW7_410672074.Rmd("ans47")
+mgetxy$HW7_410773096.Rmd("ans47")
+mgetxy$HW7_410886026.Rmd("ans47")
+mgetxy$HW7_410778033.Rmd("ans47")
+mgetxy$HW7_410874230.Rmd("ans47")
+mgetxy$HW7_410874201.Rmd("ans47")
+mgetxy$HW7_410873132.Rmd("ans47")
+mgetxy$HW7_410973029.Rmd("ans47")
+x(PaintingName = SelectedPaintingName47)
+```
+
+```{r aecheck47}
+aecheck47 = {
+
+  # ae47$.yield_messageGroupTable()# check how many groups at first glance.
+  # ae47$result$table_messageGroups %>% View()
+
+  #G1
+  ae47$check_messageGroups$G1()
+  ae47$check_messageGroups$G1grade$grade(0)
+
+  #G2
+  ae47$check_messageGroups$G2()
+  ae47$check_messageGroups$G2grade$grade(1)
+
+  #G3
+  ae47$check_messageGroups$G3()
+  ae47$check_messageGroups$G3grade$grade(0.7)
+  ae47$check_messageGroups$G3grade$comment("「主要題名：」字眼須去除；子元素 Icon 的資料型態應該是 character 不是 matrix；子元素 Subjects 的萃取過程有部分瑕疵。")
+
+  #G4
+  ae47$check_messageGroups$G4()
+  ae47$check_messageGroups$G4grade$grade(0)
+
+  #G5
+  ae47$check_messageGroups$G5()
+  ae47$check_messageGroups$G5grade$grade(0.8)
+  ae47$check_messageGroups$G5grade$comment("子元素是 Subjects 不是 Subject; 子元素 Id, Icon 的資料型態是 character，不是matrix。「主要題名：」等字眼須去除")
+
+  #G6
+  ae47$check_messageGroups$G6()
+  ae47$check_messageGroups$G6grade$grade(0.8)
+  ae47$check_messageGroups$G6grade$comment("子元素沒有命名。最後一個子元素的資料型態應該是 character，不是 matrix。")
+
+  #G7
+  ae47$check_messageGroups$G7()
+  ae47$check_messageGroups$G7grade$grade(0.7)
+  ae47$check_messageGroups$G7grade$comment("「主要題名：」字眼，去除過程有瑕疵；子元素 Id, Icon 的資料型態應該是 character 不是 matrix；子元素 Subjects 的萃取過程有部分瑕疵。")
+
+  #G8
+  ae47$check_messageGroups$G8()
+  ae47$check_messageGroups$G8grade$grade(0)
+
+  #G9
+  ae47$check_messageGroups$G9()
+  ae47$check_messageGroups$G9grade$grade(0)
+  ae47$check_messageGroups$G9grade$comment("PaintingName v.s. paintingName。且學生在原始檔案已經把後者指定為 明仇英玉洞燒丹　卷。可能他在嘗試模擬一個特定input，但是終究離題幹太遠。")
+
+  #G10 410884003 劉鳳祈同學 老是用抄的抄錯。
+  ae47$check_messageGroups$G10()
+  ae47$check_messageGroups$G10grade$grade(0)
+
+  #G11
+  ae47$check_messageGroups$G11()
+  ae47$check_messageGroups$G11grade$grade(0.6)
+  ae47$check_messageGroups$G11grade$comment("子元素 Title, Id, Icon 資料型態是 character，不是list ; 「主要提名、作品號」等字眼須去除；Subjects 萃取過程有瑕疵。")
+
+  #G12
+  ae47$check_messageGroups$G12()
+  ae47$check_messageGroups$G12grade$grade(0.9)
+  ae47$check_messageGroups$G12grade$comment("最後一個子元素 Icon 資料型態是 character，不是 matrix。")
+ae47
+}
+```
+
+#### grading 47
+
+```{r grade47}
+grade47 = {
+  ae47$.yield_messageGroupTable() # 也可以所有messageGroups處理完再執行
+  # ae47$result$table_messageGroups %>% View()
+  list_grades47 <- rmdgrader::grade_by_all.equalMessages(ae47)
+  grade47 <- list_grades47$grade
+  grade47
+}
+```
+
+### ans48
+
+不知道那個 message 的輸出，會不會有問題，但是如果有 print 相同 target painting 就可以給對嗎？
+
+改用跟 ans53 一樣的 `transformFunctional_messageKeep` 應該 ok。
+
+```{r makecondition, echo=T, drake=F}
+jsonlite::fromJSON("https://www.dropbox.com/s/ttw2j7nitc35vfx/palaceMuseumPainting.json?dl=1", simplifyDataFrame = F) -> painting
+
+# painting[[1]]$DACatalog$MetaDesc$Title
+map_chr(seq_along(painting),
+        .f = ~{painting[[.x]]$DACatalog$MetaDesc$Title}) -> AllPaintingName
+
+# set.seed(3)
+# set.seed(5)
+# set.seed(7)
+
+```
+
+#### all.equal service
+
+```{r makecondition}
+set.seed(9)
+sample(AllPaintingName, size = 1) -> SelectedPaintingName48
+SelectedPaintingName48
+transform48 <- transformFunctional_messageKeep(PaintingName = SelectedPaintingName48)
+mgetxy$HW7_410672074.Rmd("ans48")
+transform48(x) #Get the ouput of from the students answer object.
+transform48(y) #Get the ouput of from the answer object.
+```
+
+這個 code chunk 會花很久的時間。因為我自己寫的參考答案不夠漂亮。每一次 getxy 都要算一次。導致要做 mgetxy 會花滿多時間@@
+```{r makecondition}
+ae48 <- allequalService('ans48', .transform = transform48)
+ae48$generate_xy4messageGroups(mgetxy)
+```
+
+#### check xy and msg
+
+跑一次跟跑兩次都是 7 組，應該ok。
+
+some trial
+```{r}
+mgetxy$HW7_410672074.Rmd("ans48")
+mgetxy$HW7_410773096.Rmd("ans48") #Only the words
+mgetxy$HW7_410886026.Rmd("ans48") #NULL 沒有寫沒錯
+mgetxy$HW7_410778033.Rmd("ans48") #Only the words
+mgetxy$HW7_410874230.Rmd("ans48") #"Please go to 3F" 前面題目就有誤了‘
+mgetxy$HW7_410874201.Rmd("ans48")
+mgetxy$HW7_410873132.Rmd("ans48") #"Please go to 3F" 前面題目就有誤了‘
+mgetxy$HW7_410973029.Rmd("ans48")
+mgetxy$HW7_410973017.Rmd("ans48")
+x(PaintingName = SelectedPaintingName48)
+y(PaintingName = SelectedPaintingName48)
+```
+
+到了 ans48 為了避免扣到相同 ans47 的錯誤，G3 G5 有確實返還出該幅畫作的相關資訊（必須承接 ans47），以及用 `print` or `message` 函數而被 `transformFunctional_messageKeep` 捕捉到，都會給 1 。如果只有返還正確樓層資訊，是 0.65。
+```{r aecheck48}
+aecheck48 = {
+
+  # ae48$.yield_messageGroupTable()# check how many groups at first glance.
+  # ae48$result$table_messageGroups %>% View()
+
+  #G1
+  ae48$check_messageGroups$G1()
+  ae48$check_messageGroups$G1grade$grade(0)
+
+  #G2
+  ae48$check_messageGroups$G2()
+  ae48$check_messageGroups$G2grade$grade(0.65)
+  ae48$check_messageGroups$G2grade$comment("原始題目有句子：and also the exact aforementioned information from our get_painting_withDS function in ans47. 但是避免重複扣分。")
+
+  #G3
+  ae48$check_messageGroups$G3()
+  ae48$check_messageGroups$G3grade$grade(1)
+
+  #G4
+  ae48$check_messageGroups$G4()
+  ae48$check_messageGroups$G4grade$grade(0.65)
+  ae48$check_messageGroups$G4grade$comment("原始題目有句子：and also the exact aforementioned information from our get_painting_withDS function in ans47. 但是避免重複扣分。")
+
+  #G5
+  ae48$check_messageGroups$G5()
+  ae48$check_messageGroups$G5grade$grade(1)
+
+  #G6
+  # 410973003 張哲維
+  #
+  # 410973046 郭哲瑋
+  #
+  # 程式碼邏輯是對的。輸出也是 ok 的。
+  #
+  # 但是因為在 code chunk 最後一行 寫了 `get_instuction()` 沒有 input argument 產生錯誤。返還 NULL。跟其他會噴 Error 的同學被分在同一組。
+  #
+  # 讓他們來要分，如果他們有在在意的話。
+  ae48$check_messageGroups$G6()
+  ae48$check_messageGroups$G6grade$grade(0)
+
+  #G7
+  ae48$check_messageGroups$G7()
+  ae48$check_messageGroups$G7grade$grade(0)
+
+  # #G8
+  # ae48$check_messageGroups$G8()
+  # ae48$check_messageGroups$G8grade$grade(0) #410884003 劉鳳祈同學（老是貼錯）
+  ae48
+}
+```
+
+#### grading 48
+
+```{r grade48}
+grade48 = {
+  ae48$.yield_messageGroupTable() # 也可以所有messageGroups處理完再執行
+  # ae48$result$table_messageGroups %>% View()
+  list_grades48 <- rmdgrader::grade_by_all.equalMessages(ae48)
+  grade48 <- list_grades48$grade
+  grade48
+}
+```
+
+
+### ans53 *message keep
+
+
+```{r makecondition}
+# xfun::download_file("https://www.dropbox.com/s/54khnc8k607amw1/NTPUmeetCore.R?dl=1")
+source("https://www.dropbox.com/s/54khnc8k607amw1/NTPUmeetCore.R?dl=1")
+currentUser <- members[[599]]
+set.seed(2058)
+member2like <- members[[sample(1:1000,1)]]
+transform53 <- transformFunctional_messageKeep(currentUser=currentUser, member2like=member2like)
+ae53 <- allequalService('ans53', .transform = transform53)
+ae53$generate_xy4messageGroups(mgetxy)
+```
+
+
+```{r aecheck53}
+aecheck53 = {
+  ae53$check_messageGroups$G1()
+  # ae53$result$messageGroups[[1]]$Rmds
+  ae53$check_messageGroups$G1grade$grade(0)
+  
+  ae53$check_messageGroups$G2()
+
+  # ae53$result$messageGroups[[2]]$Rmds
+  ae53$check_messageGroups$G2grade$comment('want條件是T才有硬性要求，F時是都可以')
+  ae53$check_messageGroups$G2grade$grade(0.8)
+  
+  ae53$check_messageGroups$G3()
+  ae53$check_messageGroups$G3grade$comment("此題唯一全對的。Good job.")
+  ae53$check_messageGroups$G3grade$grade(1)
+
+  
+  ae53$check_messageGroups$G4()
+  ae53$check_messageGroups$G4grade$comment('want條件是T才有硬性要求，F時是都可以')
+  ae53$check_messageGroups$G4grade$grade(0.8)
+  
+  ae53$check_messageGroups$G5()
+  ae53$check_messageGroups$G5grade$comment('want條件是T才有硬性要求，F時是都可以')
+  ae53$check_messageGroups$G5grade$grade(0.8)
+  
+  ae53$check_messageGroups$G6()
+  ae53$check_messageGroups$G6grade$grade(0)
+  
+  ae53$check_messageGroups$G7()
+  ae53$check_messageGroups$G7grade$grade(0)
+
+  ae53$check_messageGroups$G8()
+  ae53$check_messageGroups$G8grade$grade(0)
+  
+  ae53$check_messageGroups$G9()
+  ae53$check_messageGroups$G9grade$comment('want條件是T才有硬性要求，F時是都可以; 除此之外，整個程式很清楚、完整, good job.')
+  ae53$check_messageGroups$G9grade$grade(0.9)
+  
+  ae53$check_messageGroups$G10()
+  ae53$check_messageGroups$G10grade$comment('同學可能被朋友耍了，拿到版本故意錯了最後輸出行，小小可惜')
+  ae53$check_messageGroups$G10grade$grade(0.1)
+  ae53
+}
+```
+
+
+```{r grade53}
+grade53 = {
+  ae53$extract_grades()
+}
+```
+
+```{r}
+ae53$result$table_messageGroups -> ae53table
+ae53table
+save(ae53table, file="ae53table.Rdata")
+```
+
+
+ae53 要補上 grading section
+
+加分題 ans49 ans6 可以先列好 heading 。
+
+## 加分題
+
+### ans49
+
+```{r makecondition, echo=T, drake=F}
+jsonlite::fromJSON("https://www.dropbox.com/s/ttw2j7nitc35vfx/palaceMuseumPainting.json?dl=1", simplifyDataFrame = F) -> painting
+
+# painting[[1]]$DACatalog$MetaDesc$Title
+map_chr(seq_along(painting),
+        .f = ~{painting[[.x]]$DACatalog$MetaDesc$Title}) -> AllPaintingName
+AllPaintingName
+# set.seed(3)
+# set.seed(5)
+# set.seed(7)
+# set.seed(9)
+
+```
+
+#### all.equal service
+
+```{r makecondition}
+set.seed(20)
+sample(AllPaintingName, size = 1) -> SelectedPaintingName49
+SelectedPaintingName49
+transform49 <- transformFunctional_messageKeep(PaintingName = SelectedPaintingName49)
+```
+
+這個 code chunk 會花很久的時間。因為我自己寫的參考答案不夠漂亮。每一次 getxy 都要算一次。導致要做 mgetxy 會花滿多時間@@
+```{r makecondition}
+ae49 <- allequalService('ans49', .transform = transform49)
+ae49$generate_xy4messageGroups(mgetxy)
+# transform49(y) #Get the ouput of from the answer object.
+```
+
+#### check xy and msg
+
+some trial
+```{r}
+mgetxy$HW7_410672074.Rmd("ans49")
+mgetxy$HW7_410773096.Rmd("ans49")
+mgetxy$HW7_410973017.Rmd("ans49")
+x(PaintingName = SelectedPaintingName49)
+y(PaintingName = SelectedPaintingName49)
+```
+
+```{r aecheck49}
+aecheck49 = {
+
+  # ae49$.yield_messageGroupTable()# check how many groups at first glance.
+  # ae49$result$table_messageGroups %>% View()
+
+  #G1
+  ae49$check_messageGroups$G1()
+  ae49$check_messageGroups$G1grade$grade(0) #48 students didn't write it.
+
+  #G2
+  ae49$check_messageGroups$G2()
+  ae49$check_messageGroups$G2grade$grade(0)
+  # mfile.edit$HW7_410674270.Rmd
+
+  #G3
+  ae49$check_messageGroups$G3()
+  ae49$check_messageGroups$G3grade$grade(0)
+  # mfile.edit$HW7_410874230.Rmd()
+  # mfile.edit$HW7_410779091.Rmd()
+
+  #G4
+  ae49$check_messageGroups$G4()
+  ae49$check_messageGroups$G4grade$grade(0)
+  # mfile.edit$HW7_410777098.Rmd()
+  # mfile.edit$HW7_410782022.Rmd()
+  # mfile.edit$HW7_410973131.Rmd()
+
+  #G5
+  ae49$check_messageGroups$G5()
+  ae49$check_messageGroups$G5grade$grade(0) #沒有任何 identify Top-10 subjects 的流程。
+  
+  ae49
+}
+```
+
+#### grading 49
+
+```{r grade49}
+grade49 = {
+  ae49$.yield_messageGroupTable() # 也可以所有messageGroups處理完再執行
+  # ae49$result$table_messageGroups %>% View()
+  list_grades49 <- rmdgrader::grade_by_all.equalMessages(ae49)
+  grade49 <- list_grades49$grade
+  grade49
+}
+```
+
+### ans6
+
+#### all.equal service
+
+```{r makecondition}
+set.seed(555)
+transform6 = transformFunctional()
+ae6$xy[[1]]$HW7_410672033.Rmd
+
+ae6 <- allequalService('ans6') #no input argument
+ae6$generate_xy4messageGroups(mgetxy)
+# transform49(y) #Get the ouput of from the answer object.
+```
+
+#### check xy and msg
+
+some trial
+```{r}
+mgetxy$HW7_410672074.Rmd("ans6")
+mgetxy$HW7_410773096.Rmd("ans6")
+mgetxy$HW7_410973017.Rmd("ans6")
+# x()
+# y() -> test
+# test$scissor()
+```
+
+```{r aecheck6}
+aecheck6 = {
+
+  # ae6$.yield_messageGroupTable()# check how many groups at first glance.
+  # ae6$result$table_messageGroups %>% View()
+
+  #G1
+  ae6$check_messageGroups$G1()
+  ae6$check_messageGroups$G1grade$grade(0) #52 students didn't write it.
+
+  #G2
+  ae6$check_messageGroups$G2()
+  ae6$check_messageGroups$G2grade$grade(0)
+  # mfile.edit$HW7_410779091.Rmd()
+  # mfile.edit$HW7_410874230.Rmd()
+  # 以上兩位同學都算是寫對了，想給分，偏偏不知道為什麼最後一行給了gameStart(sign[[sample(1:3,1)]])，整個 code chunk 變成噴 Error 。(兩位同學的版本是同一個)
+
+  #G3
+  ae6$check_messageGroups$G3()
+  ae6$check_messageGroups$G3grade$grade(0)
+  # mfile.edit$HW7_410973091.Rmd()
+  # mfile.edit$HW7_410973013.Rmd()
+  
+  ae6
+}
+```
+
+#### grading 6
+
+```{r grade6}
+grade6 = {
+  ae6$.yield_messageGroupTable() # 也可以所有messageGroups處理完再執行
+  ae6$result$table_messageGroups %>% View()
+  list_grades6 <- rmdgrader::grade_by_all.equalMessages(ae6)
+  grade6 <- list_grades6$grade
+  grade6
+}
+```
+
+### All Grades
+
+算了一下，總共10題（5+2+2+1），所以我覺得可以考慮每填都是一分。這樣剛好就是Google Classroom表定的10分。
+
+You don't need this if you have updated rmdgrader package.
+```{r tb_grades}
+tb_grades = convert_gradeList2dataframe(
+    ans45=grade45,
+    ans46=grade46,
+    ans47=grade47,
+    ans48=grade48,
+    ans53=grade53
+)
+```
+
+```{r aeCollection}
+aeCollection = {
+aeCollection <- new.env()
+aeCollection$ae45 <- aecheck45
+aeCollection$ae46 <- aecheck46
+aeCollection$ae47 <- aecheck47
+aeCollection$ae48 <- aecheck48
+aeCollection$ae53 <- aecheck53
+aeCollection}
+```
+
+
+```{r records_gradeComment}
+records_gradeComment = {
+  tb_grades
+  allObjectsInCurrentEnvironment <- ls(envir=aeCollection)
+  all_aeObjects <- stringr::str_subset(allObjectsInCurrentEnvironment, "^ae[[:alnum:]\\.]+")
+  # .x <- 1
+  record_gradesCommentsWithTimestamp(all_aeObjects = all_aeObjects, envir = aeCollection)
+}
+```
+
+
+```{r saveGrades}
+saveGrades = {
+  save(tb_grades, records_gradeComment, file=gradeSavingFilename)
+  gradeSavingFilename
+}
+```

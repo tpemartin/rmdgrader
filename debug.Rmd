@@ -1,0 +1,11 @@
+
+```{r}
+midterm2_410782022_2
+```
+
+```{r}
+correctAnsFilename = "/Users/martinl/Github/course-dashboard-programming-for-data-science/midterm2/midterm2-ans.Rmd"
+allRmds= "~/Github/course-dashboard-programming-for-data-science/studentsSubmission/midterm2/midterm2_410874230.Rmd"
+objectValues <- get_answerObjectValues(allRmds, correctAnsFilename)
+```
+

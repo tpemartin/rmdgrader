@@ -1,0 +1,81 @@
+---
+title: "Execute Grading Flow"
+author: "Your Name"
+date: "The Date"
+output: output_format
+params:
+  title: "final_extra"
+  ansfilename: "grading_flow/Final/Final-ans.Rmd" # succedding from .root
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+xx<- rstudioapi::getActiveDocumentContext()
+xx$path
+```
+
+## Modify the three steps Rmds for your need
+
+  * step1_download.Rmd
+  
+  * step2_process.Rmd
+  
+  * step3_grade.Rmd
+  
+  * step4_return.Rmd
+  
+  * step5_inspection.Rmd
+
+
+```{r}
+# exercise specific
+c(title=params$title,
+ansfilename= params$ansfilename,
+
+# course specific
+courseInfoFile="/Users/martinl/Github/course-dashboard-programming-for-data-science/course109-1-program4DS.rda",
+rosterFile="/Users/martinl/Github/course-dashboard-programming-for-data-science/109-1-completeRoster.Rdata",
+dueBuffer= "minutes(20)",
+submissionFolder= "studentsSubmission",
+gradingFolder= "grading_flow",
+localGDReturnFolderPath="/Users/martinl/Google Drive/Classroom/109-1 資料科學程式設計（一）/Return",
+classDriveFolderPath= "https://drive.google.com/drive/folders/0B7BgScbXrgfNfjRGVnp0V0NKbGVjVEN0UVRMdHB0czhnNVBXYVB4R2liTlZxclJFQWRXb1E",
+localGDReturnFolder= "/Users/martinl/Google Drive/Classroom/109-1 資料科學程式設計（一）/Return",
+githubRepo= "tpemartin/109-1-inclass-practice",
+disputeGithub="https://github.com/tpemartin/109-1-inclass-practice") -> params_setup
+
+### end of params_setup
+
+require(dplyr)
+params_setup %>%
+  names() %>%
+  paste0("\\{",.,"\\}") -> params_setupBracket_names
+params_setupBracket <- params_setup
+names(params_setupBracket) <-
+  params_setupBracket_names
+
+list.files(pattern="step[0-9][^.]+\\.Rmd", full.names = T) -> stepRmds
+
+# .x <- stepRmds[[1]]
+stepRmds %>%
+  purrr::walk(
+    ~{
+      xfun::read_utf8(.x) -> rmdlines
+      cacheName <- basename(.x) %>%
+        stringr::str_extract("step[0-9]") %>%
+        paste0(params_setupBracket[["\\{title\\}"]],
+               .)
+      stringr::str_replace_all(
+        rmdlines,
+        c(params_setupBracket,
+          "\\{cache\\}"=cacheName)
+      ) -> rmdlinesNew
+      
+      xfun::write_utf8(
+        rmdlinesNew,
+        con=.x
+      )
+    }
+  )
+```
+

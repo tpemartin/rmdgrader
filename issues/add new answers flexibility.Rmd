@@ -1,0 +1,10 @@
+---
+title: "允許多個可能答案"
+labels: ["improvement"]
+---
+
+add_ans(RmdIndex, ansLabel, gradingMethod=NULL)
+
+grade('ansxx', mxx)
+
+mxx %>% add_ans(newAns, gradingMethod=NULL)

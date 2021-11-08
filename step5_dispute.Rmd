@@ -1,0 +1,209 @@
+---
+title: "Step5_dispute"
+drake_cache: ".Finalstep4"
+output: html_document
+params:
+  title: "Final" # google classroom上公告作業時所用的標題
+  ansfilename: "grading_flow/Final/Final-ans.Rmd"
+  submissionFolder: "studentsSubmission"
+  gradingFolder: "grading_flow"
+  localGDReturnFolderPath: "/Users/martinl/Google Drive/Classroom/109-1 資料科學程式設計（一）/Return"
+  localGDReturnFolderPath_ByTA: "/Users/chenpoming/Google Drive/Classroom/109-1 資料科學程式設計（一）/Return"
+  classDriveFolderPath: "https://drive.google.com/drive/folders/1KCVTNlLMspbo5tLmLbhrHUxazutrm0Nz?usp=sharing"
+  disputeGithub: "https://github.com/tpemartin/109-1-inclass-practice"
+  googleDrivePath: "Classroom/109-1 資料科學程式設計（一）/grades/" # start after My Drive/
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## makecondition
+
+```{r makecondition}
+library(dplyr)
+# library(rmdgrader)
+library(econDS)
+library(googledrive)
+.root <- function(){
+  "/Users/martinl/Github/course-dashboard-programming-for-data-science"
+}
+datafilename <- 
+    file.path(.root(),params$gradingFolder,params$title,"data4step3.Rdata")
+  load(datafilename, envir = .GlobalEnv)
+correctAnsFilename = 
+    file.path(
+      .root(), params$ansfilename
+    ) 
+gradeSavingFilename <- 
+  file.path(.root(),params$gradingFolder,params$title,"data4step4.Rdata")
+load(gradeSavingFilename, envir=.GlobalEnv)
+returnFolder <-
+  file.path(.root(), params$submissionFolder, params$title, "return")
+problemFolder <- 
+  file.path(returnFolder, "cannotSynthesized")
+copy2returnGDfolderFilename = 
+  file.path(.root(), params$gradingFolder, params$title,
+            "data4step5.Rdata")
+classDriveFolderPath = params$classDriveFolderPath 
+if(!dir.exists(problemFolder)) dir.create(problemFolder)
+ansLabels <- colnames(tb_grades %>% select(contains("ans")))
+load(
+  file.path(
+    .root(),"109-1-completeRoster.Rdata"),
+  envir = .GlobalEnv
+)
+if(!dir.exists(returnFolder)) dir.create(returnFolder)
+mergeWithRoster <- function(df_grade_final){
+  P4DS_OfficialList_1201 <- read_csv(file.path(.root(), "109-1_P4DS_NTPU_Official_List/P4DS_OfficialList_1201.csv"))
+  P4DS_OfficialList_1201 %>% 
+    mutate(
+      studentName=姓名,
+      ID=as.character(帳號),
+      email=信箱
+      )-> P4DS_OfficialList
+  df_grade_final %>%
+    left_join(
+      P4DS_OfficialList,
+      by="ID"
+    ) 
+}
+
+```
+
+
+```{r}
+load("~/Github/course-dashboard-programming-for-data-science/grading_flow/Final/data4step4.Rdata")
+
+title=params$title
+```
+
+```{r}
+rv <- Review(tb_grades = tb_grades, title = params$title, googleDrivePath = params$googleDrivePath)
+rv$compute_GradePR() # compute grades simply adding all ans together, and generate PR
+rv$source_JSON$Final_410672033.Rmd$Final$raw$ans111[[1]]$grade
+undebug(rv$source_JSON$Final_410672033.Rmd$Final$raw$ans111$gradeUpdate)
+rv$source_JSON$Final_410672033.Rmd$Final$raw$ans111$gradeUpdate(0.5)
+rv$source_JSON$Final_410672033.Rmd$Final$PR # PR not changed yet
+rv$compute_GradePR()
+rv$source_JSON$Final_410672033.Rmd$Final$PR # PR now changed
+```
+
+#### Prepare PR
+
+If there is any special care to take on **tb_grades**, take care of it before feeding **rv** instance:
+```{r}
+pe <- Process()
+stringr::str_which(
+  names(pe$studentsRmds), pattern ="[0-9]{9}\\.Rmd$") -> whichIsValid
+pe$studentsRmds[-whichIsValid] <- NULL
+tb_grades %>% 
+  filter(
+    name %in% names(pe$studentsRmds)
+  ) %>%
+  select(
+    name, contains("ans")
+  ) -> df_gradeSelected
+df_gradeSelected %>%
+  tidyr::pivot_longer(
+    cols=contains("ans"),
+    names_to = "ansLabel",
+    values_to = "grade"
+  ) -> df_grade
+
+df_grade$part <- {
+  df_grade$ansLabel %>%
+    stringr::str_extract("ans[0-9]{2}|ans2")
+}
+df_grade %>%
+  group_by(part, name) %>%
+  summarise(
+    partGrade=max(grade)*18
+  ) %>%
+  ungroup() %>%
+  tidyr::pivot_wider(
+    names_from = "part",
+    values_from = "partGrade"
+  ) %>% 
+  rowwise() %>%
+  mutate(
+    testGrade=sum(c_across(contains("ans"))),
+    ID=stringr::str_extract(name, "[0-9]{9}")
+    )-> tb_gradesNew
+
+filename <- 
+  file.path(
+    .root(), "grading_flow", "final", "formulaSheetGrade.Rdata"
+  )
+load(filename)
+tb_gradesNew %>%
+  left_join(
+    finalFormulaSheetGrade,
+    by="ID"
+  ) %>%
+  mutate(
+    formulaSheetGrade=if_else(is.na(formulaSheetGrade),
+                              0, formulaSheetGrade),
+    formulaRate=if_else(is.na(formulaRate),
+                        0, formulaRate),
+    final=testGrade+formulaSheetGrade
+  )-> df_grade_integrated
+df_grade_integrated %>% 
+  rename(
+    "ans_formula"="formulaSheetGrade"
+  ) %>%
+  select(
+    name, ID, contains("ans")
+  ) -> df_grade_final
+```
+
+```{r}
+# Initiate a Review instance (it will take a while for Google Drive properly linked):
+rv <- Review(df_grade_final, params$title, googleDrivePath = params$googleDrivePath)
+
+# check the current grade of ans11, [[1]] is always required
+rv$source_JSON$Final_410672033.Rmd$Final$raw$ans11[[1]]$grade
+# decide to change ans11
+rv$source_JSON$Final_410672033.Rmd$Final$raw$ans11$gradeUpdate(18*0.5)
+rv$source_JSON$Final_410672033.Rmd$Final$raw$ans11$commentUpdate("okay")
+# the change happened, but not PR...(user should update PR at last):
+rv$source_JSON$Final_410672033.Rmd$Final$raw$ans11[[1]]$grade
+rv$source_JSON$Final_410672033.Rmd$Final$tb_grade$ans11
+rv$source_JSON$Final_410672033.Rmd$Final$raw$ans_formula$commentUpdate("test")
+# in addition, revision history is recorded:
+rv$revisionHistory$Final_410672033.Rmd$Final$ans11
+rv$revisionHistory$Final_410672033.Rmd
+```
+
+When grade editing is done,
+```{r}
+# update everyone's PR
+rv$compute_GradePR()
+```
+
+
+```{r}
+# Then upload and update Google drive record (the ultimate grade that counts)
+rv$upload_update()
+# Also upload revision history
+rv$upload_revisionHistory()
+```
+
+  * Don't worry files trashed message. It means the old one is overwritten by the new one.
+  
+## Notify student
+
+```{r}
+debug(rv$notifyStudentRevisions)
+mergeWithRoster(df_grade_final)-> df_grade_final2
+rv$notifyStudentRevisions(df_grade_final2)
+rv$revisionHistory$Final_410672033.Rmd$PR
+```
+
+
+```{r}
+rv$revisionEmails
+```
+
+
+

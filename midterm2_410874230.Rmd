@@ -1,0 +1,213 @@
+---
+title: "Midterm 2"
+IP: '120.126.194.173'
+params:
+  studentName: "簡毅"
+  studentID: "410874230"
+---
+
+## gitter chatroom:
+
+https://gitter.im/ntpuecon/109-1-programming-for-DS
+
+## 存檔與填寫注意事項：
+
+  
+> 考試滿分100分：每小題配分相同。
+
+> 前述存檔與frontmatter要求缺任何一個則扣5分。
+
+請先執以下code chunk, 引入所需packages，答案禁止引用其他套件（Package）。
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, eval=F)
+library(lubridate); library(jsonlite); library(readr); library(stringr); library(purrr)
+```
+
+
+## 1. 農曆
+
+引入以下資料得到農曆歲次與民國、西元年的對照物件**lunarYearMapping**, 及時間24小時與12時辰的對照物件**lunarTimeMapping**
+
+```{r data1}
+jsonlite::fromJSON("https://www.dropbox.com/s/l4fvd1ipg2w9022/lunarYearMapping.json?dl=1") -> lunarYearMapping
+jsonlite::fromJSON("https://www.dropbox.com/s/m82qeo84xcumm0i/lunarTimeMapping.json?dl=1") -> lunarTimeMapping
+```
+
+  * 程式涉及歲次丶時辰轉換時請勿用手動輸入，而是自lunarYearMapping, lunarTimeMapping粹練提取，改題時改題程式會抽換成另一組虛擬世界的lunarYearMapping/lunarTimeMapping物件。
+
+### 1.1 data frame
+
+將lunarYearMapping轉成一個dataframe物件**lunarYearTable**, 它有以下5個命名元素，其名稱，class, 及元素值length請自行由以下資訊判斷
+
+```
+ $ 民國    : chr [1:101] "民國108" ..."民國8"
+
+ $ 西元    : chr [1:101] "2019"  ..."1919"
+ $ 清代    : chr [1:101] "/" "/" "/" "/" ..."/"
+ $ 日據時代: chr [1:101] "/" "/" "/" "/" ..."大正8"
+ $ 農曆歲次: chr [1:101] "己亥"  ..."己未"
+```
+
+  * 清代，日據時代若有實際年代值則必需為實際年代值，若無則為"/"
+  
+  * 原資料來自<https://www.ris.gov.tw/app/portal/219>，同學也可連去檢查自己的答案是否正確。
+
+
+```{r}
+splited <- str_split(lunarYearMapping,pattern = "\t")
+splited <- as.list(transpose(splited))
+year <- list(
+  a = c(unlist(splited[1])),
+  b = c(unlist(splited[2])),
+  c = c(unlist(splited[3])),
+  d = c(unlist(splited[4])),
+  e = c(unlist(splited[5]))
+)
+```
+
+
+```{r ans11}
+splited <- str_split(lunarYearMapping,pattern = "\t")
+splited <- as.list(transpose(splited))
+year <- list(
+  a = c(unlist(splited[1])),
+  b = c(unlist(splited[2])),
+  c = c(unlist(splited[3])),
+  d = c(unlist(splited[4])),
+  e = c(unlist(splited[5]))
+)
+# 原始程式並不包含上半段，在此老師人工幫你補上，期末考可能你要再細心一點。
+lunarYearTable <- as.data.frame(year)
+names(lunarYearTable) <- c(year$a[1], year$b[1], year$c[1],year$d[1],year$e[1])
+# lunarYearTable
+```
+
+### 1.2 NA
+請刪去lunarYearTable中「清代」一欄。另外，在「日據時代」一欄中，出現"/"的請改成NA（小心不要改成字串的"NA"）
+
+```{r ans12}
+changetona<- str_which(lunarYearTable$日據時代,pattern="/")
+lunarYearTable$日據時代[changetona] <- NA
+# lunarYearTable
+```
+
+### 1.3 歲次
+
+執行以下程式可以得到100個隨機自1973/1/2 00:00至2020-12-31 00:00抽出的出生日期及時間，**birthdays**。
+
+```{r data13}
+birthdays <-
+  sample(
+        seq(ymd_hm("1973-01-02 00:00"),
+            ymd_hm("2020-12-31 00:00"),
+            by="hour"),
+        100
+  )
+```
+
+請計算每個生日的對應農曆歲次並存在**birth_lunarYears**（class: character; length: 100）
+
+```{r ans13}
+birth_lunarYears <- character(100)
+birth_year <- str_extract(as.character(birthdays),pattern = "[12][90][1234567890][1234567890]")
+b = c(unlist(splited[2]))
+e = c(unlist(splited[5]))
+
+# birth_lunarYears
+```
+
+### 1.4 生辰
+
+lunarTimeMapping有十二時辰的開始到結束的對應小時, 以其第一元素值"子　２３～０１點"為例，它指"子時從23:00開始到00:59結束（不包含01:00整點）", 請計算**birthdays**裡每個生日的時辰，子時出生的值請寫"子"，寅時寫"寅", 依此類推，存在**birth_lunarHours** (class: character, length: 100)
+
+```{r ans14}
+birthdays <- as.Date(birthdays)
+birthdays <- str_replace(birthdays,pattern = "[12][09][1234567890][1234567890]",replacement = "2020")
+cutD <- cut(birthdays,
+            breaks = 
+              c(
+                ymd(c(
+                "2020-03-08",
+                "2020-05-22",
+                "2020-07-20",
+                "2020-10-11")),
+                Inf
+              ))
+# birth_lunarHours
+```
+
+## 2. 故宮畫藏
+
+執行以下程式下載200幅故宮中國畫作資訊**painting**: 
+```{r data2}
+jsonlite::fromJSON("https://www.dropbox.com/s/ttw2j7nitc35vfx/palaceMuseumPainting.json?dl=1", simplifyDataFrame = F) -> painting
+```
+
+### 2.1 畫中主題
+
+```{r}
+onePiece <- painting[[sample(seq_along(painting),1)]]
+```
+
+執行上方程式從painting隨機抽出一個元素值（即一件畫作資訊）找出「所有」出現在該畫作中的主題（藏在該元素底下某一層, 主題元素值的元素名稱均以"Subject"開頭）。此外，原始資訊每個主題值寫法皆帶有"作品內容："，請去除它。如"作品內容：奇石"只留下"奇石"，存在**subjects**這個物件裡。（class: character）
+
+```{r ans21}
+subjects <- str_subset(onePiece$DACatalog$MetaDesc,pattern = "作品內容")
+subjects <- str_replace_all(subjects,pattern ="作品內容：", replacement="")
+
+# subjects
+```
+
+### 2.2 200幅畫作品內容
+
+在200幅書作中，出現了哪些主題，又每個主題出現在幾幅畫作，請存在**subjectList**物件裡（class: list），成為此物件底下的兩個元素值，元素值名稱為
+
+  * **subject**: 元素值為character vector，記載所有出現的畫作主題（不重覆列）
+  
+  * **count**: 元素值為integer vector，記載subject對應位置主題出現畫作次數
+
+
+```{r ans22}
+subject<- {
+  n_subject =1
+  subject = c(str_subset(painting[[n_subject]]$DACatalog$MetaDesc,pattern = "作品內容"))
+  while (n_subject<200) {
+    n_subject = n_subject+1
+    subject = c(subject,str_subset(painting[[n_subject]]$DACatalog$MetaDesc,pattern = "作品內容"))
+    
+  }
+  subject <- str_replace_all(subject,pattern ="作品內容：", replacement="")
+}
+
+ {
+  n_count=1
+  count = c(length(str_which(subject,pattern=subject[n_count])))
+  while (n_count<1390) {
+    n_count=n_count+1
+    count = c(count,length(str_which(subject,pattern=subject[n_count])))
+    
+  }
+}
+
+subjectList <- list(
+  "subject" = subject,
+  "count" = count
+)
+# subjectList
+```
+
+### 2.3 松
+
+畫作中最常主題有「松」的畫家前三名是誰？ 請記錄在一個type為integer的物件**creatorTable**, 其元素名稱為畫家名稱（畫家名稱以外多餘的文字及符號請去除），元素值為畫作中有「松」的數目。（書家在資料裡是某一個叫creator名稱的元素值。）
+
+```{r ans23}
+str_which(subject,pattern = "松")
+# creatorTable
+```
+
+### TurnIn
+
+```{r}
+source("https://www.dropbox.com/s/1tyfzh85hw0rx41/midterm2turnin.R?dl=1")
+turnIn()
+```

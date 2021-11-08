@@ -1,0 +1,78 @@
+---
+title: "Process"
+drake_cache: ".final_extrastep2"
+output: html_document
+params:
+  title: "final_extra" # google classroom上公告作業時所用的標題
+  ansfilename: "grading_flow/Final/Final-ans.Rmd"
+  submissionFolder: "studentsSubmission"
+  gradingFolder: "grading_flow"
+---
+
+```{r setup, include=FALSE, drake=F}
+knitr::opts_chunk$set(echo = TRUE, eval=F)
+library(drake)
+library(econDV)
+library(dplyr)
+
+```
+
+## makecondition
+
+```{r makecondition}
+library(drake)
+library(rmd2drake)
+library(dplyr)
+library(googleclassroom)
+library(readr)
+library(rmdgrader)
+library(purrr)
+library(rlang)
+library(testthat)
+library(withr)
+rprojroot::is_rstudio_project$make_fix_file() -> .root
+
+```
+
+
+```{r correctAnsFilename}
+correctAnsFilename <- file.path(
+  .root(),params$ansfilename
+) 
+```
+
+```{r studentsRmds}
+studentsRmds = {
+  studentsRmds <-  list.files(
+    file.path(.root(), params$submissionFolder, params$title)
+    , full.names = T) %>%
+    stringr::str_subset("\\.Rmd$")
+  studentsRmds
+}
+```
+
+## allRmds
+
+```{r allRmds}
+allRmds = {
+  
+
+  allRmds <- c(
+    correctAnsFilename,
+    studentsRmds
+  )
+  allRmds %>% length() #69
+  allRmds
+}
+```
+
+## object values
+
+```{r objectValues}
+objectValues = {
+  objectValues <- get_answerObjectValues(allRmds, correctAnsFilename)
+  destfile=file.path(.root(),params$gradingFolder, params$title,"data4step3.Rdata")
+  save(objectValues,allRmds, file=destfile)
+  objectValues
+}
+```

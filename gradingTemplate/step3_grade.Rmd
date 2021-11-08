@@ -1,0 +1,605 @@
+---
+title: "Grade"
+drake_cache: ".final_extrastep3"
+output: html_document
+params:
+  title: "final_extra" # google classroom上公告作業時所用的標題
+  ansfilename: "grading_flow/Final/Final-ans.Rmd"
+  submissionFolder: "studentsSubmission"
+  gradingFolder: "grading_flow"
+---
+
+
+```{r setup, include=FALSE, drake=F}
+knitr::opts_chunk$set(echo = TRUE, eval=F)
+library(drake)
+library(econDV)
+library(dplyr)
+```
+
+## makecondition
+
+```{r makecondition}
+library(drake)
+library(rmd2drake)
+library(dplyr)
+library(googleclassroom)
+library(readr)
+library(rmdgrader)
+library(purrr)
+library(rlang)
+library(testthat)
+library(withr)
+rprojroot::is_rstudio_project$make_fix_file() -> .root
+datafilename <- 
+    file.path(.root(),params$gradingFolder,params$title,"data4step3.Rdata")
+load(datafilename, envir = .GlobalEnv)
+gradeSavingFilename <- 
+  file.path(.root(),params$gradingFolder,params$title,"data4step4.Rdata")
+allValues <<- objectValues$studentValues
+correctValues <<- allValues[[1]]
+studentValues <<- allValues[-1]
+mgetxy <- rmdgrader::generate_mgetxy(allRmds[-1])
+```
+
+## Grading
+
+### Choose benchmark elite group
+
+#### list of getxy and grader
+
+```{r}
+eliteGroup = {
+  c("410874230.Rmd","410678019.Rmd",'410873132.Rmd', '410778033.Rmd', '410773030.Rmd', '410973127.Rmd', '410672033.Rmd', '410672074.Rmd', '410773101.Rmd')
+}
+#410874230 簡毅
+#410678019 施冠宇
+#410873135 李明鳳
+#410778033 統計三 蔡珮欣
+#410773030 經濟三 林億訊
+#410973131 經濟一 許智翔
+#410672033 公行四 黃梓育
+#410672074 公行四 葉宣德
+#410773101 經濟三 劉宥鑫
+
+# list of getxy 
+mgetxy <- generate_mgetxy(eliteGroup)
+# gradem to grade only the elite group
+gradem = grademFunctional(mgetxy)
+```
+
+
+### ans11
+
+```{r}
+mgetxy$`410874230.Rmd`('ans11')
+mgetxy$`410678019.Rmd`('ans11')
+```
+
+```{r m11}
+m11 <- function(x,y){
+  flatten(y) -> flat_y
+  names(flat_y) -> el_names
+  # 先確認是list再說
+  ifelsethen(
+    is.list(x),
+    0,
+    return(0),
+    0
+  )
+  flatten(x) -> flat_x
+  x1grade <- function(flat_x)
+  {
+      n1 <- el_names[[1]]
+    ifelsethen(
+      is.null(flat_x[[n1]]),
+      return(0),
+      0,0
+    )
+    ifelsethen(
+      identical(flat_x[[n1]], flat_y[[n1]]),
+      return(1),
+      0,
+      0
+    )
+    ifelsethen(
+      is.factor(flat_x[[n1]]) && 
+        as.character(flat_x[[n1]])==as.character( flat_y[[n1]]),
+      return(0.7),
+      0,
+      0
+    )
+    ifelsethen(
+        as.character(flat_x[[n1]])==as.character( flat_y[[n1]]),
+      return(0.5),
+      return(0),
+      return(0)
+    )
+  }
+  x1 <- x1grade(flat_x)
+  x234gradefun <- function(n1, flat_y)
+  {
+    function(flat_x)
+    {
+       
+      ifelsethen(
+        identical(flat_x[[n1]], flat_y[[n1]]),
+        return(1),
+        return(0),
+        return(0)
+      )
+    }
+  }
+  x2grade <- x234gradefun(el_names[[2]], flat_y)
+  x2grade2 <- 
+    x234gradefun(el_names[[2]],
+                 {
+                   flat_y2 <- flat_y
+                   flat_y2$item <-"番茄牛丼飯"
+                   flat_y2})
+  x3grade <- x234gradefun(el_names[[3]], flat_y)
+  x4grade <- x234gradefun(el_names[[4]], flat_y)
+
+  x2 <- x2grade(flat_x)    
+  x2_2 <- x2grade2(flat_x)
+  x2=max(x2, x2_2)
+
+  x3 <- x3grade(flat_x)
+  x4 <- x4grade(flat_x)
+  (x1+x2+x3+x4)/4
+}
+```
+
+測試改elite group
+```{r}
+gradem('ans11',m11)
+```
+
+```{r}
+m11(x,y)
+```
+
+```{r grade11}
+grade11 <- grade('ans11', gradingMethod = m11)
+```
+
+若grade過程有誤，想知道是哪一份有誤，改用grade_for:
+```{r}
+# grade_for('ans11', m11)
+```
+
+
+### ans12
+
+```{r m12}
+m12 <- function(x,y){
+  flatten(y) -> flat_y
+  names(flat_y) -> el_names
+  # 先確認是list再說
+  ifelsethen(
+    is.list(x),
+    0,
+    return(0),
+    0
+  )
+  flatten(x) -> flat_x
+  x1grade <- function(flat_x)
+  {
+      n1 <- el_names[[1]]
+    ifelsethen(
+      is.null(flat_x[[n1]]),
+      return(0),
+      0,0
+    )
+    ifelsethen(
+      identical(flat_x[[n1]], flat_y[[n1]]),
+      return(1),
+      0,
+      0
+    )
+    ifelsethen(
+      is.factor(flat_x[[n1]]) && 
+        as.character(flat_x[[n1]])==as.character( flat_y[[n1]]),
+      return(0.7),
+      0,
+      0
+    )
+    ifelsethen(
+        as.character(flat_x[[n1]])==as.character( flat_y[[n1]]),
+      return(0.5),
+      return(0),
+      return(0)
+    )
+  }
+  x1 <- x1grade(flat_x)
+  x234gradefun <- function(n1, flat_y)
+  {
+    function(flat_x)
+    {
+       
+      ifelsethen(
+        identical(flat_x[[n1]], flat_y[[n1]]),
+        return(1),
+        return(0),
+        return(0)
+      )
+    }
+  }
+  x2grade <- x234gradefun(el_names[[2]], flat_y)
+  x2grade2 <- 
+    x234gradefun(el_names[[2]],
+                 {
+                   flat_y2 <- flat_y
+                   flat_y2$item <-"番茄牛丼飯"
+                   flat_y2})
+  x3grade <- x234gradefun(el_names[[3]], flat_y)
+  x4grade <- x234gradefun(el_names[[4]], flat_y)
+
+  x2 <- x2grade(flat_x)    
+  x2_2 <- x2grade2(flat_x)
+  x2=max(x2, x2_2)
+
+  x3 <- x3grade(flat_x)
+  x4 <- x4grade(flat_x)
+  (x1+x2+x3+x4)/4
+}
+```
+
+```{r grade12}
+grade12 <- grade('ans12', gradingMethod = m12)
+```
+
+```{r}
+grade_for("ans12", m12)
+```
+
+
+### ans13
+
+```{r}
+mgetxy[[1]]("ans13")
+
+tr_x <- transpose(x) %>%
+  map(unlist) 
+as.data.frame(tr_x)
+as.data.frame(
+  transpose(x))
+```
+```{r m13}
+m13 = function(x,y)
+{
+  if(is.null(x) || !is.list(x)){
+    return(0)
+  }
+  tryCatch(
+    {df_x <- purrr::transpose(x) %>%
+  purrr::map(unlist) %>%
+    as.data.frame()
+    df_x},
+    error=function(e){
+      'Error'
+    }
+  ) -> df_x
+  if(df_x=="Error") return(0)
+  
+  
+  ifelsethen(
+    identical(x,y),
+    return(1),
+    0,0
+  )
+  
+  ifelsethen(
+    dim(df_x)==c(2,4),
+    return(0.8),return(0), return(0)
+  )
+}
+```
+
+```{r}
+x
+y
+m13(x,y)
+```
+
+```{r}
+gradem("ans13", m13)
+```
+
+
+```{r grade13}
+grade13 <- grade('ans13', gradingMethod = m13)
+```
+
+```{r}
+grade_for("ans13", m13)
+```
+
+
+### ans14
+
+```{r m14}
+m14 = function(x,y)
+{
+  if(
+    !is.list(x) || identical(x, list(NULL))
+  ) return(0)
+  
+  if(length(x) !=2){ return(0)}
+  
+  
+    get_match <- function(y){
+      tryCatch(
+        {
+          map(unlist(y), ~{.x=="牛丼類"}) %>% 
+      unlist() %>%
+        any() -> lgl1
+      
+      map(flatten(y), ~{.x == "牛丼類"}) %>% unlist() %>% any() -> lgl2
+
+      lgl1 || lgl2
+        },
+        error=function(e){
+          F
+        }
+      ) -> lglreturn
+      lglreturn
+    }
+    
+    x %>% 
+      map_lgl(
+        get_match
+      ) %>%
+      which() -> 
+      whichIsBeefDon
+    if(length(whichIsBeefDon)==0) return(0)
+    
+    x_beef <- x[[whichIsBeefDon]]
+    ifelsethen(
+      "category" %in% names(x_beef),
+      0.5,
+      0,
+      return(0)
+    ) -> part1
+    x_beef %>% 
+      map_lgl(
+        ~{.x==120}
+      ) %>%
+      which() -> 
+      whichHas120
+    ifelsethen(
+      length(whichHas120)==1,
+    0.25, 
+    0,0) -> part2 
+    ifelsethen(
+      "price" %in% names(x_beef),
+      0.25,
+      0,
+      0
+    ) -> part3
+    part1+part2+part3
+}
+```
+
+```{r}
+undebug(m14)
+mgetxy[[1]]("ans14") 
+m14(x,y)
+```
+
+
+```{r}
+gradem("ans14", m14)
+```
+
+```{r}
+getxy <- getxyFunctional("HW2_410973019.Rmd 
+")
+getxy("ans14")
+m14(x,y)
+undebug(m14)
+```
+
+
+```{r grade14}
+grade14 = grade_for("ans14", m14)
+```
+
+### ans15
+
+```{r hasElementName}
+hasElementName = function(targetName, x, y){
+    ifelsethen(
+      targetName %in% names(x),
+      0.2,
+      return(0),
+      return(0)
+    ) -> p1
+    map2_lgl(x[[targetName]], y[[targetName]], identical) %>%
+      {sum(., na.rm=T)/length(.)} -> p2
+    p1+p2*0.8
+  }
+```
+
+```{r tryCatchHavingSameElement}
+tryCatchHavingSameElement = function(.x,x,y){
+  tryCatch({
+    hasElementName(.x,x,y)
+  },
+  error=function(e){
+    0
+  }) -> g
+  g
+}
+```
+
+```{r m15}
+m15 = function(x,y){
+  # list of 4: 
+  ifelsethen(
+    is.list(x) && length(x)==4 && every(x, is.vector) && every(x, ~{length(.x)==2}),
+    0.5,
+    0,
+    0
+  ) -> part1
+  
+  elNames <- names(y)
+  targetName <- elNames[[1]]
+  
+  map_dbl(
+    elNames, 
+    tryCatchHavingSameElement,
+    x,y
+  )-> elgrades
+  part2 <- sum(elgrades)/8
+  part1+part2
+}
+```
+
+```{r}
+getxy <- getxyFunctional("HW2_410872055.Rmd ")
+getxy("ans15")
+x
+y
+debug(m15)
+m15(x,y)
+```
+
+
+```{r grade15}
+grade15 = grade("ans15", m15)
+```
+
+### ans16
+
+```{r}
+getxy("ans16")
+```
+
+```{r compareElementTarget}
+compareElementTarget = function(description){
+      xKeep = keep(x,~{some(.x,detectValue, description)})
+  yKeep = keep(x, ~{some(.x, detectValue,description)})
+  ifelsethen(
+    dplyr::setequal(names(unlist(yKeep)), names(unlist(xKeep))),
+    0.2,
+    0,
+    0
+  ) -> p3
+  ifelsethen(
+    identical(xKeep,yKeep),
+    0.1,
+    0,0
+  ) -> p4
+  p3+p4
+  }
+
+```
+
+```{r m16}
+m16 = function(x,y)
+{
+  ifelsethen(
+    is.list(x) && length(x)==2,
+    0.2,
+    return(0),return(0)
+  ) -> p1
+  ifelsethen(
+    every(x, is.list),
+    0.2+p1,
+    0,
+    return(0+p1)
+  ) -> p1
+  
+  
+  detectValue <-function(.x, value) .x==value
+  
+  # has elementName and identical
+  p2 <- c("category","options") %>%
+    map_dbl(
+      hasElementName, x[[1]], y[[1]]
+    ) 
+  p2 <- sum(p2)*0.3/2
+  p3 <- c("category","options") %>%
+    map_dbl(
+      hasElementName, x[[2]], y[[2]]
+    ) 
+  p3 <- sum(p3)*0.3/2
+
+  p1+p2+p3
+}
+```
+
+```{r grade16}
+grade16=grade("ans16", m16)
+```
+
+### ans21
+
+```{r m21}
+m21 = function(x,y){
+  ifelsethen(
+    is.list(x) && setequal(names(x), names(y)),
+    1,0,0)
+}
+```
+
+```{r grade21}
+grade21 = grade("ans21", m21)
+```
+
+```{r m22}
+m22 =function(x,y){
+  ifelsethen(
+    is.numeric(x) && all(x==y),
+    1,
+    0,0
+  )
+}
+```
+
+```{r grade22}
+grade22 = grade("ans22", m22)
+```
+
+
+### All Grades
+
+算了一下，總共10題（5+2+2+1），所以我覺得可以考慮每填都是一分。這樣剛好就是Google Classroom表定的10分。
+
+You don't need this if you have updated rmdgrader package.
+
+```{r tb_grades}
+tb_grades = convert_gradeList2dataframe(
+    ans11=grade11,
+    ans12=grade12,
+    ans13=grade13,
+    ans14=grade14,
+    ans15=grade15,
+    ans16=grade16,
+    ans21=grade21,
+    ans22=grade22
+)
+```
+
+```{r saveGrades}
+saveGrades = {
+  save(tb_grades, file=gradeSavingFilename)
+  gradeSavingFilename
+}
+```
+
+```{r}
+tb_grades
+```
+
+```{r}
+tb_grades %>% select(total) %>% summary
+```
+
+```{r histgram, drake=F}
+hist(
+  tb_grades$total
+) 
+```
+

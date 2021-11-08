@@ -217,7 +217,7 @@ ge$regroup(
 groupNames <- names(ge$groups)
 groupNames
 library(jsonlite); library(purrr); library(lubridate)
-verify_functions(groupNames) -> verified_results
+str_isFunction(groupNames) -> verified_results
 verified_results$IsFunction
 
 ge$groups[

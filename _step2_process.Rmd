@@ -1,0 +1,102 @@
+---
+title: "Process"
+drake_cache: ".HW8step2"
+output: html_document
+params:
+  title: "HW8" # google classroom上公告作業時所用的標題
+  ansfilename: "grading_flow/HW8/homework8-ans.Rmd"
+  submissionFolder: "studentsSubmission"
+  gradingFolder: "grading_flow"
+---
+
+```{r setup, include=FALSE, drake=F}
+knitr::opts_chunk$set(echo = TRUE, eval=F)
+library(drake)
+library(econDV)
+library(dplyr)
+
+```
+
+## makecondition
+
+```{r makecondition}
+library(drake)
+library(rmd2drake)
+library(dplyr)
+library(googleclassroom)
+library(readr)
+# library(rmdgrader)
+library(purrr)
+library(rlang)
+library(testthat)
+library(withr)
+.root <- function(){
+  "/Users/martinl/Github/course-dashboard-programming-for-data-science/"
+}
+```
+
+## Process
+
+```{r processing}
+# initiate process instance
+process <- Process()
+# get list of code chunks
+process$correctAnsFilename$tryGet_list_codeChunks()
+process$inBatch_studentsRmds$tryGet_list_codeChunks()
+
+# If one Rmd content changed, you can update simply that student's respective elements in process instance like:
+# process$studentsRmds$HW8_410672033.Rmd$tryGet_list_codeChunks()
+```
+
+
+```{r only4HW8}
+only4HW8 ={
+  purrr::walk(
+    seq_along(process$studentsRmds),
+    ~{
+      names(process$studentsRmds[[.x]]$codeChunksProcessed$list_codeChunks) %>%
+      stringr::str_replace("ans12", "ans12.") %>%
+      stringr::str_replace("ans13", "ans13.") %>%
+      stringr::str_replace("data12", "data12.") %>%
+      stringr::str_replace("data13", "data13.") ->
+      names(process$studentsRmds[[.x]]$codeChunksProcessed$list_codeChunks)
+    }
+  )
+}
+```
+
+## Evaluate
+
+After users get list_codeChunks from all Rmd files, it's time to evaluate these codes. 
+
+```{r evaluation}
+# Initiate an Evaluation Instance
+ei <- Evaluate(process)
+
+# resolve codes in batch
+ei$answerValues$batch$resolve$part12()
+ei$answerValues$batch$resolve$part13()
+# once resolved, answer values will show up for all Rmds such as:
+ei$answerValues$HW8_410672033.Rmd$values
+```
+
+
+```{r}
+# You can also evaluate each Rmd codes one-by-one via their own resolve methods. Once resolved, you can see the values after resolution
+ei$answerValues$`homework8-ans.Rmd`$resolve$part12()
+ei$answerValues$`homework8-ans.Rmd`$resolve$part13()
+ei$answerValues$`homework8-ans.Rmd`$values
+
+# resolve codes of part12 from one student
+ei$answerValues$HW8_410678019.Rmd$resolve$part12()
+# once resolved, answer values will show up below:
+ei$answerValues$HW8_410678019.Rmd$values
+```
+
+## Save
+You only save neccessary answer values for grading step via save method.
+
+```{r}
+ei$save(filename = "data4step3.Rdata")
+```
+

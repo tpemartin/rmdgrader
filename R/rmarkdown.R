@@ -6,6 +6,60 @@ require(withr)
 require(rlang)
 require(callr)
 
+#' With XXX-ans.Rmd file open, this extract exercise Rmd for student to do with no answer
+#'
+#' @return
+#' @export
+#'
+#' @examples none
+extract_exerciseRmd_from_ansRmd <- function()
+{
+  # 檔名
+  rstudioapi::getSourceEditorContext() -> doc
+  fileName <- doc$path
+  fileContent <- readLines(fileName)
+  require(stringr)
+  require(dplyr)
+  # fileContent %>% str_which(fixed("```{r ans")) -> ansStartLoc
+  ## 找出```{r ansxx} 排除```{r ansxxc}
+  fileContent %>% str_which("(?<=(\\{r ans))[:graph:]+(?!c)") -> ansStartLoc2
+  fileContent[ansStartLoc2] %>% str_which("[:digit:]+(?=c)",negate=T) %>%
+    ansStartLoc2[.] -> ansStartLoc
+
+  # 選出要清空的答案內容
+  ansEndLoc<-c()
+  nLines<-length(fileContent)
+  for(i in ansStartLoc){
+    #i<-ansStartLoc[1]
+    fileContent[i:nLines] %>% str_which(fixed("```")) -> Out
+    ansEndLoc_i <- Out[2]+i-1
+    if(str_detect(fileContent[[ansEndLoc_i-1]],"#")){ #若有 # 答案物件，則需保留
+      ansEndLoc_i<-ansEndLoc_i-1
+    }
+    ansEndLoc<-c(ansEndLoc,ansEndLoc_i)
+  }
+  cbind(c(1,ansEndLoc),c(ansStartLoc,nLines)) -> toKeep # n by 2 (保留起位置，保留迄位置)
+  str_c(toKeep[,1],toKeep[,2],sep=":") %>%
+    str_c(collapse = ",") -> toKeepIntervals
+  eval(parse(text=paste0("toKeepLines<-c(",toKeepIntervals,")")))
+
+  fileContentToKeep <- fileContent[toKeepLines]
+  # fileNameOut<-str_split_fixed(fileName,fixed("-"),n=2)[,1]
+  # dir.create(fileNameOut)
+  # fileNameOut <- paste0(fileNameOut,"/",fileNameOut,".Rmd")
+  fileName |>
+    stringr::str_remove("[:punct:]*[aA][nN][sS](?=\\.[rR][mM][dD]$)") -> filename_new
+  dirname(filename_new)
+  basename(filename_new) |> stringr::str_remove("\\.[rR][mM][dD]") |>
+    toupper() -> newDir
+  newDirpath <- file.path(
+    dirname(filename_new), newDir
+  )
+  if(!dir.exists(newDirpath)) dir.create(newDirpath)
+  fileNameOut <- file.path(newDirpath, basename(filename_new))
+
+  writeLines(fileContentToKeep,fileNameOut)
+}
 #' Produce list of code chunks
 #'
 #' @param rmdlines A character vector of rmdlines
