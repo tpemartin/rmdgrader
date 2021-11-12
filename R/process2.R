@@ -5,15 +5,17 @@
 #'
 #' @examples
 #' \dontrun{
-#' process <- Process()
+#' process <- Process2()
 #' }
-Process <- function(){
+Process2 <- function(ansRmd, path_studentRmds){
+  .root <- rprojroot::is_rstudio_project$make_fix_file()
+
   pe <- new.env(parent=.GlobalEnv)
   pe$correctAnsFilename <- list(
     filename=file.path(
-      .root(),params$ansfilename
+      .root(),ansRmd
     ),
-    basename=basename(params$ansfilename)
+    basename=basename(ansRmd)
   )
   pe$correctAnsFilename$tryGet_list_codeChunks =
     tryGet_list_codeChunksFunctional(
@@ -23,7 +25,10 @@ Process <- function(){
 
   pe$studentsRmds <- list()
 
-  population_peWithStudentsRmds(pe)
+  studentRmds <- list.files(
+    path_studentRmds, full.names= T
+  ) |> stringr::str_subset("\\.Rmd$")
+  population_peWithStudentsRmds(pe, studentRmds)
 
   pe$.preProcessing <- function(.fn=NULL){
     if(!is.null(.fn)) .fn(pe)
@@ -73,31 +78,6 @@ processingRmds <- function(silent=F){
   pe$save <- function(){
     save(.GlobalEnv$objectValues, pe$allRmds, file=pe$destfile)
   }
-}
-population_peWithStudentsRmds <- function(pe, studentRmds=NULL){
-  require(dplyr)
-  if(!is.null(studentRmds)){
-    studentRmds %>%
-      stringr::str_subset("\\.Rmd$") -> studentRmds
-  } else if (
-    is.null(studentRmds)
-    && !is.null(params$submissionFolder)
-    && !is.null(params$title)){
-      studentRmds <-  list.files(
-        file.path(.root(), params$submissionFolder, params$title)
-        , full.names = T) %>%
-        stringr::str_subset("\\.Rmd$")
-  }
-
-  purrr::map(
-    seq_along(studentRmds),
-    ~list(
-      filename=studentRmds[[.x]],
-      basename=basename(studentRmds[[.x]]),
-      tryGet_list_codeChunks= tryGet_list_codeChunksFunctional(pe,"studentsRmds",studentRmds[[.x]], codeChunksFromAnsFile=F)
-    )
-  ) -> list_studentRmds
-  pe$studentsRmds = setNames(list_studentRmds, basename(studentRmds))
 }
 tryGet_list_codeChunksFunctional <- function(pe, objectname, filename, codeChunksFromAnsFile=F, filenameAsElementName=T){
   function(){
