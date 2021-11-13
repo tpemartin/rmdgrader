@@ -466,7 +466,7 @@ ansValueResolveFunctional <- function(.part, tempEnv, ee, pe, basenameRmd){
     setup_dataLabels = list_ansLabels_setup_dataLabels$setup_dataLabels
 
     # attach setup and data
-    if(!inBatch){
+    if(!inBatch && length(setup_dataLabels)!=0){
       purrr::walk(
         setup_dataLabels,
         ~ attach(
@@ -485,53 +485,15 @@ ansValueResolveFunctional <- function(.part, tempEnv, ee, pe, basenameRmd){
       Xcodes <- pe$studentsRmds[[basenameRmd]]$codeChunksProcessed$list_codeChunks[[Xlabel]]
 
       XansObjname <- ee$ansObjectnames[[Xlabel]]
-      objValue <-
-        tryEvaluate_Xcodes(
-          Xcodes,
-          resolvingEnvironment = tempEnv[[.part]]$resolved[[Xlabel]])
-
-
-      # # label suffix resolution branching
-      # if(stringr::str_detect(Xlabel, "s$")){
-      #   XansObjname <- "codes"
-      #   tempEnv[[.part]]$resolved[[Xlabel]][[XansObjname]] <- Xcodes
-      # } else {
-      #
-      #   isXcodesNULL <- is.null(Xcodes)
-      #   if(!isXcodesNULL){
-      #     tryResult <- try(parse(text=Xcodes), silent=T)
-      #     # When codes can be parsed:
-      #     if(!is(tryResult, "try-error")){
-      #       Xexpression <- rlang::expr(
-      #         eval(parse(text = Xcodes), envir = tempEnv[[.part]]$resolved[[Xlabel]])
-      #       )
-      #       tryResult <- try(rlang::eval_bare(Xexpression), silent = T)
-      #     }
-      #   }
-      #
-      #
-      #   XansObjname <- ee$ansObjectnames[[Xlabel]]
-      #   if (isXcodesNULL){
-      #     tempEnv[[.part]]$resolved[[Xlabel]][[XansObjname]] <- "Xcodes is null."
-      #   } else if (is(tryResult, "try-error")){
-      #     tempEnv[[.part]]$resolved[[Xlabel]][[XansObjname]] <- tryResult
-      #   }
-      # }
-      #
-      # # produce objValue
-      # if(isXcodesNULL || is(tryResult, "try-error")) {
-      #   objValue <- NULL
-      # } else {
-      #   chr2eval <-
-      #     paste0(
-      #       "tempEnv[[.part]]$resolved[[Xlabel]]$",
-      #       XansObjname)
-      #   try(
-      #     eval(
-      #       parse(text=chr2eval)
-      #     ), silent=T
-      #   ) -> objValue
-      # }
+      if(stringr::str_detect(Xlabel, "s$")){
+        XansObjname <- "codes"
+        objValue <- Xcodes
+      } else {
+        objValue <-
+          tryEvaluate_Xcodes(
+            Xcodes,
+            resolvingEnvironment = tempEnv[[.part]]$resolved[[Xlabel]])
+      }
 
       ee$answerValues[[basenameRmd]]$values[[.part]][Xlabel] <-
         list(
@@ -540,8 +502,6 @@ ansValueResolveFunctional <- function(.part, tempEnv, ee, pe, basenameRmd){
     }
     if(!inBatch) detach_runningSequence()
 
-
-    # tempEnv[[.part]] -> tempEnv[[.part]]$resolvedEnvironment
   }
 }
 generate_ansValuesResolvingFunction <- function(pe, ee, basenameRmd){
