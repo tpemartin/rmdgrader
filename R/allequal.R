@@ -115,6 +115,7 @@ allequalService <- function(targetLabel = targetLabel, .transform=NULL, switchTa
 
   ae$extract_grades <- get_gradesFromAeFunctional(ae)
 
+  # attach_file.edits(ae, path)
   ae
 }
 #' Extract grades and comments from an all.equal_env grading result.
@@ -434,4 +435,17 @@ tryCatch_allEqual <- function(y, x){
       e
     }) -> result
   return(as.character(result))
+}
+attach_file.edits <- function(ae, path){
+  studentValues |> names() -> studentRmds
+  #
+  # .x=1
+  ae$file.edits <- purrr::map(
+    seq_along(studentRmds),
+    ~function(){
+      file.edit(
+        file.path(path,
+          studentRmds[[.x]]))
+    }
+  ) |> setNames(studentRmds)
 }
