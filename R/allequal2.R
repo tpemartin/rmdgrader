@@ -38,14 +38,29 @@ allequalService2 <- function(process, path="")
     ae[[ansLabel]]$generate_xy4messageGroups(.GlobalEnv$mgetxy)
   }
   rmdgrader:::attach_file.edits(ae, path)
-
+  ae$grades <- list()
   for(ansLabel in ansLabels){
     attach_file.edits2AnsLabel(ae, ansLabel)
     ae[[ansLabel]]$code <- get_ansCodes(process, ansLabel)
     attach_listCodeByGroup(ae, ansLabel)
+    # ae[[ansLabel]]$save_grade <- save_grade_functional(ae=ae, ansLabel=ansLabel)
   }
 
+  ae$grades <- list()
+  purrr::map(
+    ansLabels,
+    ~{
+      function(){
+        ae[[.x]]$extract_grades() -> ae$grades[[.x]]
+      }
+    }
+  ) -> list_save_grades
+  names(list_save_grades) <- ansLabels
+  ae$save_grade <- list_save_grades
 
+  ae$export_grade <- function(path=""){
+      export_grade(ae, path)
+    }
   return(ae)
 }
 generate_file.edits_basedOn_group_Rmds <- function(ae,group_Rmds){
@@ -162,4 +177,29 @@ attach_listCodeByGroup <- function(ae, ansLabel){
   ) -> list_codesByGroup
   ae[[ansLabel]]$code[names(list_codesByGroup)] <-
     list_codesByGroup
+}
+save_grade_functional <- function(ae, ansLabel) {
+  function(){
+    ae[[ansLabel]]$extract_grades() -> ae$grades[[ansLabel]]
+  }
+}
+export_grade <- function(ae, path="") {
+  ae$grades |> data.frame() -> df_grades
+  # df_grades |> View()
+  library(dplyr)
+  df_grades %>%
+    mutate(
+      rmd=rownames(df_grades)
+    ) %>%
+    rowwise() %>%
+    mutate(
+      sum=sum(c_across(matches("ans")))
+    ) -> df_grades
+  ansLabels <- sort( stringr::str_subset(names(df_grades), "ans"))
+  ansLabels
+  df_grades[c("rmd", "sum", ansLabels)] -> df_grades
+  filename=file.path(path,"grades.Rds")
+  saveRDS(df_grades, file=filename
+      )
+  cat("df_grades exported to ", filename)
 }
