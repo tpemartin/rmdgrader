@@ -59,7 +59,7 @@ allequalService2 <- function(process, path="")
   ae$save_grade <- list_save_grades
 
   ae$export_grade <- function(path=""){
-      export_grade(ae, path)
+      export_grade2(ae, path)
     }
   return(ae)
 }
@@ -183,14 +183,27 @@ save_grade_functional <- function(ae, ansLabel) {
     ae[[ansLabel]]$extract_grades() -> ae$grades[[ansLabel]]
   }
 }
-export_grade <- function(ae, path="") {
-  ae$grades |> data.frame() -> df_grades
+export_grade2 <- function(ae, path="") {
+  ansLabels= names(ae) |> stringr::str_subset("ans")
+  purrr::map(
+    ansLabels,
+    ~{
+      list(
+        unlist(ae$grades[[.x]]),
+        names(ae$grades[[.x]])
+      ) -> list_df
+      names(list_df) <- c(.x, "rmd")
+      data.frame(list_df) -> list_df
+      rownames(list_df) <- NULL
+      list_df
+    }
+  ) -> list_dfs
+  purrr::reduce(
+    list_dfs, function(x, y){x %>% left_join(y, by="rmd")}
+  ) -> df_grades
   # df_grades |> View()
   library(dplyr)
   df_grades %>%
-    mutate(
-      rmd=rownames(df_grades)
-    ) %>%
     rowwise() %>%
     mutate(
       sum=sum(c_across(matches("ans")))

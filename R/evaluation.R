@@ -585,6 +585,40 @@ save_objectValues <- function(ee) {
     save(correctValues,studentValues , allRmds, file = filename)
   }
 }
+
+export_objectValues <- function(ee) {
+  function(path="") {
+    filename=file.path(path, "evaluated.Rdata")
+    whichIsBatch <- stringr::str_which(names(ee$answerValues), "batch")
+    purrr::map(
+      ee$answerValues[-whichIsBatch],
+      ~ purrr::flatten(.x$values)
+    ) -> objectValues
+
+    # browser()
+    ee$objectValues <- objectValues
+
+    whichIsAns <- stringr::str_which(names(objectValues),"ans")
+    evaluated <- list()
+    evaluated$correctValues <- objectValues[[whichIsAns]]
+    evaluated$studentValues <- objectValues[-whichIsAns]
+    # purrr::map(
+    #   objectValues,
+    #   ~{
+    #    if(is.null(.x)) .x else
+    #     purrr::flatten(.x)
+    #   }
+    # ) -> objectValues
+    evaluated$allRmds <- ee$allRmds
+    message(
+      "evaluated saved at ", filename, "\n"
+    )
+    saveRDS(evaluated, file=filename)
+    invisible(evaluated)
+    # save(correctValues,studentValues , allRmds, file = filename)
+  }
+}
+
 get_ansLabels_setupdataLabels <- function(ee, .part){
   correctRunningSequenceLabels <- ee$running_sequence[[.part]]$labels
   setup_dataLabels <- stringr::str_subset(

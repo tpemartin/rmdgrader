@@ -10,7 +10,8 @@
 Return2 <- function(path, download){
   rt <- new.env()
   # _return$return <- return_rmds_functional(return, path, download)
-  rt$get_returnable <- get_returnable_functional(rt, path, download)
+  get_returnable(path, download) -> rt$returnable
+  # rt$get_returnable <- get_returnable_functional(rt, path, download)
 
   rt$return_all <- return_rmd_functional(returnable = rt$returnable)
   rt$returnable$file2return |> basename() -> studentRmds
@@ -54,7 +55,7 @@ get_returnable_functional <- function(return, path, download){
   }
 }
 
-get_returnable <- function(return, path, download){
+get_returnable <- function(path, download){
   rmds2return <- list.files(path)
   rmds2return |> stringr::str_extract("(?<=-)[0-9]+(?=\\.)") |>
     as.integer() -> schoolIds2return

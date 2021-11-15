@@ -60,6 +60,9 @@ Process2 <- function(ansRmd, path_studentRmds){
     ~{pe$studentsRmds[[.x]]$move2problem <-
       generate_move2problemFunction(problemFolder, process, .x)}
   )
+
+  pe$export <- process_export(pe)
+
   return(pe)
 }
 
@@ -166,4 +169,13 @@ generate_move2problemFunction <- function(problemFolder, pe, .it) {
     )
   }
 }
-
+process_export <- function(process){
+  function(path=""){
+    process_exported <- list()
+    process_exported$studentsRmds <- process$studentsRmds
+    process_exported$correctAnsFilename <- process$correctAnsFilename
+    saveRDS(process_exported, file=file.path(path, "processed.Rds"))
+    message("process_exported saved at ",file.path(path, "processed.Rds"),"\n")
+    invisible(process_exported)
+  }
+}

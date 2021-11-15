@@ -95,12 +95,24 @@ get_courseWorkInfoFromGoogleDriveFolderUrl <- function(gd_courseWorkUrl){
   courseWork$url <- gd_courseWorkUrl
   courseWork$dribble <- googledrive::as_dribble(courseWork$url)
   courseWork$list <- googledrive::drive_ls(courseWork$dribble)
+
+  purrr::map_lgl(
+    seq_along(courseWork[["list"]][["drive_resource"]]),
+    ~{courseWork[["list"]][["drive_resource"]][[.x]][["ownedByMe"]][[1]]}
+  ) -> flags_ownedByMe
+
+
   purrr::map_dfr(
     seq_along(courseWork$list$drive_resource),
     ~{
       # print(.x)
       data.frame(
-        googleLogin=courseWork$list$drive_resource[[.x]]$lastModifyingUser$emailAddress,
+        googleLogin=ifelse(
+          flags_ownedByMe[[.x]],
+          courseWork[["list"]][["drive_resource"]][[.x]][["sharingUser"]][["emailAddress"]],
+          courseWork[["list"]][["drive_resource"]][[.x]][["owners"]][[1]][["emailAddress"]]
+        ),
+          # courseWork$list$drive_resource[[.x]]$lastModifyingUser$emailAddress,
         createdTime={
           courseWork$list$drive_resource[[.x]]$createdTime |>
             lubridate::ymd_hms() |> lubridate::with_tz(tz="Asia/Taipei")

@@ -64,7 +64,7 @@ synthesize_returnRmd2 <- function(df_grades, mapping, path="")
     }
     # locate mapping lines
     {
-      gradeYMALTemplate <- "      {ansLabelY}: {gradeY}"
+      gradeYMALTemplate <- "  {ansLabelY}: {gradeY}"
       gradeYAMLX <- character(0)
       allGradeYAMLX <- character(0)
       for(.y in seq_along(mapping)){
@@ -93,7 +93,7 @@ synthesize_returnRmd2 <- function(df_grades, mapping, path="")
     # editing YAML
     {
       stringr::str_which(rmdlines, "^---$") -> whichAreYMAL
-      totalGradeYAML <- "  grade:\n    total: {total}"
+      totalGradeYAML <- "grade:\n  total: {total}"
       total <- df_grades$sum[[.x]]
       allGradeYAMLX <-
         paste(
