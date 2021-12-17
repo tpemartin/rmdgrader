@@ -60,7 +60,7 @@ get_returnable <- function(path, download){
   rmds2return |> stringr::str_extract("(?<=-)[0-9]+(?=\\.)") |>
     as.integer() -> schoolIds2return
   download$courseWork$submissions %>%
-    filter(學號 %in% schoolIds2return) %>%
+    dplyr::filter(學號 %in% schoolIds2return) %>%
     arrange(學號, desc(createdTime)) %>%
     group_by(學號) %>%
     slice(1) -> files2return
