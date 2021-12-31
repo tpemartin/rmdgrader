@@ -66,7 +66,7 @@ get_returnable <- function(path, download){
     slice(1) -> files2return
   data.frame(
     file2return = file.path(path,rmds2return),
-    schoolId = schoolIds2return
+    schoolId = schoolIds2return |> as.character()
   ) %>%
     left_join(
       files2return %>%
