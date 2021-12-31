@@ -193,6 +193,7 @@ processDataExprs2getDataEnvironment <- function(
 Evaluate <- function(pe){
   require(stringr)
   # pe <- process
+  pe <- as.environment(pe)
   ee <- new.env(parent = pe)
 
   ee$allRmds <- get_allRmds(pe)

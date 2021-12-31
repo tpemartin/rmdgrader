@@ -11,10 +11,15 @@ Process2 <- function(ansRmd, path_studentRmds){
   .root <- rprojroot::is_rstudio_project$make_fix_file()
 
   pe <- new.env(parent=.GlobalEnv)
-  pe$correctAnsFilename <- list(
-    filename=file.path(
+  if(file.exists(ansRmd)){
+    filename= ansRmd
+  } else {
+    filename = file.path(
       .root(),ansRmd
-    ),
+    )
+  }
+  pe$correctAnsFilename <- list(
+    filename=filename,
     basename=basename(ansRmd)
   )
   pe$correctAnsFilename$tryGet_list_codeChunks =

@@ -1,0 +1,70 @@
+---
+title: "110-1-r4ds Midterm"
+params:
+  name: "林木木"
+  id: "007"
+---
+
+
+**Please change 林木木 to your name, and 411073221 to your school id.**
+
+# Part I: Programming Question (Full mark is 30)
+One big question with 5 small questions. Each is worth 6 points. 
+
+## Before you start
+
+Each question is framed like:
+
+Create an object named **practice** and bind a numeric value of 5 to it.
+```{r ans0}
+# practice
+```
+
+  * **All program lines must be inside a corresponding code chunk with code chunk label `ansXX`, like the one `ans0` above**. (程式碼請寫在每小題如上帶有`ansXX`標籤的code chunk裡)
+  
+  * **Keep `# practice` at the very last line inside your code chunk. You can remove # if you want, but it must be the last line**. (code chunk的最後一行請保留為`# xxx`，即原始code chunk所附帶的`# xxx`)
+  
+  * **To check whether your answer is correct, we will run the lines in that code chunk, then do a name call on the very-last-line object (i.e. practice here)** (so you better do a name call in console on the very-last-line name to see if it delivers the answer value you want.) (`# xxx`中的xxx是最後答案正確與否的依據，所以完成該小題你最好執行xxx的name call來檢查你的答案值。)
+  
+  * **DO NOT touch the code chunk label (i.e. ans_practice here).** Computer will fail to run your codes if you touch and change it.(code chunk一開頭的`ans_xxx`為code chunk label, 請不要動到它，否則會造成考卷判讀錯誤。)
+
+## The Question
+
+# 1 Econ Survey
+
+An online survey is distributed to students of Economics department. 
+
+## 1.1 Storing questions
+
+There are two questions:
+
+  * question 1: "Are you happy with our campus? Choose a number from 5(very happy), 4(happy), 3(satisfy), 2( unhappy), to 1(very unhappy)." 
+  
+  * question 2: "Did you participate in any of the following activities? Check all that apply to you. (student association, school club, school sport team, department sport team)"
+
+Suppose the following retrieval will print each question respectively: 
+```{r}
+survey$questions[[1]] # will show as
+"Are you happy with our campus? Choose a number from 5(very happy), 4(happy), 3(satisfy), 2( unhappy), to 1(very unhappy)."
+survey$options[[1]] # will show as
+c(1, 2, 3, 4, 5)
+
+survey$questions[[2]] # will show as
+"Did you participate in any of the following activities? Check all that apply to you. (student association, school club, school sport team, department sport team)"
+survey$options[[2]] # will show as
+c("student association", "school club", "school sport team", "department sport team")
+```
+
+Construct the `survey` object that can satisfy the above retrieval outcomes:
+```{r ans11}
+# declare then add method
+survey <- list() # declare
+survey$questions[[1]] <- "Are you happy with our campus? Choose a number from 5(very happy), 4(happy), 3(satisfy), 2( unhappy), to 1(very unhappy)." # then-add
+survey$options[[1]] <- c(1, 2, 3, 4, 5)
+
+survey$questions[[2]] <- "Did you participate in any of the following activities? Check all that apply to you. (student association, school club, school sport team, department sport team)"
+survey$options[[2]] <- c("student association", "school club", "school sport team", "department sport team")
+
+# survey
+```
+
