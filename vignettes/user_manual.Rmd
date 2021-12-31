@@ -43,7 +43,7 @@ library(rmdgrader)
 
 ## Exam design
 
-**File** > **New File** > **R Markdown...* 
+**File** > **New File** > **R Markdown...** 
 
 Click **From Template**, select **Exam Rmd**, click **OK**.
 
