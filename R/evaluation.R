@@ -192,6 +192,7 @@ processDataExprs2getDataEnvironment <- function(
 #' }
 Evaluate <- function(pe){
   require(stringr)
+  require(purrr)
   # pe <- process
   pe <- as.environment(pe)
   ee <- new.env(parent = pe)
@@ -310,7 +311,7 @@ get_running_sequence <- function(pe){
     tidyr::nest() -> ct
 
   ct %>%
-    filter(
+    dplyr::filter(
       stringr::str_detect(part, "setup|library")
     ) -> tbl_ct
   if(nrow(tbl_ct)!=0){
@@ -321,7 +322,7 @@ get_running_sequence <- function(pe){
 
 
   ct %>%
-    filter(
+    dplyr::filter(
       stringr::str_detect(part, "setup|library", T)
     ) -> ct_parts
 

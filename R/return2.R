@@ -70,6 +70,7 @@ get_returnable <- function(path, download){
   ) %>%
     left_join(
       files2return %>%
+        mutate(學號=as.character(學號)) %>%
         select(學號,id),
       by=c("schoolId"="學號")
     ) -> df_returns

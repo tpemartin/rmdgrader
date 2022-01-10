@@ -1,0 +1,606 @@
+
+## upload summary
+
+```{r}
+library(NTPUclassmanagement)
+library(rmdgrader)
+library(googleclassroom)
+library(dplyr)
+library(googledrive)
+options(gargle_oauth_cache = ".secrets", gargle_oauth_email="mtlin@gm.ntpu.edu.tw")
+
+course <- get_courseWorks(gc, "110-1 資料科學程式設計（一）")
+  
+source("support/main.R")
+source("support/midterm.R")
+gd_courseWorkUrl = "https://drive.google.com/drive/u/0/folders/1lO5s1qeGacUVE4y0hCDaHAr0-n0n6lljKEpDTsKsI9S90jNXRBvRZOV4jHgVtqhGBzy4u3Kn"
+generate_upload_summary(gd_courseWorkUrl)
+summarise_multipleChoiceSubmission(
+  sheet="Form Responses 3")
+```
+
+## Download
+
+
+
+```{r}
+source("support/main.R")
+source("support/midterm.R")
+library(rmdgrader)
+library(dplyr)
+gd_url <- "https://drive.google.com/drive/u/0/folders/1lO5s1qeGacUVE4y0hCDaHAr0-n0n6lljKEpDTsKsI9S90jNXRBvRZOV4jHgVtqhGBzy4u3Kn"
+title= "midterm"
+path= "MIDTERM/submissions"
+roster <- readRDS("rosterComplete.rds")
+colname_googleClassLogin="Google classroom login email (Primary one only)"
+roster[[colname_googleClassLogin]] |>
+  tolower() -> roster[[colname_googleClassLogin]]
+# undebug(rmdgrader::Download)
+download <- rmdgrader::Download(title, path)
+download$get_courseWork(gd_url, roster, colname_googleClassLogin)
+# download all
+download$courseWork$download(overwrite = T)
+# download one
+download$courseWork$download(validSchoolIds=410872134, overwrite = T)
+download$courseWork$download(validSchoolIds=411073129, overwrite = T)
+#
+download$courseWork$download(validSchoolIds=411073126, overwrite = T)
+```
+
+## Process
+
+```{r}
+library(rmdgrader)
+library(purrr)
+library(dplyr)
+# .root <- rprojroot::is_rstudio_project$make_fix_file()
+# params <- list(
+#   ansfilename = "midterm.Rmd"
+# )
+process <- rmdgrader::Process2(
+  ansRmd="midterm-ans.Rmd",
+  path_studentRmds = "MIDTERM/submissions2"
+)
+process$correctAnsFilename$tryGet_list_codeChunks()
+process$inBatch_studentsRmds$tryGet_list_codeChunks()
+
+process$export(path="MIDTERM")
+```
+
+## Evaluate
+
+```{r}
+library(rmdgrader)
+processed <- readRDS("MIDTERM/processed.Rds")
+ev <- rmdgrader::Evaluate(as.environment(processed))
+ev$answerValues$batch$resolve$part1()
+ev$save("MIDTERM/evaluated.Rdata")
+
+```
+
+## Grading
+
+```{r}
+load("MIDTERM/evaluated.Rdata")
+library(rmdgrader)
+library(purrr)
+library(dplyr)
+process = readRDS("MIDTERM/processed.Rds")
+ae <- allequalService2(process, path="MIDTERM/submissions2")
+```
+
+
+```{r}
+process <- rmdgrader::Process2(
+  ansRmd="midterm-ans.Rmd",
+  path_studentRmds = "MIDTERM/submissions2"
+)
+process$correctAnsFilename$tryGet_list_codeChunks()
+process$inBatch_studentsRmds$tryGet_list_codeChunks()
+
+load("MIDTERM/evaluated.Rdata")
+ae <- rmdgrader::allequalService2(process, path="MIDTERM/submissions2")
+
+```
+
+```{r}
+ae$ans11$check_messageGroups$G1()
+```
+
+
+### ans11
+
+```{r ans11}
+ae$ans11$check_messageGroups$G1()
+ae$ans11$check_messageGroups$G1grade$grade(5)
+ae$ans11$code$G1$`midterm-410872134.Rmd`()
+
+ae$ans11$check_messageGroups$G2()
+ae$ans11$check_messageGroups$G2grade$grade(0)
+
+ae$ans11$check_messageGroups$G3()
+ae$ans11$check_messageGroups$G3grade$grade(6)
+ae$ans11$code$G3$`midterm-410873016.Rmd`()
+
+ae$ans11$check_messageGroups$G4()
+# process$file.edit$`midterm-410873054.Rmd`()
+ae$ans11$check_messageGroups$G4grade$grade(5)
+ae$ans11$code$G4$`midterm-410873054.Rmd`()
+
+ae$ans11$check_messageGroups$G5()
+# process$file.edit$`midterm-410873116.Rmd`()
+ae$ans11$check_messageGroups$G5grade$grade(3)
+ae$ans11$code$G5$`midterm-410873116.Rmd`()
+
+ae$ans11$check_messageGroups$G6()
+# process$file.edit$`midterm-410873134.Rmd`()
+ae$ans11$check_messageGroups$G6grade$grade(6)
+ae$ans11$code$G6$`midterm-410873134.Rmd`()
+
+ae$ans11$check_messageGroups$G7()
+ae$ans11$check_messageGroups$G7grade$grade(3)
+ae$ans11$code$G7$`midterm-410879124.Rmd`()
+
+ae$ans11$check_messageGroups$G8()
+ae$ans11$check_messageGroups$G8grade$grade(6)
+ae$ans11$code$G8$`midterm-410971414.Rmd`()
+
+ae$ans11$check_messageGroups$G9()
+ae$ans11$check_messageGroups$G9grade$grade(5)
+ae$ans11$code$G9$`midterm-410981001.Rmd`()
+
+ae$ans11$check_messageGroups$G10()
+ae$ans11$check_messageGroups$G10grade$grade(1)
+ae$ans11$code$G10$`midterm-411073011.Rmd`()
+
+ae$ans11$check_messageGroups$G11()
+ae$ans11$check_messageGroups$G11grade$grade(5)
+ae$ans11$code$G11$`midterm-411073013.Rmd`()
+
+ae$ans11$check_messageGroups$G12()
+ae$ans11$check_messageGroups$G12grade$grade(5)
+ae$ans11$code$G12$`midterm-411073020.Rmd`()
+
+ae$ans11$check_messageGroups$G13()
+ae$ans11$check_messageGroups$G13grade$grade(5)
+ae$ans11$code$G13$`midterm-411073025.Rmd`()
+
+ae$ans11$check_messageGroups$G14()
+ae$ans11$check_messageGroups$G14grade$grade(3)
+ae$ans11$code$G14$`midterm-411073110.Rmd`()
+```
+
+```{r}
+ae$save_grade$ans11()
+ae$grades$ans11
+```
+
+### ans12
+
+```{r ans12}
+# ae12 <- rmdgrader::allequalService("ans12")
+# ae12$generate_xy4messageGroups(mgetxy)
+ae$ans12$check_messageGroups$G1()
+ae$ans12$check_messageGroups$G1grade$grade(2)
+ae$ans12$code$G1$`midterm-410872134.Rmd`()
+
+ae$ans12$check_messageGroups$G2()
+ae$ans12$check_messageGroups$G2grade$grade(0)
+
+ae$ans12$check_messageGroups$G3()
+ae$ans12$check_messageGroups$G3grade$grade(6)
+ae$ans12$code$G3$`midterm-410873016.Rmd`()
+
+ae$ans12$check_messageGroups$G4()
+ae$ans12$check_messageGroups$G4grade$grade(1)
+ae$ans12$code$G4$`midterm-410873054.Rmd`()
+ae$ans12$code$G4$`midterm-411073057.Rmd`()
+
+ae$ans12$check_messageGroups$G5()
+ae$ans12$check_messageGroups$G5grade$grade(3)
+ae$ans12$code$G5$`midterm-410873116.Rmd`()
+ae$ans12$code$G5$`midterm-410971414.Rmd`()
+
+ae$ans12$check_messageGroups$G6()
+ae$ans12$check_messageGroups$G6grade$grade(3)
+ae$ans12$code$G6$`midterm-410873134.Rmd`()
+
+ae$ans12$check_messageGroups$G7()
+ae$ans12$check_messageGroups$G7grade$grade(1)
+ae$ans12$code$G7$`midterm-410981001.Rmd`()
+  
+ae$ans12$check_messageGroups$G8()
+ae$ans12$check_messageGroups$G8grade$grade(3)
+ae$ans12$code$G8$`midterm-411073008.Rmd`()
+# ae$ans12$file.edits$G8$`midterm-411073008.Rmd`()
+
+ae$ans12$check_messageGroups$G9()
+ae$ans12$check_messageGroups$G9grade$grade(2)
+
+ae$ans12$check_messageGroups$G10()
+ae$ans12$check_messageGroups$G10grade$grade(2)
+
+ae$ans12$check_messageGroups$G11()
+ae$ans12$check_messageGroups$G11grade$grade(2)
+
+ae$ans12$check_messageGroups$G12()
+ae$ans12$check_messageGroups$G12grade$grade(2)
+```
+
+
+```{r}
+ae$save_grade$ans12()
+```
+
+```{r ans13}
+ae$ans13$check_messageGroups$G1()
+ae$ans13$check_messageGroups$G1grade$grade(0)
+ae$ans13$code$G1$`midterm-410872134.Rmd`()
+
+ae$ans13$check_messageGroups$G2()
+ae$ans13$code$G2$`midterm-410873016.Rmd`()
+ae$ans13$check_messageGroups$G2grade$grade(6)
+
+ae$ans13$check_messageGroups$G3()
+ae$ans13$code$G3$`midterm-410879124.Rmd`()
+ae$ans13$check_messageGroups$G3grade$grade(2)
+
+ae$ans13$check_messageGroups$G4()
+ae$ans13$code$G4$`midterm-411073008.Rmd`()
+ae$ans13$check_messageGroups$G4grade$grade(4)
+
+ae$ans13$check_messageGroups$G5()
+ae$ans13$code$G5$`midterm-411073011.Rmd`()
+ae$ans13$check_messageGroups$G5grade$grade(4)
+
+ae$ans13$check_messageGroups$G6()
+ae$ans13$code$G6$`midterm-411073013.Rmd`()
+ae$ans13$check_messageGroups$G6grade$grade(2)
+
+ae$ans13$check_messageGroups$G7()
+ae$ans13$code$G7$`midterm-411073019.Rmd`()
+ae$ans13$check_messageGroups$G7grade$grade(3)
+
+ae$ans13$check_messageGroups$G8()
+ae$ans13$code$G8$`midterm-411073020.Rmd`()
+ae$ans13$check_messageGroups$G8grade$grade(0)
+
+ae$ans13$check_messageGroups$G9()
+ae$ans13$code$G9$`midterm-411073043.Rmd`()
+ae$ans13$check_messageGroups$G9grade$grade(2)
+
+ae$ans13$check_messageGroups$G10()
+ae$ans13$code$G10$`midterm-411099029.Rmd`()
+ae$ans13$check_messageGroups$G10grade$grade(4)
+```
+
+
+```{r}
+ae$save_grade$ans13()
+```
+
+```{r ans14}
+ae$ans14$check_messageGroups$G1()
+ae$ans14$check_messageGroups$G1grade$grade(0)
+
+ae$ans14$check_messageGroups$G2()
+ae$ans14$code$G2$`midterm-410873016.Rmd`()
+ae$ans14$check_messageGroups$G2grade$grade(5)
+ae$ans14$check_messageGroups$G2grade$comment("watch the responses[[2]] removing order.")
+
+ae$ans14$check_messageGroups$G3()
+ae$ans14$code$G3$`midterm-410879124.Rmd`()
+ae$ans14$check_messageGroups$G3grade$grade(2)
+
+# undebug(ae$ans14$check_messageGroups$G4)
+ae$ans14$check_messageGroups$G4()
+ae$ans14$code$G4$`midterm-410971414.Rmd`()
+ae$ans14$check_messageGroups$G4grade$grade(4)
+
+ae$ans14$check_messageGroups$G5()
+ae$ans14$check_messageGroups$G5grade$grade(6)
+
+ae$ans14$check_messageGroups$G6()
+ae$ans14$code$G6$`midterm-410981001.Rmd`()
+ae$ans14$check_messageGroups$G6grade$grade(0)
+
+ae$ans14$check_messageGroups$G7()
+ae$ans14$code$G7$`midterm-411073008.Rmd`()
+ae$ans14$check_messageGroups$G7grade$grade(5)
+
+ae$ans14$check_messageGroups$G8()
+ae$ans14$code$G8$`midterm-411073011.Rmd`()
+ae$ans14$check_messageGroups$G8grade$grade(0)
+
+ae$ans14$check_messageGroups$G9()
+ae$ans14$code$G9$`midterm-411073013.Rmd`()
+ae$ans14$check_messageGroups$G9grade$grade(0)
+
+ae$ans14$check_messageGroups$G10()
+ae$ans14$code$G10$`midterm-411073019.Rmd`()
+ae$ans14$check_messageGroups$G10grade$grade(0)
+
+ae$ans14$check_messageGroups$G11()
+ae$ans14$code$G11$`midterm-411073020.Rmd`()
+# ae$ans14$file.edits$G11$`midterm-411073020.Rmd`()
+ae$ans14$check_messageGroups$G11grade$grade(0)
+
+ae$ans14$check_messageGroups$G12()
+ae$ans14$code$G12$`midterm-411073043.Rmd`()
+ae$ans14$check_messageGroups$G12grade$grade(3)
+
+ae$ans14$check_messageGroups$G13()
+ae$ans14$code$G13$`midterm-411073130.Rmd`()
+ae$ans14$check_messageGroups$G13grade$grade(1)
+
+ae$ans14$check_messageGroups$G14()
+ae$ans14$code$G14$`midterm-411099029.Rmd`()
+ae$ans14$check_messageGroups$G14grade$grade(5)
+```
+
+
+```{r}
+ae$save_grade$ans14()
+```
+
+```{r ans15}
+ae$ans15$check_messageGroups$G1()
+ae$ans15$check_messageGroups$G1grade$grade(0)
+
+ae$ans15$check_messageGroups$G2()
+ae$ans15$code$G2$`midterm-410973132.Rmd`()
+ae$ans15$check_messageGroups$G2grade$grade(6)
+
+ae$ans15$check_messageGroups$G3()
+ae$ans15$code$G3$`midterm-411073043.Rmd`()
+ae$ans15$check_messageGroups$G3grade$grade(6)
+
+ae$ans15$check_messageGroups$G4()
+ae$ans15$code$G4$`midterm-411073053.Rmd`()
+# ae$file.edits$`midterm-411073013.Rmd`()
+ae$ans15$check_messageGroups$G4grade$grade(5)
+
+ae$ans15$check_messageGroups$G5()
+ae$ans15$code$G5$`midterm-411073129.Rmd`()
+ae$ans15$check_messageGroups$G5grade$grade(0)
+
+ae$ans15$check_messageGroups$G6()
+ae$ans15$code$G6$`midterm-411099029.Rmd`()
+ae$ans15$check_messageGroups$G6grade$grade(0)
+```
+
+```{r}
+ae$save_grade$ans15()
+ae$grades$ans15[19]
+```
+
+```{r}
+debug(ae$export_grade)
+ae$export_grade(path="MIDTERM")
+library(dplyr)
+library(purrr)
+rmdgrader:::export_grade2(ae, path="MIDTERM")
+```
+
+## Synthesize
+
+```{r}
+library(rmdgrader)
+df_grades = readRDS("MIDTERM/grades.Rds")
+list(ans11="## 1.1", ans12="## 1.2", ans13="## 1.3", ans14="## 1.4", ans15="## 1.5") -> mapping
+path="MIDTERM/submissions2"
+syn <- rmdgrader::Synthesize(df_grades, mapping, path)
+# synthesize all Rmds
+syn$all()
+# synthesize one Rmd
+syn$individual$`midterm-410872134.Rmd`()
+```
+
+## Return
+
+```{r}
+source("support/main.R")
+source("support/midterm.R")
+library(rmdgrader)
+library(dplyr)
+gd_url <- "https://drive.google.com/drive/u/0/folders/1lO5s1qeGacUVE4y0hCDaHAr0-n0n6lljKEpDTsKsI9S90jNXRBvRZOV4jHgVtqhGBzy4u3Kn"
+title= "midterm"
+path= "MIDTERM/submissions"
+roster <- readRDS("rosterComplete.rds")
+colname_googleClassLogin="Google classroom login email (Primary one only)"
+roster[[colname_googleClassLogin]] |>
+  tolower() -> roster[[colname_googleClassLogin]]
+# undebug(rmdgrader::Download)
+download <- rmdgrader::Download(title, path)
+download$get_courseWork(gd_url, roster, colname_googleClassLogin)
+```
+
+
+```{r}
+# debug(rmdgrader::Return2)
+rt <- rmdgrader::Return2(
+  path="MIDTERM/submissions2",
+  download=download
+)
+rt$return_all()
+```
+
+
+## Publish to Google Sheets
+
+```{r}
+sheetUrl <- "https://docs.google.com/spreadsheets/d/1fs61_qTY4IYqtzWgg7VNbJ_igwJaVgRPYVjvodre5JI/edit#gid=1317931649"
+df_grades = readRDS("MIDTERM/grades.Rds")
+sheet_mcq <- googlesheets4::read_sheet(
+  ss=sheetUrl,
+  sheet="Form Responses 3"
+)
+sheet_roster <- googlesheets4::read_sheet(
+  ss=sheetUrl,
+  sheet="完整資訊2"
+)
+# sheet_mcq |> View()
+library(dplyr)
+sheet_mcq %>% mutate(
+  midterm_mcq = Score
+) -> sheet_mcq
+sheet_roster %>%
+  left_join(
+    sheet_mcq %>%
+      select("School ID", "midterm_mcq"),
+    by=c("學號"="School ID")
+  ) -> sheet_midterm
+df_grades %>%
+  mutate(
+    midterm_program=sum,
+    schoolId=stringr::str_extract(rmd, "(?<=-)[0-9]+(?=\\.)") %>% as.integer()
+  ) %>%
+  relocate(schoolId, midterm_program) -> sheet_grades
+sheet_midterm %>%
+  left_join(
+    sheet_grades %>% select(schoolId, midterm_program), 
+    by=c("學號"="schoolId")
+  ) -> sheet_midterm2
+
+sheet_midterm2 %>%
+  mutate(
+    midterm_total = midterm_mcq + midterm_program
+  ) -> sheet_midterm3
+
+sheet_midterm3 %>%
+  select(
+    姓名,學號,matches("midterm")
+  ) %>%
+  arrange(學號) -> sheet_publish
+
+googlesheets4::write_sheet(
+  sheet_publish,
+  ss=sheetUrl,
+  sheet="Midterm"
+)
+```
+
+## Analysis
+
+```{r}
+sheetUrl <- "https://docs.google.com/spreadsheets/d/1fs61_qTY4IYqtzWgg7VNbJ_igwJaVgRPYVjvodre5JI/edit#gid=1317931649"
+analysis <- list()
+analysis$data <- googlesheets4::read_sheet(
+  ss=sheetUrl,
+  sheet="Midterm"
+)
+analysis$data_percentRank <- analysis$data %>% 
+  mutate(
+    across(
+      .cols=matches("midterm"),
+      .fns = percent_rank
+    )
+  ) %>%
+  mutate(
+    isAlgorithmStrong = midterm_program > midterm_mcq
+  )
+
+library(ggplot2)
+library(econDV2)
+{
+  analysis$data$midterm_total |> range()
+  analysis$data$midterm_total |> cut(
+    seq(0,80, by=5), 
+    right = F, ordered_result = T
+  ) -> analysis$data$midterm_bin
+}
+econDV2::axis_x_custom(scale_x = scale_x_discrete) -> axis_x_discrete_custom
+ggplot()+
+  geom_bar(
+    data=analysis$data,
+    mapping=aes(
+      x=midterm_total
+    ),
+    fill="dodgerblue2"
+  )+
+  scale_x_binned(
+    name="",
+    n.breaks = 10,
+    limits = c(0,80),
+    breaks=seq(0,80, by=10),
+    expand = expansion(0,0)
+  )+
+  scale_y_continuous(
+    name="",
+    expand = expansion(0,0),
+    limits = c(0, 18)
+  )+
+  theme(
+    axis.line.y=element_blank(),
+    axis.ticks.y = element_blank(),
+    panel.grid.major.y = element_line(
+      size=0.5, #input$grideSize
+      color="grey" #input$color
+    )
+  )+
+  labs(
+    title="Midterm grades distribution",
+    subtitle="Person count in each grade interval"
+  )
+  
+```
+
+## dispute
+
+```{r}
+sheetUrl <- "https://docs.google.com/spreadsheets/d/1fs61_qTY4IYqtzWgg7VNbJ_igwJaVgRPYVjvodre5JI/edit#gid=1317931649"
+
+sheet_grade <- 
+  googlesheets4::read_sheet(
+    ss=sheetUrl,
+    sheet="Midterm"
+  )
+library(dplyr)
+whichIsTarget <- 
+  which(sheet_grade$學號==411073088)
+sheet_grade[whichIsTarget, ] %>%
+  mutate(
+    midterm_program=13,
+    midterm_total = midterm_mcq+midterm_program
+  ) -> sheet_grade[whichIsTarget, ]
+
+googlesheets4::write_sheet(
+    sheet_grade, 
+    ss=sheetUrl,
+    sheet="Midterm"
+  )
+
+```
+
+
+## fix ansObjname hash tag not removed problem
+
+```{r}
+ansLabels <- names(ev$ansObjectnames)
+process$correctAnsFilename$codeChunksProcessed$chunkTable |> 
+  filter(part == 1) |> pull(label) -> ansLabels
+ev$allRmds %>%
+  subset(stringr::str_detect(ev$allRmds, "ans", negate=T)) ->
+  studentRmds
+newpath = "MIDTERM/submissions2"
+dir.create(newpath)
+for(rmdX in studentRmds){
+  filename = file.path("MIDTERM/submissions", rmdX)
+  rmdlines = xfun::read_utf8(filename)
+  rmdgrader::rmd_chunkTable(rmdlines) -> chunkTableX
+  for(.x in seq_along(ansLabels))
+  {
+    ansX = ansLabels[[.x]]
+    ansObjX = ev$ansObjectnames[[ansX]] 
+    chunkTableX |> distinct() |> 
+      filter(label==ansX) |> pull(end) -> endlineX
+    if(length(endlineX) == 0) next
+    paste0(ansObjX, "\n", rmdlines[[endlineX]]) -> 
+      rmdlines[[endlineX]]
+  }
+  newfilename=file.path(newpath, rmdX)
+  xfun::write_utf8(rmdlines, con=newfilename)
+}
+
+```
+

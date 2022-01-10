@@ -148,10 +148,10 @@ generate_datalist <- function(
   )
   require(dplyr)
   seatMapping %>%
-    mutate(
+    dplyr::mutate(
       seat=paste(row, col, sep=".")
     ) %>%
-    pull(seat) %>%
+    dplyr::pull(seat) %>%
     as.list() %>%
     setNames(seatMapping$name) -> datalist
 
@@ -185,7 +185,7 @@ get_seatmapFromSeatChart <- function(seatingChartUrl, sheet_seatChart, range_sea
   seatingChart |> unlist() -> seatCheck$name
   require(dplyr)
   seatCheck |>
-    filter(
+    dplyr::filter(
       name !="X"
       & !is.na(name)
       & !stringr::str_detect(name,"[0-9]")) ->
@@ -217,7 +217,7 @@ get_seatmapFromSeatChart <- function(seatingChartUrl, sheet_seatChart, range_sea
 #'   sheet = "new assigned-seating chart")
 generate_seatingChart <- function(
   seatChartUrl, sheet_seatChart, student_names, sheet){
-
+  require(dplyr)
   seatingTemplate <- {
     seatChartUrl |>
       googlesheets4::read_sheet(sheet=sheet_seatChart, col_names = F) -> seatingTemplate
@@ -246,8 +246,8 @@ generate_seatingChart <- function(
     goodSeatChart$student_names[assigned_indices] = student_names
 
     goodSeatChart |>
-      filter(student_names !="") |>
-      rename(".row"="Var1", ".col"="Var2")
+      dplyr::filter(student_names !="") |>
+      dplyr::rename(".row"="Var1", ".col"="Var2")
   }
   seatChart_with_names <- {
 

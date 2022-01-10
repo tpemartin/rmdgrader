@@ -53,7 +53,7 @@ Download <- function(title, path)
               {
                 filenameX <- file.path(
                   download$path,
-                  glue::glue("{download$title}-{schoolId}.Rmd")
+                  stringr::str_remove_all(glue::glue("{download$title}-{schoolId}.Rmd"), "\\s")
                 )
                 googledrive::drive_download(
                   file=download$courseWork$download_meta$id[pick_schoolIds][[.x]], path=filenameX,
