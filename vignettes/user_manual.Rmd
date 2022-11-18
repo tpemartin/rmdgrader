@@ -41,6 +41,9 @@ library(rmdgrader)
 
 6.  Sythesize: Adding student's grading result to his Rmd file for returning.
 
+7.  Inspection: Manually inspect student's synthesized Rmd, change its grade and update grade
+
+
 ## Exam design
 
 **File** > **New File** > **R Markdown...**  
@@ -153,7 +156,7 @@ ae$ans11$check_messageGroups$G1grade$comment("your comment")
   If want ot bring out some student's code in a group:
 
 ```{r}
-ae$ans11$code$`midterm-410872134.Rmd`()
+ae$ans11$code$G1$`midterm-410872134.Rmd`()
 ```
 
 ***
@@ -189,3 +192,66 @@ syn$all()
 # synthesize one Rmd
 syn$individual$`midterm-410872134.Rmd`()
 ```
+
+## Inspection
+
+  * use `rmdgrader::Inspect(path)` to initiate an inspect instance. Make sure the global environment has `df_grades` in it.
+  
+```{r}
+library(rmdgrader)
+df_grades = readRDS("/Users/martinl/Github/110-1-r4ds-management/MIDTERM/grades.Rds")
+path="MIDTERM/submissions2"
+isp <- rmdgrader::Inspect(path)
+```
+
+Use the following to file.edit the first Rmd
+```{r}
+isp$file.edit$`Finalexam-410872134.Rmd`()
+```
+
+Use the following to file.edit the next Rmd, continue to use `$file.edit_next()` for the next Rmd, `$file.edit_previous()` to go back:
+```{r}
+isp$file.edit_next()
+```
+
+  * When manually change grades, make sure ansXXX and total are changed accordingly in the frontmatter. They will be used to update `df_grades`
+
+Use the following method to update the df_grades row corresponding to the Rmd file:
+```{r}
+isp$update_grade$`Finalexam-410872134.Rmd`()
+```
+  
+```{r}
+saveRDS(df_grades, file="/Users/martinl/Github/110-1-r4ds-management/MIDTERM/grades.Rds")
+```
+
+## Return
+
+
+```{r}
+source("support/main.R")
+source("support/midterm.R")
+library(rmdgrader)
+library(dplyr)
+gd_url <- "https://drive.google.com/drive/folders/1BbD2wbI4gK-14ViZnbeu5dQGTctchdSQCjD-AzcbGfmzBDeT-9poom_nOjwjtF7wcu--yOk0"
+title= "Final exam" # title of google class assignment
+path= "FINAL/submissions" # the local folder to download student turn ins.
+roster <- readRDS("rosterComplete.rds")
+colname_googleClassLogin="Google classroom login email (Primary one only)"
+roster[[colname_googleClassLogin]] |>
+  tolower() -> roster[[colname_googleClassLogin]]
+# undebug(rmdgrader::Download)
+download <- rmdgrader::Download(title, path)
+download$get_courseWork(gd_url, roster, colname_googleClassLogin)
+```
+
+
+```{r}
+rt <- rmdgrader::Return2(
+  path="FINAL/submissions2",
+  download=download
+)
+rt$return_all()
+```
+
+
